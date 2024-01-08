@@ -5,12 +5,12 @@ go 1.21
 toolchain go1.21.1
 
 require (
-	github.com/Layr-Labs/eigensdk-go v0.0.8
+	github.com/Layr-Labs/eigensdk-go v0.0.9
 	github.com/aws/aws-sdk-go-v2 v1.21.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.43
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.40
 	github.com/consensys/gnark-crypto v0.12.1
-	github.com/ethereum/go-ethereum v1.13.4
+	github.com/ethereum/go-ethereum v1.13.5
 	github.com/fxamacker/cbor/v2 v2.5.0
 	github.com/gin-contrib/logger v0.2.6
 	github.com/gin-gonic/gin v1.9.1
@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.2
 	github.com/urfave/cli v1.22.14
-	github.com/urfave/cli/v2 v2.25.7
+	github.com/urfave/cli/v2 v2.26.0
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
 	github.com/zero-gravity-labs/zerog-storage-client v0.1.1
 	github.com/zero-gravity-labs/zgda/api v0.0.0
@@ -68,14 +68,14 @@ require (
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
-	github.com/crate-crypto/go-kzg-4844 v0.3.0 // indirect
+	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
 	github.com/docker/cli v20.10.17+incompatible // indirect
 	github.com/docker/docker v24.0.6+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/ethereum/c-kzg-4844 v0.3.1 // indirect
+	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gammazero/deque v0.2.0 // indirect
@@ -175,7 +175,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.5.0
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
