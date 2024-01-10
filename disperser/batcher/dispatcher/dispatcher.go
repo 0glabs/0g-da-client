@@ -105,8 +105,10 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, blobs []*core.EncodedBlo
 		return nil, fmt.Errorf("Failed to get file info: %v", err)
 	}
 	// check finalization
-	if !info.Finalized {
-		return nil, fmt.Errorf("Tx not finalized: %v", info)
-	}
+	/*
+		if !info.Finalized {
+			return nil, fmt.Errorf("Tx not finalized: %v", info)
+		}
+	*/
 	return info, nil
 }

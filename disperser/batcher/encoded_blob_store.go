@@ -56,7 +56,7 @@ func (e *encodedBlobStore) PutEncodingRequest(blobKey disperser.BlobKey) {
 	e.requested[requestID] = struct{}{}
 }
 
-func (e *encodedBlobStore) HasEncodingRequested(blobKey disperser.BlobKey, quorumID core.QuorumID, referenceBlockNumber uint) bool {
+func (e *encodedBlobStore) HasEncodingRequested(blobKey disperser.BlobKey) bool {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
@@ -65,8 +65,8 @@ func (e *encodedBlobStore) HasEncodingRequested(blobKey disperser.BlobKey, quoru
 		return true
 	}
 
-	res, ok := e.encoded[requestID]
-	if ok && res.ReferenceBlockNumber == referenceBlockNumber {
+	_, ok := e.encoded[requestID]
+	if ok {
 		return true
 	}
 	return false
@@ -118,7 +118,7 @@ func (e *encodedBlobStore) GetEncodingResult(blobKey disperser.BlobKey, quorumID
 	return e.encoded[requestID], nil
 }
 
-func (e *encodedBlobStore) DeleteEncodingResult(blobKey disperser.BlobKey, quorumID core.QuorumID) {
+func (e *encodedBlobStore) DeleteEncodingResult(blobKey disperser.BlobKey) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -142,15 +142,6 @@ func (e *encodedBlobStore) GetNewEncodingResults() []*EncodingResult {
 	}
 	e.logger.Trace("consumed encoded results", "fetched", len(fetched), "encodedSize", e.encodedResultSize)
 	return fetched
-}
-
-// DeleteStaleEncodingResults deletes all the stale results
-func (e *encodedBlobStore) DeleteStaleEncodingResults() {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	for ri := range e.encoded {
-		delete(e.encoded, ri)
-	}
 }
 
 // GetEncodedResultSize returns the total size of all the chunks in the encoded results in bytes

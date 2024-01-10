@@ -156,6 +156,15 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	if err != nil {
 		return fmt.Errorf("error getting blob metadatas: %w", err)
 	}
+	// filter requested/encoded blobs
+	n := 0
+	for _, metadata := range metadatas {
+		if !e.EncodedBlobstore.HasEncodingRequested(metadata.GetBlobKey()) {
+			metadatas[n] = metadata
+			n++
+		}
+	}
+	metadatas = metadatas[:n]
 	if len(metadatas) == 0 {
 		e.logger.Info("no new metadatas to encode")
 		return nil
@@ -220,9 +229,9 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 
 	blobLength := core.GetBlobLength(metadata.RequestMetadata.BlobSize)
 
-	chunkLength, chunkNum := uint(1), blobLength
+	chunkLength, chunkNum := blobLength*2, uint(1)
 
-	params, err := core.GetEncodingParams(chunkLength, chunkNum*2)
+	params, err := core.GetEncodingParams(chunkLength, chunkNum)
 	if err != nil {
 		e.logger.Error("[RequestEncodingForBlob] error getting encoding params", "err", err)
 		return
@@ -387,7 +396,5 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 }
 
 func (e *EncodingStreamer) RemoveEncodedBlob(metadata *disperser.BlobMetadata) {
-	for _, sp := range metadata.RequestMetadata.SecurityParams {
-		e.EncodedBlobstore.DeleteEncodingResult(metadata.GetBlobKey(), sp.QuorumID)
-	}
+	e.EncodedBlobstore.DeleteEncodingResult(metadata.GetBlobKey())
 }

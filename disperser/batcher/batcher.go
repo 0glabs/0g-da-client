@@ -263,7 +263,6 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) error {
 			return fmt.Errorf("HandleSingleBatch: failed to update blob confirmed metadata for all blobs in batch: %w", updateConfirmationInfoErr)
 		}
 	}
-	b.EncodingStreamer.EncodedBlobstore.DeleteStaleEncodingResults()
 
 	log.Trace("[batcher] Update confirmation info took", "duration", time.Since(stageTimer))
 	b.Metrics.ObserveLatency("UpdateConfirmationInfo", float64(time.Since(stageTimer).Milliseconds()))
