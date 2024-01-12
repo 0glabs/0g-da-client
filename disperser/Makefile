@@ -24,21 +24,23 @@ run_batcher: build_batcher
 	--batcher.aws.access-key-id localstack \
 	--batcher.aws.secret-access-key localstack \
 	--batcher.aws.endpoint-url http://0.0.0.0:4566 \
-	--batcher.s3-bucket-name test-eigenda-blobstore \
+	--batcher.s3-bucket-name test-zgda-blobstore \
 	--batcher.dynamodb-table-name test-BlobMetadata \
 	--encoder-socket 0.0.0.0:34000 \
 	--batcher.batch-size-limit 10000 \
-	--batcher.srs-order 3000 \
+	--batcher.srs-order 300000 \
 	--encoding-timeout 10s \
 	--chain-read-timeout 12s \
 	--chain-write-timeout 13s \
 	--batcher.storage.node-urls http://0.0.0.0:5678,http://0.0.0.0:6789 \
+	--batcher.storage.kv-url http://0.0.0.0:7890 \
+	--batcher.storage.kv-stream-id 000000000000000000000000000000000000000000000000000000000000f2bd \
 	--batcher.storage.flow-contract FLOW_CONTRACT_ADDR
 
 run_server: build_server
 	./bin/server \
 	--disperser-server.grpc-port 51001 \
-	--disperser-server.s3-bucket-name test-eigenda-blobstore \
+	--disperser-server.s3-bucket-name test-zgda-blobstore \
 	--disperser-server.dynamodb-table-name test-BlobMetadata \
 	--disperser-server.aws.region us-east-1 \
 	--disperser-server.aws.access-key-id localstack \
@@ -49,10 +51,10 @@ run_encoder: build_encoder
 	./bin/encoder \
 	--disperser-encoder.grpc-port 34000 \
   --disperser-encoder.metrics-http-port 9109 \
-  --kzg.g1-path ../inabox/resources/kzg/g1.point \
-  --kzg.g2-path ../inabox/resources/kzg/g2.point \
+  --kzg.g1-path ../inabox/resources/kzg/g1.point.300000 \
+  --kzg.g2-path ../inabox/resources/kzg/g2.point.300000 \
   --kzg.cache-path ../inabox/resources/kzg/SRSTables \
-  --kzg.srs-order 3000 \
+  --kzg.srs-order 300000 \
   --kzg.num-workers 12 \
   --disperser-encoder.log.level-std trace \
   --disperser-encoder.log.level-file trace

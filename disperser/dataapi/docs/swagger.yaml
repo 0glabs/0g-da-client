@@ -53,7 +53,7 @@ definitions:
       blob_key:
         type: string
       blob_status:
-        $ref: '#/definitions/github_com_Layr-Labs_eigenda_disperser.BlobStatus'
+        $ref: '#/definitions/github_com_Layr-Labs_zgda_disperser.BlobStatus'
       confirmation_block_number:
         type: integer
       fee:
@@ -111,7 +111,7 @@ definitions:
       timestamp:
         type: integer
     type: object
-  github_com_Layr-Labs_eigenda_disperser.BlobStatus:
+  github_com_Layr-Labs_zgda_disperser.BlobStatus:
     enum:
     - 0
     - 1
@@ -127,8 +127,8 @@ definitions:
     - InsufficientSignatures
 info:
   contact: {}
-  description: This is the EigenDA Data Access API server.
-  title: EigenDA Data Access API
+  description: This is the ZGDA Data Access API server.
+  title: ZGDA Data Access API
   version: "1"
 paths:
   /feed/blobs:

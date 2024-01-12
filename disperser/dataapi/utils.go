@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/subgraph"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/subgraph"
 )
 
 func ConvertHexadecimalToBytes(byteHash []byte) ([32]byte, error) {

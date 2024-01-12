@@ -63,7 +63,7 @@
 | signatory_record_hash | [bytes](#bytes) |  | The hash of all public keys of the operators that did not sign the batch. |
 | fee | [bytes](#bytes) |  | The gas fee of confirming this batch. It&#39;s the bytes representation of a big.Int value. |
 | confirmation_block_number | [uint32](#uint32) |  | The Ethereum block number at which the batch is confirmed onchain. |
-| batch_header_hash | [bytes](#bytes) |  | This is the hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43 The is the message that the operators will sign their signatures on. |
+| batch_header_hash | [bytes](#bytes) |  | This is the hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43 The is the message that the operators will sign their signatures on. |
 
 
 
@@ -90,7 +90,7 @@
 <a name="disperser-BlobInfo"></a>
 
 ### BlobInfo
-BlobInfo contains information needed to confirm the blob against the EigenDA contracts
+BlobInfo contains information needed to confirm the blob against the ZGDA contracts
 
 
 | Field | Type | Label | Description |
@@ -114,7 +114,7 @@ BlobInfo contains information needed to confirm the blob against the EigenDA con
 | quorum_number | [uint32](#uint32) |  | The ID of the quorum. |
 | adversary_threshold_percentage | [uint32](#uint32) |  | Same as SecurityParams.adversary_threshold. |
 | quorum_threshold_percentage | [uint32](#uint32) |  | Same as SecurityParams.quorum_threshold. |
-| quantization_param | [uint32](#uint32) |  | This determines the nominal number of chunks for the blob, which is nominal_num_chunks = quantization_param * num_operators. A chunk is the smallest unit that&#39;s distributed to DA Nodes, corresponding to a set of evaluations of the polynomial (representing the blob) and a KZG multiproof. See more details in data model of EigenDA: https://github.com/zero-gravity-labs/zgda/blob/master/docs/spec/data-model.md |
+| quantization_param | [uint32](#uint32) |  | This determines the nominal number of chunks for the blob, which is nominal_num_chunks = quantization_param * num_operators. A chunk is the smallest unit that&#39;s distributed to DA Nodes, corresponding to a set of evaluations of the polynomial (representing the blob) and a KZG multiproof. See more details in data model of ZGDA: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/docs/spec/data-model.md |
 | encoded_length | [uint64](#uint64) |  | The length of the blob after encoding (in number of symbols). |
 
 
@@ -131,7 +131,7 @@ BlobInfo contains information needed to confirm the blob against the EigenDA con
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | status | [BlobStatus](#disperser-BlobStatus) |  | The status of the blob. |
-| info | [BlobInfo](#disperser-BlobInfo) |  | The blob info needed for clients to confirm the blob against the EigenDA contracts. |
+| info | [BlobInfo](#disperser-BlobInfo) |  | The blob info needed for clients to confirm the blob against the ZGDA contracts. |
 
 
 
@@ -161,7 +161,7 @@ BlobStatusRequest is used to query the status of a blob.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| batch_id | [uint32](#uint32) |  | batch_id is an incremental ID assigned to a batch by EigenDAServiceManager |
+| batch_id | [uint32](#uint32) |  | batch_id is an incremental ID assigned to a batch by ZGDAServiceManager |
 | blob_index | [uint32](#uint32) |  | The index of the blob in the batch (which is logically an ordered list of blobs). |
 | batch_metadata | [BatchMetadata](#disperser-BatchMetadata) |  |  |
 | inclusion_proof | [bytes](#bytes) |  | inclusion_proof is a merkle proof for a blob header&#39;s inclusion in a batch |
@@ -255,7 +255,7 @@ Clients use this to customize liveness requirement. The higher this number, the 
 
 Requires: 1 &lt;= quorum_threshld &lt;= 100 quorum_threshld &gt; adversary_threshold.
 
-Note: The adversary_threshold and quorum_threshold will directly influence the cost of encoding for the blob to be dispersed, roughly by a factor of 100 / (quorum_threshold - adversary_threshold). See the spec for more details: https://github.com/zero-gravity-labs/zgda/blob/master/docs/spec/protocol-modules/storage/overview.md |
+Note: The adversary_threshold and quorum_threshold will directly influence the cost of encoding for the blob to be dispersed, roughly by a factor of 100 / (quorum_threshold - adversary_threshold). See the spec for more details: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/docs/spec/protocol-modules/storage/overview.md |
 
 
 

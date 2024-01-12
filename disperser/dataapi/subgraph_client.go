@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/subgraph"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/subgraph"
 )
 
 const _14Days = 14 * 24 * time.Hour

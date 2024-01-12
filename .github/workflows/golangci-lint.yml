@@ -17,7 +17,7 @@ jobs:
           go-version: '1.21' # The Go version to download (if necessary) and use.
       - run: go version
 
-      - name: Checkout ZGDA
+      - name: Checkout zerog-data-avail
         uses: actions/checkout@v3
 
       - name: golangci-lint

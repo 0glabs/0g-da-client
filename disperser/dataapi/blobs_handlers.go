@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"sort"
 
-	"github.com/zero-gravity-labs/zgda/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 func (s *server) getBlob(ctx context.Context, key string) (*BlobMetadataResponse, error) {

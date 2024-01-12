@@ -2,10 +2,10 @@ package flags
 
 import (
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/common/aws"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
 )
 
 const (

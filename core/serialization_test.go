@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zgda/core"
-	kzgbn254 "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	kzgbn254 "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 const (

@@ -28,7 +28,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| data | [bytes](#bytes) |  | The blob retrieved and reconstructed from the EigenDA Nodes per BlobRequest. |
+| data | [bytes](#bytes) |  | The blob retrieved and reconstructed from the ZGDA Nodes per BlobRequest. |
 
 
 
@@ -43,7 +43,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| batch_header_hash | [bytes](#bytes) |  | The hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43 This identifies the batch that this blob belongs to. |
+| batch_header_hash | [bytes](#bytes) |  | The hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43 This identifies the batch that this blob belongs to. |
 | blob_index | [uint32](#uint32) |  | Which blob in the batch this is requesting for (note: a batch is logically an ordered list of blobs). |
 | reference_block_number | [uint32](#uint32) |  | The Ethereum block number at which the batch for this blob was constructed. |
 | quorum_id | [uint32](#uint32) |  | Which quorum of the blob this is requesting for (note a blob can participate in multiple quorums). |
@@ -63,13 +63,13 @@
 
 ### Retriever
 The Retriever is a service for retrieving chunks corresponding to a blob from
-the EigenDA operator nodes and reconstructing the original blob from the chunks.
+the ZGDA operator nodes and reconstructing the original blob from the chunks.
 This is a client-side library that the users are supposed to operationalize.
 
-Note: Users generally have two ways to retrieve a blob from EigenDA:
+Note: Users generally have two ways to retrieve a blob from ZGDA:
   1) Retrieve from the Disperser that the user initially used for dispersal: the API
      is Disperser.RetrieveBlob() as defined in api/proto/disperser/disperser.proto
-  2) Retrieve directly from the EigenDA Nodes, which is supported by this Retriever.
+  2) Retrieve directly from the ZGDA Nodes, which is supported by this Retriever.
 
 The Disperser.RetrieveBlob() (the 1st approach) is generally faster and cheaper as the
 Disperser manages the blobs that it has processed, whereas the Retriever.RetrieveBlob()
@@ -78,7 +78,7 @@ worse cost and performance.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| RetrieveBlob | [BlobRequest](#retriever-BlobRequest) | [BlobReply](#retriever-BlobReply) | This fans out request to EigenDA Nodes to retrieve the chunks and returns the reconstructed original blob in response. |
+| RetrieveBlob | [BlobRequest](#retriever-BlobRequest) | [BlobReply](#retriever-BlobReply) | This fans out request to ZGDA Nodes to retrieve the chunks and returns the reconstructed original blob in response. |
 
  
 

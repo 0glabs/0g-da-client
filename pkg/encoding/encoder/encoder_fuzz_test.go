@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
 )
 
 func FuzzOnlySystematic(f *testing.F) {

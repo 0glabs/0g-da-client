@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	kzgRs "github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	kzgRs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 func TestProveAllCosetThreads(t *testing.T) {

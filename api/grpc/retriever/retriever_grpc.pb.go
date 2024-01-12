@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RetrieverClient interface {
-	// This fans out request to EigenDA Nodes to retrieve the chunks and returns the
+	// This fans out request to ZGDA Nodes to retrieve the chunks and returns the
 	// reconstructed original blob in response.
 	RetrieveBlob(ctx context.Context, in *BlobRequest, opts ...grpc.CallOption) (*BlobReply, error)
 }
@@ -48,7 +48,7 @@ func (c *retrieverClient) RetrieveBlob(ctx context.Context, in *BlobRequest, opt
 // All implementations must embed UnimplementedRetrieverServer
 // for forward compatibility
 type RetrieverServer interface {
-	// This fans out request to EigenDA Nodes to retrieve the chunks and returns the
+	// This fans out request to ZGDA Nodes to retrieve the chunks and returns the
 	// reconstructed original blob in response.
 	RetrieveBlob(context.Context, *BlobRequest) (*BlobReply, error)
 	mustEmbedUnimplementedRetrieverServer()

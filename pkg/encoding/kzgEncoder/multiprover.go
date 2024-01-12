@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/utils/toeplitz"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/utils/toeplitz"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 type WorkerResult struct {

@@ -48,7 +48,7 @@ type TelemetryConfig struct {
 	DockerSd   []string `yaml:"dockerSd"`
 }
 
-type EigenDADeployConfig struct {
+type ZGDADeployConfig struct {
 	UseDefaults         bool       `json:"useDefaults"`
 	NumStrategies       int        `json:"numStrategies"`
 	MaxOperatorCount    int        `json:"maxOperatorCount"`
@@ -57,7 +57,7 @@ type EigenDADeployConfig struct {
 	OperatorPrivateKeys []string   `json:"-"`
 }
 
-func (cfg *EigenDADeployConfig) MarshalJSON() ([]byte, error) {
+func (cfg *ZGDADeployConfig) MarshalJSON() ([]byte, error) {
 	// Convert StakerTokenAmounts to custom string format without quotes
 	amountsStr := "["
 	for i, subAmounts := range cfg.StakerTokenAmounts {
@@ -95,9 +95,9 @@ func (cfg *EigenDADeployConfig) MarshalJSON() ([]byte, error) {
 	return []byte(customJSON), nil
 }
 
-type EigenDAContract struct {
+type ZGDAContract struct {
 	Deployer                       string `yaml:"deployer"`
-	ServiceManager                 string `json:"eigenDAServiceManager"`
+	ServiceManager                 string `json:"zerogDAServiceManager"`
 	OperatorStateRetreiver         string `json:"blsOperatorStateRetriever"`
 	PubkeyRegistry                 string `json:"blsPubkeyRegistry"`
 	PubkeyCompendium               string `json:"pubkeyCompendium"`
@@ -153,8 +153,8 @@ type Config struct {
 
 	Deployers []*ContractDeployer `yaml:"deployers"`
 
-	EigenDA    EigenDAContract `yaml:"eigenda"`
-	MockRollup string          `yaml:"mockRollup" json:"mockRollup"`
+	ZGDA       ZGDAContract `yaml:"zgda"`
+	MockRollup string       `yaml:"mockRollup" json:"mockRollup"`
 
 	Pks *PkConfig `yaml:"privateKeys"`
 
@@ -171,8 +171,8 @@ type Config struct {
 	Retriever  RetrieverVars
 }
 
-func (c Config) IsEigenDADeployed() bool {
-	return c.EigenDA.ServiceManager != ""
+func (c Config) IsZGDADeployed() bool {
+	return c.ZGDA.ServiceManager != ""
 }
 
 func NewTestConfig(testName, rootPath string) (testEnv *Config) {

@@ -68,54 +68,54 @@ type subgraphUpdater interface {
 	UpdateNetworks(n Networks, startBlock int)
 }
 
-type eigenDAOperatorStateSubgraphUpdater struct {
+type zerogDAOperatorStateSubgraphUpdater struct {
 	c *Config
 }
 
-func (u eigenDAOperatorStateSubgraphUpdater) UpdateSubgraph(s *Subgraph, startBlock int) {
-	s.DataSources[0].Source.Address = strings.TrimPrefix(u.c.EigenDA.RegistryCoordinatorWithIndices, "0x")
+func (u zerogDAOperatorStateSubgraphUpdater) UpdateSubgraph(s *Subgraph, startBlock int) {
+	s.DataSources[0].Source.Address = strings.TrimPrefix(u.c.ZGDA.RegistryCoordinatorWithIndices, "0x")
 	s.DataSources[0].Source.StartBlock = startBlock
-	s.DataSources[1].Source.Address = strings.TrimPrefix(u.c.EigenDA.PubkeyRegistry, "0x")
+	s.DataSources[1].Source.Address = strings.TrimPrefix(u.c.ZGDA.PubkeyRegistry, "0x")
 	s.DataSources[1].Source.StartBlock = startBlock
-	s.DataSources[2].Source.Address = strings.TrimPrefix(u.c.EigenDA.PubkeyCompendium, "0x")
+	s.DataSources[2].Source.Address = strings.TrimPrefix(u.c.ZGDA.PubkeyCompendium, "0x")
 	s.DataSources[2].Source.StartBlock = startBlock
-	s.DataSources[3].Source.Address = strings.TrimPrefix(u.c.EigenDA.PubkeyCompendium, "0x")
+	s.DataSources[3].Source.Address = strings.TrimPrefix(u.c.ZGDA.PubkeyCompendium, "0x")
 	s.DataSources[3].Source.StartBlock = startBlock
-	s.DataSources[4].Source.Address = strings.TrimPrefix(u.c.EigenDA.RegistryCoordinatorWithIndices, "0x")
+	s.DataSources[4].Source.Address = strings.TrimPrefix(u.c.ZGDA.RegistryCoordinatorWithIndices, "0x")
 	s.DataSources[4].Source.StartBlock = startBlock
-	s.DataSources[5].Source.Address = strings.TrimPrefix(u.c.EigenDA.PubkeyRegistry, "0x")
+	s.DataSources[5].Source.Address = strings.TrimPrefix(u.c.ZGDA.PubkeyRegistry, "0x")
 	s.DataSources[5].Source.StartBlock = startBlock
 }
 
-func (u eigenDAOperatorStateSubgraphUpdater) UpdateNetworks(n Networks, startBlock int) {
-	n["devnet"]["BLSRegistryCoordinatorWithIndices"]["address"] = u.c.EigenDA.RegistryCoordinatorWithIndices
+func (u zerogDAOperatorStateSubgraphUpdater) UpdateNetworks(n Networks, startBlock int) {
+	n["devnet"]["BLSRegistryCoordinatorWithIndices"]["address"] = u.c.ZGDA.RegistryCoordinatorWithIndices
 	n["devnet"]["BLSRegistryCoordinatorWithIndices"]["startBlock"] = startBlock
-	n["devnet"]["BLSRegistryCoordinatorWithIndices_Operator"]["address"] = u.c.EigenDA.RegistryCoordinatorWithIndices
+	n["devnet"]["BLSRegistryCoordinatorWithIndices_Operator"]["address"] = u.c.ZGDA.RegistryCoordinatorWithIndices
 	n["devnet"]["BLSRegistryCoordinatorWithIndices_Operator"]["startBlock"] = startBlock
 
-	n["devnet"]["BLSPubkeyRegistry"]["address"] = u.c.EigenDA.PubkeyRegistry
+	n["devnet"]["BLSPubkeyRegistry"]["address"] = u.c.ZGDA.PubkeyRegistry
 	n["devnet"]["BLSPubkeyRegistry"]["startBlock"] = startBlock
-	n["devnet"]["BLSPubkeyRegistry_QuorumApkUpdates"]["address"] = u.c.EigenDA.PubkeyRegistry
+	n["devnet"]["BLSPubkeyRegistry_QuorumApkUpdates"]["address"] = u.c.ZGDA.PubkeyRegistry
 	n["devnet"]["BLSPubkeyRegistry_QuorumApkUpdates"]["startBlock"] = startBlock
 
-	n["devnet"]["BLSPubkeyCompendium"]["address"] = u.c.EigenDA.PubkeyCompendium
+	n["devnet"]["BLSPubkeyCompendium"]["address"] = u.c.ZGDA.PubkeyCompendium
 	n["devnet"]["BLSPubkeyCompendium"]["startBlock"] = startBlock
-	n["devnet"]["BLSPubkeyCompendium_Operator"]["address"] = u.c.EigenDA.PubkeyCompendium
+	n["devnet"]["BLSPubkeyCompendium_Operator"]["address"] = u.c.ZGDA.PubkeyCompendium
 	n["devnet"]["BLSPubkeyCompendium_Operator"]["startBlock"] = startBlock
 }
 
-type eigenDAUIMonitoringUpdater struct {
+type zerogDAUIMonitoringUpdater struct {
 	c *Config
 }
 
-func (u eigenDAUIMonitoringUpdater) UpdateSubgraph(s *Subgraph, startBlock int) {
-	s.DataSources[0].Source.Address = strings.TrimPrefix(u.c.EigenDA.ServiceManager, "0x")
+func (u zerogDAUIMonitoringUpdater) UpdateSubgraph(s *Subgraph, startBlock int) {
+	s.DataSources[0].Source.Address = strings.TrimPrefix(u.c.ZGDA.ServiceManager, "0x")
 	s.DataSources[0].Source.StartBlock = startBlock
 }
 
-func (u eigenDAUIMonitoringUpdater) UpdateNetworks(n Networks, startBlock int) {
-	n["devnet"]["EigenDAServiceManager"]["address"] = u.c.EigenDA.ServiceManager
-	n["devnet"]["EigenDAServiceManager"]["startBlock"] = startBlock
+func (u zerogDAUIMonitoringUpdater) UpdateNetworks(n Networks, startBlock int) {
+	n["devnet"]["ZGDAServiceManager"]["address"] = u.c.ZGDA.ServiceManager
+	n["devnet"]["ZGDAServiceManager"]["startBlock"] = startBlock
 }
 
 func (env *Config) deploySubgraphs(startBlock int) {
@@ -128,8 +128,8 @@ func (env *Config) deploySubgraphs(startBlock int) {
 	defer changeDirectory(currDir)
 
 	fmt.Println("Deploying Subgraph")
-	env.deploySubgraph(eigenDAOperatorStateSubgraphUpdater{c: env}, "eigenda-operator-state", startBlock)
-	env.deploySubgraph(eigenDAUIMonitoringUpdater{c: env}, "eigenda-batch-metadata", startBlock)
+	env.deploySubgraph(zerogDAOperatorStateSubgraphUpdater{c: env}, "zgda-operator-state", startBlock)
+	env.deploySubgraph(zerogDAUIMonitoringUpdater{c: env}, "zgda-batch-metadata", startBlock)
 }
 
 func (env *Config) deploySubgraph(updater subgraphUpdater, path string, startBlock int) {

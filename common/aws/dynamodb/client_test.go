@@ -11,11 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
-	commonaws "github.com/zero-gravity-labs/zgda/common/aws"
-	commondynamodb "github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	test_utils "github.com/zero-gravity-labs/zgda/common/aws/dynamodb/utils"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/inabox/deploy"
+	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	commondynamodb "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (

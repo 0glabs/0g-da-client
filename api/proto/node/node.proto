@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-option go_package = "github.com/zero-gravity-labs/zgda/api/grpc/node";
+option go_package = "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/node";
 package node;
 
-// The EigenDA Node implements two services, Dispersal and Retrieval, as defined below,
+// The ZGDA Node implements two services, Dispersal and Retrieval, as defined below,
 // for better security and separation of concerns.
 
 service Dispersal {
 	// StoreChunks validates that the chunks match what the Node is supposed to receive (
-	// different Nodes are responsible for different chunks, as EigenDA is horizontally
+	// different Nodes are responsible for different chunks, as ZGDA is horizontally
 	// sharded) and is correctly coded (e.g. each chunk must be a valid KZG multiproof)
-	// according to the EigenDA protocol. It also stores the chunks along with metadata
+	// according to the ZGDA protocol. It also stores the chunks along with metadata
 	// for the protocol-defined length of custody. It will return a signature at the
 	// end to attest to the data in this request it has processed.
 	rpc StoreChunks(StoreChunksRequest) returns (StoreChunksReply) {}
@@ -28,7 +28,7 @@ service Retrieval {
 message StoreChunksRequest {
 	// Which batch this request is for.
 	BatchHeader batch_header = 1;
-	// The chunks for each blob in the batch to be stored in an EigenDA Node.
+	// The chunks for each blob in the batch to be stored in an ZGDA Node.
 	repeated Blob blobs = 2;
 }
 
@@ -39,7 +39,7 @@ message StoreChunksReply {
 
 message RetrieveChunksRequest {
 	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// This identifies which batch to retrieve for.
 	bytes batch_header_hash = 1;
 	// Which blob in the batch to retrieve for (note: a batch is logically an ordered
@@ -82,9 +82,9 @@ message MerkleProof {
 
 // Types
 
-// In EigenDA, the original blob to disperse is encoded as a polynomial via taking
+// In ZGDA, the original blob to disperse is encoded as a polynomial via taking
 // taking different point evaluations (i.e. erasure coding). These points are split
-// into disjoint subsets which are assigned to different operator nodes in the EigenDA
+// into disjoint subsets which are assigned to different operator nodes in the ZGDA
 // network.
 // The data in this message is a subset of these points that are assigned to a
 // single operator node.
@@ -116,7 +116,7 @@ message BlobHeader {
 	uint32 length = 3;
 	// The params of the quorums that this blob participates in.
 	repeated BlobQuorumInfo quorum_headers = 4;
-	// The ID of the user who is dispersing this blob to EigenDA.
+	// The ID of the user who is dispersing this blob to ZGDA.
 	string account_id = 5;
 }
 

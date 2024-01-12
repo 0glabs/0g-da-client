@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 )
 
 type LocalEncoderClient struct {

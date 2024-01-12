@@ -1,7 +1,7 @@
 package kzgEncoder
 
 import (
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
 )
 
 func (g *KzgEncoder) Decode(frames []Frame, indices []uint64, maxInputSize uint64) ([]byte, error) {

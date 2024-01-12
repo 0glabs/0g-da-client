@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	kzgRs "github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
+	kzgRs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 const (

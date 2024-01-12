@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"strconv"
 
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 // BlobStore is an in-memory implementation of the BlobStore interface

@@ -50,9 +50,9 @@ BatchHeader (see core/data.go#BatchHeader)
 <a name="node-Blob"></a>
 
 ### Blob
-In EigenDA, the original blob to disperse is encoded as a polynomial via taking
+In ZGDA, the original blob to disperse is encoded as a polynomial via taking
 different point evaluations (i.e. erasure coding). These points are split
-into disjoint subsets which are assigned to different operator nodes in the EigenDA
+into disjoint subsets which are assigned to different operator nodes in the ZGDA
 network.
 The data in this message is a subset of these points that are assigned to a
 single operator node.
@@ -80,7 +80,7 @@ single operator node.
 | length_proof | [bytes](#bytes) |  | The low degree proof. It&#39;s the KZG commitment to the polynomial shifted to the largest SRS degree. |
 | length | [uint32](#uint32) |  | The length of the original blob in number of symbols (in the field where the polynomial is defined). |
 | quorum_headers | [BlobQuorumInfo](#node-BlobQuorumInfo) | repeated | The params of the quorums that this blob participates in. |
-| account_id | [string](#string) |  | The ID of the user who is dispersing this blob to EigenDA. |
+| account_id | [string](#string) |  | The ID of the user who is dispersing this blob to ZGDA. |
 
 
 
@@ -196,7 +196,7 @@ See RetrieveChunksRequest for documentation of each parameter of GetBlobHeaderRe
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| batch_header_hash | [bytes](#bytes) |  | The hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43 This identifies which batch to retrieve for. |
+| batch_header_hash | [bytes](#bytes) |  | The hash of the ReducedBatchHeader defined onchain, see: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43 This identifies which batch to retrieve for. |
 | blob_index | [uint32](#uint32) |  | Which blob in the batch to retrieve for (note: a batch is logically an ordered list of blobs). |
 | quorum_id | [uint32](#uint32) |  | Which quorum of the blob to retrieve for (note: a blob can have multiple quorums and the chunks for different quorums at a Node can be different). The ID must be in range [0, 255]. |
 
@@ -229,7 +229,7 @@ See RetrieveChunksRequest for documentation of each parameter of GetBlobHeaderRe
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | batch_header | [BatchHeader](#node-BatchHeader) |  | Which batch this request is for. |
-| blobs | [Blob](#node-Blob) | repeated | The chunks for each blob in the batch to be stored in an EigenDA Node. |
+| blobs | [Blob](#node-Blob) | repeated | The chunks for each blob in the batch to be stored in an ZGDA Node. |
 
 
 
@@ -249,7 +249,7 @@ See RetrieveChunksRequest for documentation of each parameter of GetBlobHeaderRe
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| StoreChunks | [StoreChunksRequest](#node-StoreChunksRequest) | [StoreChunksReply](#node-StoreChunksReply) | StoreChunks validates that the chunks match what the Node is supposed to receive ( different Nodes are responsible for different chunks, as EigenDA is horizontally sharded) and is correctly coded (e.g. each chunk must be a valid KZG multiproof) according to the EigenDA protocol. It also stores the chunks along with metadata for the protocol-defined length of custody. It will return a signature at the end to attest to the data in this request it has processed. |
+| StoreChunks | [StoreChunksRequest](#node-StoreChunksRequest) | [StoreChunksReply](#node-StoreChunksReply) | StoreChunks validates that the chunks match what the Node is supposed to receive ( different Nodes are responsible for different chunks, as ZGDA is horizontally sharded) and is correctly coded (e.g. each chunk must be a valid KZG multiproof) according to the ZGDA protocol. It also stores the chunks along with metadata for the protocol-defined length of custody. It will return a signature at the end to attest to the data in this request it has processed. |
 
 
 <a name="node-Retrieval"></a>

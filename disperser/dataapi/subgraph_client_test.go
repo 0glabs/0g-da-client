@@ -6,9 +6,9 @@ import (
 
 	"github.com/shurcooL/graphql"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/subgraph"
-	subgraphmock "github.com/zero-gravity-labs/zgda/disperser/dataapi/subgraph/mock"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/subgraph"
+	subgraphmock "github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/subgraph/mock"
 )
 
 var (

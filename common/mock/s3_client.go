@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/zero-gravity-labs/zgda/common/aws/s3"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
 )
 
 type S3Client struct {

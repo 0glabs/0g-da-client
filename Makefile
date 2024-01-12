@@ -41,7 +41,7 @@ build:
 	# cd churner && make build
 	cd disperser && make build
 	# cd node && make build
-	# cd retriever && make build
+	cd retriever && make build
 	# cd tools/traffic && make build
 
 unit-tests:

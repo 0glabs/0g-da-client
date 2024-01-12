@@ -267,7 +267,7 @@ type BlobStatusReply struct {
 
 	// The status of the blob.
 	Status BlobStatus `protobuf:"varint,1,opt,name=status,proto3,enum=disperser.BlobStatus" json:"status,omitempty"`
-	// The blob info needed for clients to confirm the blob against the EigenDA contracts.
+	// The blob info needed for clients to confirm the blob against the ZGDA contracts.
 	Info *BlobInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 }
 
@@ -453,7 +453,7 @@ type SecurityParams struct {
 	// Note: The adversary_threshold and quorum_threshold will directly influence the
 	// cost of encoding for the blob to be dispersed, roughly by a factor of
 	// 100 / (quorum_threshold - adversary_threshold). See the spec for more details:
-	// https://github.com/zero-gravity-labs/zgda/blob/master/docs/spec/protocol-modules/storage/overview.md
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/docs/spec/protocol-modules/storage/overview.md
 	// Currently it's required that the difference must be at least 10.
 	QuorumThreshold uint32 `protobuf:"varint,3,opt,name=quorum_threshold,json=quorumThreshold,proto3" json:"quorum_threshold,omitempty"`
 }
@@ -511,7 +511,7 @@ func (x *SecurityParams) GetQuorumThreshold() uint32 {
 	return 0
 }
 
-// BlobInfo contains information needed to confirm the blob against the EigenDA contracts
+// BlobInfo contains information needed to confirm the blob against the ZGDA contracts
 type BlobInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -713,7 +713,7 @@ type BlobVerificationProof struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// batch_id is an incremental ID assigned to a batch by EigenDAServiceManager
+	// batch_id is an incremental ID assigned to a batch by ZGDAServiceManager
 	BatchId uint32 `protobuf:"varint,1,opt,name=batch_id,json=batchId,proto3" json:"batch_id,omitempty"`
 	// The index of the blob in the batch (which is logically an ordered list of blobs).
 	BlobIndex     uint32         `protobuf:"varint,2,opt,name=blob_index,json=blobIndex,proto3" json:"blob_index,omitempty"`
@@ -823,7 +823,7 @@ type BatchMetadata struct {
 	// The Ethereum block number at which the batch is confirmed onchain.
 	ConfirmationBlockNumber uint32 `protobuf:"varint,4,opt,name=confirmation_block_number,json=confirmationBlockNumber,proto3" json:"confirmation_block_number,omitempty"`
 	// This is the hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// The is the message that the operators will sign their signatures on.
 	BatchHeaderHash []byte `protobuf:"bytes,5,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
 }

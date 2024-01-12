@@ -43,7 +43,7 @@ This tells us that the family $\{U_q \setminus U_a \}$ which satisfies the above
 
 ### 2. Observes operator bandwidth usage limits
 
-Let $B$ be the total size of a blob sent to EigenDA, e.g. in MB, and let $B_i$ denote the portion of the blob stored by operator $i$ having stake $S_i$. 
+Let $B$ be the total size of a blob sent to ZGDA, e.g. in MB, and let $B_i$ denote the portion of the blob stored by operator $i$ having stake $S_i$. 
 
 Note that if blob data were distributed exactly in accordance with stake, an operator's storage requirement would be given by
 

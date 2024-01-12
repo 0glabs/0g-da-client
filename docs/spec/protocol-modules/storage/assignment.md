@@ -1,7 +1,7 @@
 
 # Assignment
 
-The assignment functionality within EigenDA is carried out by the `AssignmentCoordinator`, which is responsible for taking the current OperatorState and the security requirements represented by a given QuorumParam and determining or validating system parameters that will satisfy these security requirements given the OperatorStates. There are two classes of parameters that must be determined or validated:
+The assignment functionality within ZGDA is carried out by the `AssignmentCoordinator`, which is responsible for taking the current OperatorState and the security requirements represented by a given QuorumParam and determining or validating system parameters that will satisfy these security requirements given the OperatorStates. There are two classes of parameters that must be determined or validated:
 
 1) the chunk indices that will be assigned to each DA node.
 2) the length of each chunk (measured in number of symbols). In keeping with the constraint imposed by the Encoding module, all chunks must have the same length, so this parameter is a scalar.
@@ -97,4 +97,4 @@ Since the DA nodes will allow a range of `ChunkLength` values, as long as they s
 
 ### Rollup Smart Contract
 
-When the rollup confirms its blob against the EigenDA batch, it checks that the `QuorumThreshold` for the blob is greater than the `AdversaryThreshold`. This means that if the `ChunkLength` determined by the disperser is invalid, the batch cannot be confirmed as a sufficient number of nodes will not sign.
+When the rollup confirms its blob against the ZGDA batch, it checks that the `QuorumThreshold` for the blob is greater than the `AdversaryThreshold`. This means that if the `ChunkLength` determined by the disperser is invalid, the batch cannot be confirmed as a sufficient number of nodes will not sign.

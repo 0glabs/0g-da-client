@@ -5,8 +5,8 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "This is the EigenDA Data Access API server.",
-        "title": "EigenDA Data Access API",
+        "description": "This is the ZGDA Data Access API server.",
+        "title": "ZGDA Data Access API",
         "contact": {},
         "version": "1"
     },
@@ -333,7 +333,7 @@
                     "type": "string"
                 },
                 "blob_status": {
-                    "$ref": "#/definitions/github_com_Layr-Labs_eigenda_disperser.BlobStatus"
+                    "$ref": "#/definitions/github_com_Layr-Labs_zgda_disperser.BlobStatus"
                 },
                 "confirmation_block_number": {
                     "type": "integer"
@@ -424,7 +424,7 @@
                 }
             }
         },
-        "github_com_Layr-Labs_eigenda_disperser.BlobStatus": {
+        "github_com_Layr-Labs_zgda_disperser.BlobStatus": {
             "type": "integer",
             "enum": [
                 0,

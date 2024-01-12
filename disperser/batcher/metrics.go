@@ -9,8 +9,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 type FailReason string
@@ -50,7 +50,7 @@ type Metrics struct {
 }
 
 func NewMetrics(httpPort string, logger common.Logger) *Metrics {
-	namespace := "eigenda_batcher"
+	namespace := "zgda_batcher"
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	reg.MustRegister(collectors.NewGoCollector())

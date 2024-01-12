@@ -12,8 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/zero-gravity-labs/zgda/common"
-	commonaws "github.com/zero-gravity-labs/zgda/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 )
 
 const (

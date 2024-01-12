@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common/aws"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/common/ratelimit"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/disperser/apiserver"
-	"github.com/zero-gravity-labs/zgda/disperser/cmd/apiserver/flags"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/apiserver/flags"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 )
 
 type Config struct {

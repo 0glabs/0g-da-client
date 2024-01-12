@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
 )
 
 func TestEncodeDecodeFrame_AreInverses(t *testing.T) {

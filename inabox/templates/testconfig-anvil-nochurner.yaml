@@ -10,7 +10,7 @@ deployers:
   deploySubgraphs: true
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:

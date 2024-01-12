@@ -5,8 +5,8 @@ services:
     ports:
       - 8545:8545
     networks:
-      - eigenda-demo
+      - zgda-demo
     command: ["anvil --host 0.0.0.0"]
 networks:
-  eigenda-demo:
-    name: eigenda-demo
+  zgda-demo:
+    name: zgda-demo

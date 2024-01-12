@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	pb "github.com/zero-gravity-labs/zgda/disperser/api/grpc/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	pb "github.com/zero-gravity-labs/zerog-data-avail/disperser/api/grpc/encoder"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

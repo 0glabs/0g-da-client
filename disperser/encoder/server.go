@@ -7,11 +7,11 @@ import (
 	"net"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/common/healthcheck"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	pb "github.com/zero-gravity-labs/zgda/disperser/api/grpc/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/healthcheck"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	pb "github.com/zero-gravity-labs/zerog-data-avail/disperser/api/grpc/encoder"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

@@ -137,11 +137,11 @@ func (env *Config) generateChurnerVars(ind int, graphUrl, logPath, grpcPort stri
 	v := ChurnerVars{
 		CHURNER_HOSTNAME:                    "",
 		CHURNER_GRPC_PORT:                   grpcPort,
-		CHURNER_BLS_OPERATOR_STATE_RETRIVER: env.EigenDA.OperatorStateRetreiver,
-		CHURNER_EIGENDA_SERVICE_MANAGER:     env.EigenDA.ServiceManager,
+		CHURNER_BLS_OPERATOR_STATE_RETRIVER: env.ZGDA.OperatorStateRetreiver,
+		CHURNER_ZGDA_SERVICE_MANAGER:        env.ZGDA.ServiceManager,
 
 		CHURNER_CHAIN_RPC:   "",
-		CHURNER_PRIVATE_KEY: strings.TrimPrefix(env.Pks.EcdsaMap[env.EigenDA.Deployer].PrivateKey, "0x"),
+		CHURNER_PRIVATE_KEY: strings.TrimPrefix(env.Pks.EcdsaMap[env.ZGDA.Deployer].PrivateKey, "0x"),
 
 		CHURNER_GRAPH_URL:             graphUrl,
 		CHURNER_INDEXER_PULL_INTERVAL: "1s",
@@ -162,7 +162,7 @@ func (env *Config) generateChurnerVars(ind int, graphUrl, logPath, grpcPort stri
 // Generates disperser .env
 func (env *Config) generateDisperserVars(ind int, key, address, logPath, dbPath, grpcPort string) DisperserVars {
 	v := DisperserVars{
-		DISPERSER_SERVER_S3_BUCKET_NAME:         "test-eigenda-blobstore",
+		DISPERSER_SERVER_S3_BUCKET_NAME:         "test-zgda-blobstore",
 		DISPERSER_SERVER_DYNAMODB_TABLE_NAME:    "test-BlobMetadata",
 		DISPERSER_SERVER_RATE_BUCKET_TABLE_NAME: "",
 		DISPERSER_SERVER_RATE_BUCKET_STORE_SIZE: "100000",
@@ -184,8 +184,8 @@ func (env *Config) generateDisperserVars(ind int, key, address, logPath, dbPath,
 		DISPERSER_SERVER_BUCKET_MULTIPLIERS: "1",
 		DISPERSER_SERVER_COUNT_FAILED:       "true",
 
-		DISPERSER_SERVER_BLS_OPERATOR_STATE_RETRIVER: env.EigenDA.OperatorStateRetreiver,
-		DISPERSER_SERVER_EIGENDA_SERVICE_MANAGER:     env.EigenDA.ServiceManager,
+		DISPERSER_SERVER_BLS_OPERATOR_STATE_RETRIVER: env.ZGDA.OperatorStateRetreiver,
+		DISPERSER_SERVER_ZGDA_SERVICE_MANAGER:        env.ZGDA.ServiceManager,
 	}
 
 	env.applyDefaults(&v, "DISPERSER_SERVER", "dis", ind)
@@ -197,13 +197,13 @@ func (env *Config) generateDisperserVars(ind int, key, address, logPath, dbPath,
 // Generates batcher .env
 func (env *Config) generateBatcherVars(ind int, key, graphUrl, logPath string) BatcherVars {
 	v := BatcherVars{
-		BATCHER_S3_BUCKET_NAME:              "test-eigenda-blobstore",
+		BATCHER_S3_BUCKET_NAME:              "test-zgda-blobstore",
 		BATCHER_DYNAMODB_TABLE_NAME:         "test-BlobMetadata",
 		BATCHER_ENABLE_METRICS:              "true",
 		BATCHER_METRICS_HTTP_PORT:           "9094",
 		BATCHER_PULL_INTERVAL:               "5s",
-		BATCHER_BLS_OPERATOR_STATE_RETRIVER: env.EigenDA.OperatorStateRetreiver,
-		BATCHER_EIGENDA_SERVICE_MANAGER:     env.EigenDA.ServiceManager,
+		BATCHER_BLS_OPERATOR_STATE_RETRIVER: env.ZGDA.OperatorStateRetreiver,
+		BATCHER_ZGDA_SERVICE_MANAGER:        env.ZGDA.ServiceManager,
 		BATCHER_SRS_ORDER:                   "300000",
 		BATCHER_CHAIN_RPC:                   "",
 		BATCHER_PRIVATE_KEY:                 key[2:],
@@ -286,8 +286,8 @@ func (env *Config) generateOperatorVars(ind int, name, key, churnerUrl, logPath,
 		NODE_ECDSA_KEY_FILE:              ecdsaKeyFile,
 		NODE_BLS_KEY_PASSWORD:            blsPassword,
 		NODE_ECDSA_KEY_PASSWORD:          ecdsaPassword,
-		NODE_BLS_OPERATOR_STATE_RETRIVER: env.EigenDA.OperatorStateRetreiver,
-		NODE_EIGENDA_SERVICE_MANAGER:     env.EigenDA.ServiceManager,
+		NODE_BLS_OPERATOR_STATE_RETRIVER: env.ZGDA.OperatorStateRetreiver,
+		NODE_ZGDA_SERVICE_MANAGER:        env.ZGDA.ServiceManager,
 		NODE_REGISTER_AT_NODE_START:      "true",
 		NODE_CHURNER_URL:                 churnerUrl,
 		NODE_CHURNER_USE_SECURE_GRPC:     "false",
@@ -321,8 +321,8 @@ func (env *Config) generateRetrieverVars(ind int, key string, graphUrl, logPath,
 		RETRIEVER_HOSTNAME:                    "",
 		RETRIEVER_GRPC_PORT:                   grpcPort,
 		RETRIEVER_TIMEOUT:                     "10s",
-		RETRIEVER_BLS_OPERATOR_STATE_RETRIVER: env.EigenDA.OperatorStateRetreiver,
-		RETRIEVER_EIGENDA_SERVICE_MANAGER:     env.EigenDA.ServiceManager,
+		RETRIEVER_BLS_OPERATOR_STATE_RETRIVER: env.ZGDA.OperatorStateRetreiver,
+		RETRIEVER_ZGDA_SERVICE_MANAGER:        env.ZGDA.ServiceManager,
 		RETRIEVER_NUM_CONNECTIONS:             "10",
 
 		RETRIEVER_CHAIN_RPC:   "",
@@ -443,7 +443,7 @@ func (env *Config) getKey(name string) (key, address string) {
 // current experiment.
 func (env *Config) GenerateAllVariables() {
 	// hardcode graphurl for now
-	graphUrl := "http://localhost:8000/subgraphs/name/Layr-Labs/eigenda-operator-state"
+	graphUrl := "http://localhost:8000/subgraphs/name/zero-gravity-labs/zerog-storage-client-operator-state"
 
 	// Create envs directory
 	createDirectory(env.Path + "/envs")

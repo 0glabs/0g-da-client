@@ -11,8 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/zero-gravity-labs/zgda/common"
-	commonaws "github.com/zero-gravity-labs/zgda/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 )
 
 var (

@@ -30,7 +30,7 @@ package kzg
 import (
 	"fmt"
 
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 func (fs *FFTSettings) simpleFTG1(vals []bls.G1Point, valsOffset uint64, valsStride uint64, rootsOfUnity []bls.Fr, rootsOfUnityStride uint64, out []bls.G1Point) {

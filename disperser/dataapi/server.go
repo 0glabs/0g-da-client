@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/logger"
@@ -19,8 +19,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	swaggerfiles "github.com/swaggo/files"     // swagger embed files
 	ginswagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/docs"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/docs"
 )
 
 const (

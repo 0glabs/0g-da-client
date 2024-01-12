@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/urfave/cli/v2"
-	"github.com/zero-gravity-labs/zgda/inabox/deploy"
+	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 	deployResourcesFlagName = "deploy-resources"
 
 	metadataTableName = "test-BlobMetadata"
-	bucketTableName   = "test-eigenda-blobstore"
+	bucketTableName   = "test-zgda-blobstore"
 
 	chainCmdName      = "chain"
 	localstackCmdName = "localstack"
@@ -31,7 +31,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    testNameFlagName,
 				Usage:   "name of the test to run (in `inabox/testdata`)",
-				EnvVars: []string{"EIGENDA_TESTDATA_PATH"},
+				EnvVars: []string{"ZGDA_TESTDATA_PATH"},
 				Value:   "",
 			},
 			&cli.StringFlag{
@@ -63,7 +63,7 @@ func main() {
 			},
 			{
 				Name:   expCmdName,
-				Usage:  "deploy the contracts and create configurations for all EigenDA components",
+				Usage:  "deploy the contracts and create configurations for all ZGDA components",
 				Action: getRunner(expCmdName),
 			},
 			{
@@ -120,7 +120,7 @@ func chainInfra(ctx *cli.Context, config *deploy.Config) error {
 
 	config.StartAnvil()
 
-	if deployer, ok := config.GetDeployer(config.EigenDA.Deployer); ok && deployer.DeploySubgraphs {
+	if deployer, ok := config.GetDeployer(config.ZGDA.Deployer); ok && deployer.DeploySubgraphs {
 		fmt.Println("Starting graph node")
 		config.StartGraphNode()
 	}

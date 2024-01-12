@@ -10,7 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/zero-gravity-labs/zgda/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 type MetrisConfig struct {
@@ -38,7 +38,7 @@ func NewMetrics(httpPort string, logger common.Logger) *Metrics {
 		httpPort: httpPort,
 		NumEncodeBlobRequests: promauto.With(reg).NewCounterVec(
 			prometheus.CounterOpts{
-				Namespace: "eigenda_encoder",
+				Namespace: "zgda_encoder",
 				Name:      "request_total",
 				Help:      "the number and size of total encode blob request at server side per state",
 			},
@@ -46,7 +46,7 @@ func NewMetrics(httpPort string, logger common.Logger) *Metrics {
 		),
 		Latency: promauto.With(reg).NewSummaryVec(
 			prometheus.SummaryOpts{
-				Namespace:  "eigenda_encoder",
+				Namespace:  "zgda_encoder",
 				Name:       "encoding_latency_ms",
 				Help:       "latency summary in milliseconds",
 				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.95: 0.01, 0.99: 0.001},

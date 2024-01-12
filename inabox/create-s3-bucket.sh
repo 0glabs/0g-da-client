@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-S3_BUCKET="test-eigenda-blobstore"
+S3_BUCKET="test-zgda-blobstore"
 S3_REGION="us-east-1"
 
 if AWS_ACCESS_KEY_ID=localstack AWS_SECRET_ACCESS_KEY=localstack \

@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/zero-gravity-labs/zerog-storage-client/node"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/wealdtech/go-merkletree"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 
+	eth_common "github.com/ethereum/go-ethereum/common"
 	gcommon "github.com/ethereum/go-ethereum/common"
-	disperser_rpc "github.com/zero-gravity-labs/zgda/api/grpc/disperser"
+	disperser_rpc "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/disperser"
 )
 
 type BlobStatus uint
@@ -158,7 +159,7 @@ type BlobStore interface {
 }
 
 type Dispatcher interface {
-	DisperseBatch(ctx context.Context, blobs []*core.EncodedBlob) (*node.FileInfo, error)
+	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobs []*core.EncodedBlob, proofs []*merkletree.Proof) (eth_common.Hash, error)
 }
 
 // GenerateReverseIndexKey returns the key used to store the blob key in the reverse index

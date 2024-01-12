@@ -1,6 +1,6 @@
-# EigenDA Throughput Characteristics
+# ZGDA Throughput Characteristics
 
-## What is the total throughput of EigenDA? 
+## What is the total throughput of ZGDA? 
 
 Let $S_i$ denote the total stake delegated to an operator $i \in O$, and $n = |O|$ denote the total number of operators. Let $C_i$ be the throughput/bandwidth capacity by the individual operator $i$. 
 
@@ -29,7 +29,7 @@ $$T = \min_{i\in O} C_i \frac{m}{m_i} = \min_{i\in O} \frac{n\rho C_i}{\text{cei
 
 ## Discussion
 
-Notice that Eq. (1) implies two dynamics by which the total throughput of EigenDA can increase. With $j \in O$ as operator for which $C_i/\max(1/n\rho,\alpha_i)$ is currently the smallest:
+Notice that Eq. (1) implies two dynamics by which the total throughput of ZGDA can increase. With $j \in O$ as operator for which $C_i/\max(1/n\rho,\alpha_i)$ is currently the smallest:
 
 1. Operator $j$ can increase its capacity. 
 2. If $\alpha_j > 1/n\rho$, then $\alpha_j$ can decrease either by stakers redelegating from $j$ to some operator with more capacity per stake or by new stakers entering the ecosystem and delegating to such an operator. 

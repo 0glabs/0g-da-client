@@ -7,16 +7,16 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	"github.com/zero-gravity-labs/zgda/common/aws/s3"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/disperser/batcher"
-	"github.com/zero-gravity-labs/zgda/disperser/batcher/dispatcher"
-	"github.com/zero-gravity-labs/zgda/disperser/cmd/batcher/flags"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
-	"github.com/zero-gravity-labs/zgda/disperser/common/inmem"
-	"github.com/zero-gravity-labs/zgda/disperser/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/dispatcher"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/batcher/flags"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/inmem"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/encoder"
 )
 
 var (
@@ -31,7 +31,7 @@ func main() {
 	app.Flags = flags.Flags
 	app.Version = fmt.Sprintf("%s-%s-%s", version, gitCommit, gitDate)
 	app.Name = "batcher"
-	app.Usage = "EigenDA Batcher"
+	app.Usage = "ZGDA Batcher"
 	app.Description = "Service for creating a batch from queued blobs, distributing coded chunks to nodes, and confirming onchain"
 
 	app.Action = RunBatcher

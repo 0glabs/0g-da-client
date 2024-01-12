@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/zero-gravity-labs/zgda/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 // InstrumentedEthClient is a wrapper around our EthClient that instruments all underlying json-rpc calls.

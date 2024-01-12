@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math"
 
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	wbls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	wbls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 type KzgVerifier struct {

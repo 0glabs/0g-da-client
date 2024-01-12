@@ -1,6 +1,6 @@
 # Attestation Module
 
-The attestation module of the EigenDA protocol is implemented by the EigenDA smart contracts which provide the following interfaces:
+The attestation module of the ZGDA protocol is implemented by the ZGDA smart contracts which provide the following interfaces:
 - A `confirmBatch` method for confirming data store confirmation.
 - `register` and `deregister` methods for registering and deregistering DA nodes.
 

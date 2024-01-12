@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	pb "github.com/zero-gravity-labs/zgda/api/grpc/disperser"
-	"github.com/zero-gravity-labs/zgda/common"
-	healthcheck "github.com/zero-gravity-labs/zgda/common/healthcheck"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
+	pb "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	healthcheck "github.com/zero-gravity-labs/zerog-data-avail/common/healthcheck"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

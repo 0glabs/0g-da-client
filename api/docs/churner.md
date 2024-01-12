@@ -101,8 +101,8 @@ This describes an operator to churn out for a quorum.
 
 ### Churner
 The Churner is a service that handles churn requests from new operators trying to
-join the EigenDA network.
-When the EigenDA network reaches the maximum number of operators, any new operator
+join the ZGDA network.
+When the ZGDA network reaches the maximum number of operators, any new operator
 trying to join will have to make a churn request to this Churner, which acts as the
 sole decision maker to decide whether this new operator could join, and if so, which
 existing operator will be churned out (so the max number of operators won&#39;t be

@@ -3,7 +3,7 @@
 
 ## Overall Requirements
 
-Within EigenDA, blobs are encoded so that they can be scalably distributed among the DA nodes. The EigenDA encoding module is designed to meet the following security requirements:
+Within ZGDA, blobs are encoded so that they can be scalably distributed among the DA nodes. The ZGDA encoding module is designed to meet the following security requirements:
 1. Adversarial tolerance for DA nodes: We need to have tolerance to arbitrary adversarial behavior by DA nodes up to some threshold, which is discussed in other sections. Note that simple sharding approaches such as duplicating slices of the blob data have good tolerance to random node dropout, but poor tolerance to worst-case adversarial behavior.
 2. Adversarial tolerance for disperser: We do not want to put trust assumptions on the encoder or rely on fraud proofs to detect if an encoding is done incorrectly.
 
@@ -48,7 +48,7 @@ Notice that these interfaces only support a global chunk size across all the enc
 
 ## Trustless Encoding via KZG and Reed-Solomon
 
-EigenDA uses a combination of Reed-Solomon (RS) erasure coding and KZG polynomial commitments to perform trustless  encoding. In this section, we provide a high level overview of how the EigenDA encoding module works and how it achieves these properties.
+ZGDA uses a combination of Reed-Solomon (RS) erasure coding and KZG polynomial commitments to perform trustless  encoding. In this section, we provide a high level overview of how the ZGDA encoding module works and how it achieves these properties.
 
 ### Basic Reed Solomon Encoding
 

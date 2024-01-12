@@ -26,7 +26,7 @@ type BlobRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// This identifies the batch that this blob belongs to.
 	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
 	// Which blob in the batch this is requesting for (note: a batch is logically an
@@ -104,7 +104,7 @@ type BlobReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The blob retrieved and reconstructed from the EigenDA Nodes per BlobRequest.
+	// The blob retrieved and reconstructed from the ZGDA Nodes per BlobRequest.
 	Data []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 }
 

@@ -11,7 +11,7 @@ import (
 	"regexp"
 
 	bn "github.com/consensys/gnark-crypto/ecc/bn254"
-	"github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/wealdtech/go-merkletree"
@@ -58,8 +58,8 @@ func (h *BatchHeader) SetBatchRoot(blobHeaders []*BlobHeader) (*merkletree.Merkl
 }
 
 func (h *BatchHeader) Encode() ([]byte, error) {
-	// The order here has to match the field ordering of ReducedBatchHeader defined in IEigenDAServiceManager.sol
-	// ref: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43
+	// The order here has to match the field ordering of ReducedBatchHeader defined in IZGDAServiceManager.sol
+	// ref: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	batchHeaderType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
 			Name: "blobHeadersRoot",
@@ -97,7 +97,7 @@ func (h *BatchHeader) Encode() ([]byte, error) {
 }
 
 // GetBatchHeaderHash returns the hash of the reduced BatchHeader that is used to sign the Batch
-// ref: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/libraries/EigenDAHasher.sol#L65
+// ref: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/libraries/ZGDAHasher.sol#L65
 func (h BatchHeader) GetBatchHeaderHash() ([32]byte, error) {
 	headerByte, err := h.Encode()
 	if err != nil {
@@ -192,7 +192,7 @@ func (h *BlobHeader) Encode() ([]byte, error) {
 		return nil, ErrInvalidCommitment
 	}
 
-	// The order here has to match the field ordering of BlobHeader defined in IEigenDAServiceManager.sol
+	// The order here has to match the field ordering of BlobHeader defined in IZGDAServiceManager.sol
 	blobHeaderType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
 			Name: "commitment",
@@ -336,6 +336,24 @@ func (c *Commitment) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+func (h *KVBlobInfoKey) Serialize() ([]byte, error) {
+	return encode(h)
+}
+
+func (h *KVBlobInfoKey) Deserialize(data []byte) (*KVBlobInfoKey, error) {
+	err := decode(data, h)
+	return h, err
+}
+
+func (h *KVBlobInfo) Serialize() ([]byte, error) {
+	return encode(h)
+}
+
+func (h *KVBlobInfo) Deserialize(data []byte) (*KVBlobInfo, error) {
+	err := decode(data, h)
+	return h, err
 }
 
 func encode(obj any) ([]byte, error) {

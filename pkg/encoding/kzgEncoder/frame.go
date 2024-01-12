@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 // Proof is the multireveal proof

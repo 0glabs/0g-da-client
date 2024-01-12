@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/zero-gravity-labs/zgda/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 var (

@@ -11,22 +11,22 @@ import (
 
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
-	"github.com/zero-gravity-labs/zgda/disperser/apiserver"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
-	pb "github.com/zero-gravity-labs/zgda/api/grpc/disperser"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/common/aws"
-	"github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	"github.com/zero-gravity-labs/zgda/common/aws/s3"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/inabox/deploy"
-	"github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	pb "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 	"google.golang.org/grpc/peer"
 )
 
@@ -37,7 +37,7 @@ var (
 	dockertestResource *dockertest.Resource
 	UUID               = uuid.New()
 	metadataTableName  = fmt.Sprintf("test-BlobMetadata-%v", UUID)
-	bucketTableName    = fmt.Sprintf("test-eigenda-blobstore-%v", UUID)
+	bucketTableName    = fmt.Sprintf("test-zgda-blobstore-%v", UUID)
 
 	deployLocalStack bool
 	localStackPort   = "4568"
@@ -315,7 +315,7 @@ func newTestServer(m *testing.M) *apiserver.DispersalServer {
 		panic("failed to create a new logger")
 	}
 
-	bucketName := "test-eigenda-blobstore"
+	bucketName := "test-zgda-blobstore"
 	awsConfig := aws.ClientConfig{
 		Region:          "us-east-1",
 		AccessKey:       "localstack",

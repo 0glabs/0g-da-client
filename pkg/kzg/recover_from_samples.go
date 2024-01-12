@@ -27,7 +27,7 @@ package kzg
 import (
 	"fmt"
 
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 	//"github.com/protolambda/go-kzg/bls"
 )
 

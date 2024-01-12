@@ -10,7 +10,7 @@ deployers:
   deploySubgraphs: true
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:
@@ -49,6 +49,6 @@ services:
       AWS_ACCESS_KEY_ID: localstack
       AWS_SECRET_ACCESS_KEY: localstack
       ENCODER_ADDRESS: host.docker.internal:34000
-      GRAPH_URL: http://host.docker.internal:8000/subgraphs/name/Layr-Labs/eigenda-operator-state
+      GRAPH_URL: http://host.docker.internal:8000/subgraphs/name/zero-gravity-labs/zerog-storage-client-operator-state
       USE_GRAPH: true
       PUBLIC_IP_CHECK_INTERVAL: 0

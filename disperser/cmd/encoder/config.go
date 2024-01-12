@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/core/encoding"
-	"github.com/zero-gravity-labs/zgda/disperser/cmd/encoder/flags"
-	"github.com/zero-gravity-labs/zgda/disperser/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/encoder/flags"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/encoder"
 )
 
 type Config struct {

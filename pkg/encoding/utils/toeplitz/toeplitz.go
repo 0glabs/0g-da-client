@@ -3,10 +3,11 @@ package toeplitz
 import (
 	"errors"
 	"log"
+
 	// "fmt"
 
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 // V is ordered as (v_0, .., v_6), so it creates a

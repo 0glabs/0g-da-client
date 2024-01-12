@@ -7,7 +7,7 @@ import (
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	"github.com/stretchr/testify/mock"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/prometheus"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/prometheus"
 )
 
 type MockPrometheusApi struct {

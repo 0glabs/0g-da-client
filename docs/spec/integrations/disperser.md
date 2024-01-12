@@ -2,9 +2,9 @@
 
 ## Requests to Store Data
 
-Requesters that want to store data on EigenDA (mostly rollups) make requests to the disperser with the form of [`BlobStoreRequest`](./types.md#blobstorerequest).
+Requesters that want to store data on ZGDA (mostly rollups) make requests to the disperser with the form of [`BlobStoreRequest`](./types.md#blobstorerequest).
 
-They specify the data they want to store on EigenDA and the different assumptions they are making on the quorums that they want to store their data. Requesters also attach a unique `BlobID` used to identify their blob later in the protocol. This is randomly generated and the disperser will fail the request if it has seen the given `BlobID` before. The disperser takes each `BlobStoreRequest` and adds it to a queue.
+They specify the data they want to store on ZGDA and the different assumptions they are making on the quorums that they want to store their data. Requesters also attach a unique `BlobID` used to identify their blob later in the protocol. This is randomly generated and the disperser will fail the request if it has seen the given `BlobID` before. The disperser takes each `BlobStoreRequest` and adds it to a queue.
 
 ## Dispersal
 

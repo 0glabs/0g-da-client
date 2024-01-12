@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/zero-gravity-labs/zgda/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 type localParamStore[T any] struct {

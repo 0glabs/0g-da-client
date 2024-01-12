@@ -9,7 +9,7 @@ deployers:
   verifierUrl: http://localhost:4000/api
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:

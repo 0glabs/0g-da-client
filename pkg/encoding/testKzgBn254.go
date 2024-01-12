@@ -3,8 +3,8 @@ package main
 // "fmt"
 // "log"
 // "math"
-// bn "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
-// bnKzg "github.com/zero-gravity-labs/zgda/pkg/kzgFFT/go-kzg-bn254"
+// bn "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+// bnKzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzgFFT/go-kzg-bn254"
 
 //func testLinComb() {
 //polyFr := GenPoly(1,2,3,4,5)

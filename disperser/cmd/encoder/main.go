@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/disperser/cmd/encoder/flags"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/encoder/flags"
 )
 
 var (
@@ -24,7 +24,7 @@ func main() {
 	app.Flags = flags.Flags
 	app.Version = fmt.Sprintf("%s-%s-%s", Version, GitCommit, GitDate)
 	app.Name = "encoder"
-	app.Usage = "EigenDA Encoder"
+	app.Usage = "ZGDA Encoder"
 	app.Description = "Service for encoding blobs"
 
 	app.Action = RunEncoderServer

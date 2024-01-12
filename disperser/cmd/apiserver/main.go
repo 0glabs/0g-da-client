@@ -6,18 +6,18 @@ import (
 	"log"
 	"os"
 
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/disperser/apiserver"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	"github.com/zero-gravity-labs/zgda/common/aws/s3"
-	"github.com/zero-gravity-labs/zgda/common/logging"
-	"github.com/zero-gravity-labs/zgda/common/ratelimit"
-	"github.com/zero-gravity-labs/zgda/common/store"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/disperser/cmd/apiserver/flags"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/apiserver/flags"
 )
 
 var (
@@ -32,7 +32,7 @@ func main() {
 	app.Flags = flags.Flags
 	app.Version = fmt.Sprintf("%s-%s-%s", version, gitCommit, gitDate)
 	app.Name = "disperser"
-	app.Usage = "EigenDA Disperser Server"
+	app.Usage = "ZGDA Disperser Server"
 	app.Description = "Service for accepting blobs for dispersal"
 
 	app.Action = RunDisperserServer

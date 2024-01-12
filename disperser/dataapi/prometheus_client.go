@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/prometheus/common/model"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/prometheus"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/prometheus"
 )
 
 const (
@@ -43,7 +43,7 @@ func NewPrometheusClient(api prometheus.Api, cluster string) *prometheusClient {
 }
 
 func (pc *prometheusClient) QueryDisperserBlobSizeBytesPerSecond(ctx context.Context, start time.Time, end time.Time) (*PrometheusResult, error) {
-	query := fmt.Sprintf("eigenda_batcher_blobs_total{state=\"confirmed\",data=\"size\",cluster=\"%s\"}", pc.cluster)
+	query := fmt.Sprintf("zgda_batcher_blobs_total{state=\"confirmed\",data=\"size\",cluster=\"%s\"}", pc.cluster)
 	return pc.queryRange(ctx, query, start, end)
 }
 
@@ -52,7 +52,7 @@ func (pc *prometheusClient) QueryDisperserAvgThroughputBlobSizeBytes(ctx context
 		windowSizeInSec = throughputRateWindowInSec
 	}
 
-	query := fmt.Sprintf("sum by (job) (rate(eigenda_batcher_blobs_total{state=\"confirmed\",data=\"size\",cluster=\"%s\"}[%ds]))", pc.cluster, windowSizeInSec)
+	query := fmt.Sprintf("sum by (job) (rate(zgda_batcher_blobs_total{state=\"confirmed\",data=\"size\",cluster=\"%s\"}[%ds]))", pc.cluster, windowSizeInSec)
 	return pc.queryRange(ctx, query, start, end)
 }
 

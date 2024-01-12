@@ -6,8 +6,8 @@ import (
 	"slices"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser/dataapi/subgraph"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/dataapi/subgraph"
 )
 
 type MockSubgraphApi struct {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/utils/toeplitz"
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/utils/toeplitz"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 // V is ordered as (v_0, .., v_6), so it creates a

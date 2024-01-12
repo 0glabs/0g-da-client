@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/zero-gravity-labs/zgda/common"
-	commondynamodb "github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	commondynamodb "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
 )
 
 type dynamodbBucketStore[T any] struct {

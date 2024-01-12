@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/common/mock"
-	"github.com/zero-gravity-labs/zgda/common/ratelimit"
-	"github.com/zero-gravity-labs/zgda/common/store"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/mock"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
 )
 
 func makeTestRatelimiter() (common.RateLimiter, error) {

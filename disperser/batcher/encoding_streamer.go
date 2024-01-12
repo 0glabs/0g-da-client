@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/wealdtech/go-merkletree"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 const encodingInterval = 2 * time.Second
@@ -229,7 +230,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 
 	blobLength := core.GetBlobLength(metadata.RequestMetadata.BlobSize)
 
-	chunkLength, chunkNum := blobLength*2, uint(1)
+	chunkLength, chunkNum := core.SplitToChunks(blobLength)
 
 	params, err := core.GetEncodingParams(chunkLength, chunkNum)
 	if err != nil {
@@ -343,11 +344,13 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 	encodedBlobByKey := make(map[disperser.BlobKey]*core.EncodedBlob)
 	blobHeaderByKey := make(map[disperser.BlobKey]*core.BlobHeader)
 	metadataByKey := make(map[disperser.BlobKey]*disperser.BlobMetadata)
+	blobKeys := make([]disperser.BlobKey, 0)
 	for i := range encodedResults {
 		// each result represent an encoded result per blob
 		result := encodedResults[i]
 
 		blobKey := result.BlobMetadata.GetBlobKey()
+		blobKeys = append(blobKeys, blobKey)
 		if _, ok := encodedBlobByKey[blobKey]; !ok {
 			metadataByKey[blobKey] = result.BlobMetadata
 		}
@@ -361,12 +364,17 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 		}
 	}
 
+	// sort blobs by size
+	sort.SliceStable(blobKeys, func(i, j int) bool {
+		return blobHeaderByKey[blobKeys[i]].Length < blobHeaderByKey[blobKeys[j]].Length
+	})
+
 	// Transform maps to slices so orders in different slices match
 	encodedBlobs := make([]*core.EncodedBlob, len(metadataByKey))
 	blobHeaders := make([]*core.BlobHeader, len(metadataByKey))
 	metadatas := make([]*disperser.BlobMetadata, len(metadataByKey))
 	i := 0
-	for key := range metadataByKey {
+	for _, key := range blobKeys {
 		encodedBlobs[i] = encodedBlobByKey[key]
 		blobHeaders[i] = blobHeaderByKey[key]
 		metadatas[i] = metadataByKey[key]

@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
-	bn254utils "github.com/zero-gravity-labs/zgda/core/bn254"
+	bn254utils "github.com/zero-gravity-labs/zerog-data-avail/core/bn254"
 )
 
 type G1Point struct {

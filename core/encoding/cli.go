@@ -4,8 +4,8 @@ import (
 	"runtime"
 
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 const (

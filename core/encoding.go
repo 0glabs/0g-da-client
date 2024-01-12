@@ -3,8 +3,17 @@ package core
 import (
 	"fmt"
 
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	"github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+)
+
+const (
+	EntrySize       = 256 //256B
+	EntryPerSegment = 1024
+	SegmentSize     = EntrySize * EntryPerSegment // 256KB
+	CoeffSize       = 32                          // 32B
+	ProofSize       = 64                          // 64B
+	MaxChunkLength  = SegmentSize / CoeffSize     // 8192
 )
 
 // Commitments
@@ -52,6 +61,13 @@ type Encoder interface {
 func GetBlobLength(blobSize uint) uint {
 	symSize := uint(bn254.BYTES_PER_COEFFICIENT)
 	return (blobSize + symSize - 1) / symSize
+}
+
+func SplitToChunks(blobLength uint) (uint, uint) {
+	nextPow2 := uint(encoder.NextPowerOf2(uint64(blobLength)))
+	chunkLength := min(MaxChunkLength, nextPow2)
+	chunkNum := (nextPow2*2 + MaxChunkLength - 1) / MaxChunkLength
+	return chunkLength, chunkNum
 }
 
 // GetBlobSize converts from blob length in symbols to blob size in bytes. This is not an exact conversion.

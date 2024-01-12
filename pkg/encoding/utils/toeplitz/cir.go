@@ -3,8 +3,8 @@ package toeplitz
 import (
 	"errors"
 
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 type Circular struct {

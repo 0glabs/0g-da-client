@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	"github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 func toEncParams(params core.EncodingParams) encoder.EncodingParams {

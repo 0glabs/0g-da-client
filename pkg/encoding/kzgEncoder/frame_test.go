@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	kzgRs "github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	kzgRs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
 )
 
 func TestEncodeDecodeFrame_AreInverses(t *testing.T) {

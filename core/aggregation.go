@@ -7,7 +7,7 @@ import (
 	"sort"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/zero-gravity-labs/zgda/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 var (

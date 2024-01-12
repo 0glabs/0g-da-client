@@ -23,9 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DispersalClient interface {
 	// StoreChunks validates that the chunks match what the Node is supposed to receive (
-	// different Nodes are responsible for different chunks, as EigenDA is horizontally
+	// different Nodes are responsible for different chunks, as ZGDA is horizontally
 	// sharded) and is correctly coded (e.g. each chunk must be a valid KZG multiproof)
-	// according to the EigenDA protocol. It also stores the chunks along with metadata
+	// according to the ZGDA protocol. It also stores the chunks along with metadata
 	// for the protocol-defined length of custody. It will return a signature at the
 	// end to attest to the data in this request it has processed.
 	StoreChunks(ctx context.Context, in *StoreChunksRequest, opts ...grpc.CallOption) (*StoreChunksReply, error)
@@ -53,9 +53,9 @@ func (c *dispersalClient) StoreChunks(ctx context.Context, in *StoreChunksReques
 // for forward compatibility
 type DispersalServer interface {
 	// StoreChunks validates that the chunks match what the Node is supposed to receive (
-	// different Nodes are responsible for different chunks, as EigenDA is horizontally
+	// different Nodes are responsible for different chunks, as ZGDA is horizontally
 	// sharded) and is correctly coded (e.g. each chunk must be a valid KZG multiproof)
-	// according to the EigenDA protocol. It also stores the chunks along with metadata
+	// according to the ZGDA protocol. It also stores the chunks along with metadata
 	// for the protocol-defined length of custody. It will return a signature at the
 	// end to attest to the data in this request it has processed.
 	StoreChunks(context.Context, *StoreChunksRequest) (*StoreChunksReply, error)

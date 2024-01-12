@@ -30,7 +30,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 func TestFFTSettings_reduceLeaves(t *testing.T) {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Within the modular structure of the EigenDA protocol, when we consider "storage," we are thinking about the following guarantee:
+Within the modular structure of the ZGDA protocol, when we consider "storage," we are thinking about the following guarantee:
 
 >> When the minimal adversarial threshold assumptions of a blob are met for any quorum, then on-chain acceptance of a blob implies a full blob is held by honest DA nodes of that quorum for the designated period.
 
@@ -34,6 +34,6 @@ The acceptance guarantee is only satisfied when chunks are properly assigned to 
 
 ## Storage Guarantee
 
-The storage guarantee derives simply from the conditions under which a node will continue to store a blob which has been accepted. Once an EigenDA node has attested to a batch, it will store it until one of the following conditions is met:
+The storage guarantee derives simply from the conditions under which a node will continue to store a blob which has been accepted. Once an ZGDA node has attested to a batch, it will store it until one of the following conditions is met:
 - If there is no finalized confirmation transaction including the header of a batch within `BLOCK_STALE_MEASURE` blocks of the dataStore's `referenceBlockNumber`, the node knows that the dataStore cannot be confirmed on chain, so they prune it from their storage.
 - If there is a finalized confirmation, TODO: how long will they store?

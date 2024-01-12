@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"time"
 
-	rs "github.com/zero-gravity-labs/zgda/pkg/encoding/encoder"
-	kzgRs "github.com/zero-gravity-labs/zgda/pkg/encoding/kzgEncoder"
-	kzg "github.com/zero-gravity-labs/zgda/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	kzgRs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
+	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 func main() {

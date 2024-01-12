@@ -9,7 +9,7 @@ deployers:
   verifierUrl: http://172.17.0.1:4000/api
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:
@@ -22,7 +22,7 @@ privateKeys:
 # for "configPath", use absolute path
 telemetry:
   isNeeded: true
-  configPath: "/home/ubuntu/eigenda/inabox/grafana-agent/agent-config.yaml"
+  configPath: "/home/ubuntu/zgda/inabox/grafana-agent/agent-config.yaml"
   dockerSd:
     - /var/lib/docker/containers:/var/lib/docker/containers:ro
     - /var/run/docker.sock:/var/run/docker.sock

@@ -50,4 +50,4 @@ services:
 
 networks:
   default:
-    name: eigenda_testbed
+    name: zgda_testbed

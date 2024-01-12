@@ -337,7 +337,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "blob_status": {
-                    "$ref": "#/definitions/github_com_Layr-Labs_eigenda_disperser.BlobStatus"
+                    "$ref": "#/definitions/github_com_Layr-Labs_zgda_disperser.BlobStatus"
                 },
                 "confirmation_block_number": {
                     "type": "integer"
@@ -428,7 +428,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Layr-Labs_eigenda_disperser.BlobStatus": {
+        "github_com_Layr-Labs_zgda_disperser.BlobStatus": {
             "type": "integer",
             "enum": [
                 0,
@@ -454,8 +454,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{"https", "http"},
-	Title:            "EigenDA Data Access API",
-	Description:      "This is the EigenDA Data Access API server.",
+	Title:            "ZGDA Data Access API",
+	Description:      "This is the ZGDA Data Access API server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

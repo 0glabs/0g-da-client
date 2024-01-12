@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 )
 
 const (

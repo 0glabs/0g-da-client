@@ -6,7 +6,7 @@ import (
 
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/zero-gravity-labs/zgda/api/grpc/churner"
+	"github.com/zero-gravity-labs/zerog-data-avail/api/grpc/churner"
 )
 
 type OperatorStake struct {

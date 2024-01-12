@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	rb "github.com/zero-gravity-labs/zgda/pkg/encoding/utils/reverseBits"
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	rb "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/utils/reverseBits"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 type GlobalPoly struct {

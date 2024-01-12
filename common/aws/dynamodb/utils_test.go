@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	commonaws "github.com/zero-gravity-labs/zgda/common/aws"
+	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 )
 
 const (

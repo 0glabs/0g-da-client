@@ -1,15 +1,19 @@
 package core
 
 import (
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
+	eth_common "github.com/ethereum/go-ethereum/common"
+
+	"github.com/wealdtech/go-merkletree"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 type AccountID = string
 
 // Security and Quorum Paramaters
 
-// QuorumID is a unique identifier for a quorum; initially EigenDA wil support upt to 256 quorums
+// QuorumID is a unique identifier for a quorum; initially ZGDA wil support upt to 256 quorums
 type QuorumID = uint8
 
 // SecurityParam contains the quorum ID and the adversary threshold for the quorum;
@@ -32,7 +36,7 @@ type QuorumResult struct {
 	PercentSigned uint8
 }
 
-// Blob stores the data and header of a single data blob. Blobs are the fundamental unit of data posted to EigenDA by users.
+// Blob stores the data and header of a single data blob. Blobs are the fundamental unit of data posted to ZGDA by users.
 type Blob struct {
 	RequestHeader BlobRequestHeader
 	Data          []byte
@@ -42,7 +46,7 @@ type Blob struct {
 type BlobRequestHeader struct {
 	// Commitments
 	BlobCommitments `json:"commitments"`
-	// For a blob to be accepted by EigenDA, it satisfy the AdversaryThreshold of each quorum contained in SecurityParams
+	// For a blob to be accepted by ZGDA, it satisfy the AdversaryThreshold of each quorum contained in SecurityParams
 	SecurityParams []*SecurityParam `json:"security_params"`
 	// AccountID is the account that is paying for the blob to be stored
 	AccountID AccountID `json:"account_id"`
@@ -104,6 +108,8 @@ type BatchHeader struct {
 	ReferenceBlockNumber uint
 	// BatchRoot is the root of a Merkle tree whose leaves are the hashes of the blobs in the batch
 	BatchRoot [32]byte
+	// DataRoot is the root of a Merkle tree whos leaves are the merkle root encoded data blobs divided in zgs segment size
+	DataRoot eth_common.Hash
 }
 
 // EncodedBlob contains the messages to be sent to a group of DA nodes corresponding to a single blob
@@ -118,6 +124,49 @@ type Chunk struct {
 	// interpolating polynomial, I(X), used in the KZG multi-reveal (https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html#multiproofs)
 	Coeffs []Symbol
 	Proof  Proof
+}
+
+// Returns 32 * len(Coeffs) bytes
+func (c *Chunk) CoeffsToBytes() []byte {
+	res := make([]byte, 0)
+	for _, coeff := range c.Coeffs {
+		b := bn254.FrToBytes(&coeff)
+		res = append(res, b[:]...)
+	}
+	return res
+}
+
+func BytesToCoeffs(bytes []byte) []Symbol {
+	if len(bytes)%32 != 0 {
+		panic("invalid bytes coeffs conversion")
+	}
+	n := len(bytes) / 32
+	res := make([]Symbol, n)
+	for i := 0; i < n; i++ {
+		var tmp [32]byte
+		copy(tmp[:], bytes[i*32:i*32+32])
+		bn254.FrFrom32(&res[i], tmp)
+	}
+	return res
+}
+
+// Returns 64 bytes
+func (c *Chunk) ProofToBytes() [64]byte {
+	x := c.Proof.X.Bytes()
+	y := c.Proof.Y.Bytes()
+	var res [64]byte
+	copy(res[:], append(x[:], y[:]...))
+	return res
+}
+
+func BytesToProof(bytes [64]byte) Proof {
+	var x, y fp.Element
+	x.SetBytes(bytes[:32])
+	y.SetBytes(bytes[32:])
+	return Proof{
+		X: x,
+		Y: y,
+	}
 }
 
 func (c *Chunk) Length() int {
@@ -150,4 +199,17 @@ type Sample struct {
 type SubBatch struct {
 	Samples  []Sample
 	NumBlobs int
+}
+
+type KVBlobInfoKey struct {
+	BatchHeaderHash [32]byte
+	BlobIndex       uint32
+}
+
+// BlobInfo to write to KV stream, the key is (BatchHeaderHash, BlobIndex)
+type KVBlobInfo struct {
+	BlobHeader  *BlobHeader
+	MerkleProof *merkletree.Proof // to prove blob exists in batch
+	ChunkOffset uint              // start index of first chunk in batch data
+	ProofOffset uint              // start index of first proof in batch data
 }

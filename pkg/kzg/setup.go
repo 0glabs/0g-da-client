@@ -28,7 +28,7 @@
 package kzg
 
 import (
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 
 	"bufio"
 	"fmt"

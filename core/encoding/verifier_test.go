@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 	// "github.com/pkg/profile"
 )
 

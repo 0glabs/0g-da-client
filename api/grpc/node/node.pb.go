@@ -27,7 +27,7 @@ type StoreChunksRequest struct {
 
 	// Which batch this request is for.
 	BatchHeader *BatchHeader `protobuf:"bytes,1,opt,name=batch_header,json=batchHeader,proto3" json:"batch_header,omitempty"`
-	// The chunks for each blob in the batch to be stored in an EigenDA Node.
+	// The chunks for each blob in the batch to be stored in an ZGDA Node.
 	Blobs []*Blob `protobuf:"bytes,2,rep,name=blobs,proto3" json:"blobs,omitempty"`
 }
 
@@ -131,7 +131,7 @@ type RetrieveChunksRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L43
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// This identifies which batch to retrieve for.
 	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
 	// Which blob in the batch to retrieve for (note: a batch is logically an ordered
@@ -424,9 +424,9 @@ func (x *MerkleProof) GetIndex() uint32 {
 	return 0
 }
 
-// In EigenDA, the original blob to disperse is encoded as a polynomial via taking
+// In ZGDA, the original blob to disperse is encoded as a polynomial via taking
 // taking different point evaluations (i.e. erasure coding). These points are split
-// into disjoint subsets which are assigned to different operator nodes in the EigenDA
+// into disjoint subsets which are assigned to different operator nodes in the ZGDA
 // network.
 // The data in this message is a subset of these points that are assigned to a
 // single operator node.
@@ -555,7 +555,7 @@ type BlobHeader struct {
 	Length uint32 `protobuf:"varint,3,opt,name=length,proto3" json:"length,omitempty"`
 	// The params of the quorums that this blob participates in.
 	QuorumHeaders []*BlobQuorumInfo `protobuf:"bytes,4,rep,name=quorum_headers,json=quorumHeaders,proto3" json:"quorum_headers,omitempty"`
-	// The ID of the user who is dispersing this blob to EigenDA.
+	// The ID of the user who is dispersing this blob to ZGDA.
 	AccountId string `protobuf:"bytes,5,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 }
 

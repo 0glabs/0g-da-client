@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/mock"
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 )
 
 type MockEncoder struct {

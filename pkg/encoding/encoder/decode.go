@@ -3,7 +3,7 @@ package encoder
 import (
 	"errors"
 
-	bls "github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 // Decode data when some chunks from systematic nodes are lost. It first uses FFT to recover

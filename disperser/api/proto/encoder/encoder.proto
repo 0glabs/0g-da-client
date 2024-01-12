@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/zero-gravity-labs/zgda/api/grpc/encoder";
+option go_package = "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/encoder";
 package encoder;
 
 service Encoder {

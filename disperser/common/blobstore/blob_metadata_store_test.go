@@ -9,10 +9,10 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
-	commondynamodb "github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
-	"github.com/zero-gravity-labs/zgda/pkg/kzg/bn254"
+	commondynamodb "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 func TestBlobMetadataStoreOperations(t *testing.T) {

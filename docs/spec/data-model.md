@@ -3,7 +3,7 @@
 ### Quorum Information
 
 ```go
-// QuorumID is a unique identifier for a quorum; initially EigenDA will support up to 256 quorums
+// QuorumID is a unique identifier for a quorum; initially ZGDA will support up to 256 quorums
 type QuorumID = uint8
 
 // SecurityParam contains the quorum ID and the adversary threshold for the quorum;
@@ -30,7 +30,7 @@ type QuorumResult struct {
 type BlobRequestHeader struct {
 	// BlobSize is the size of the original data in bytes
 	BlobSize uint32
-	// For a blob to be accepted by EigenDA, it satisfies the AdversaryThreshold of each quorum contained in SecurityParams
+	// For a blob to be accepted by ZGDA, it satisfies the AdversaryThreshold of each quorum contained in SecurityParams
 	SecurityParams []SecurityParam
 }
 ```

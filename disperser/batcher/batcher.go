@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/wealdtech/go-merkletree"
-	"github.com/zero-gravity-labs/zgda/common"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/common"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 const (
@@ -157,6 +157,14 @@ func (b *Batcher) Start(ctx context.Context) error {
 	return nil
 }
 
+func serializeProof(proof *merkletree.Proof) []byte {
+	proofBytes := make([]byte, 0)
+	for _, hash := range proof.Hashes {
+		proofBytes = append(proofBytes, hash[:]...)
+	}
+	return proofBytes
+}
+
 func (b *Batcher) handleFailure(ctx context.Context, blobMetadatas []*disperser.BlobMetadata, reason FailReason) error {
 	var result *multierror.Error
 	for _, metadata := range blobMetadatas {
@@ -188,15 +196,6 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) error {
 	}
 	log.Trace("[batcher] CreateBatch took", "duration", time.Since(stageTimer))
 
-	// Dispatch encoded batch
-	log.Trace("[batcher] Dispatching encoded batch...")
-	stageTimer = time.Now()
-	fileInfo, err := b.Dispatcher.DisperseBatch(ctx, batch.EncodedBlobs)
-	if err != nil {
-		return err
-	}
-	log.Trace("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
-
 	// Get the batch header hash
 	log.Trace("[batcher] Getting batch header hash...")
 	headerHash, err := batch.BatchHeader.GetBatchHeaderHash()
@@ -205,19 +204,13 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) error {
 		return fmt.Errorf("HandleSingleBatch: error getting batch header hash: %w", err)
 	}
 
-	batchID := fileInfo.Tx.Seq
-
-	// Mark the blobs as complete
-	log.Trace("[batcher] Marking blobs as complete...")
-	stageTimer = time.Now()
-	blobsToRetry := make([]*disperser.BlobMetadata, 0)
-	var updateConfirmationInfoErr error
-	for blobIndex, metadata := range batch.BlobMetadata {
+	proofs := make([]*merkletree.Proof, 0)
+	// Prepare data writes to kv stream
+	for blobIndex := range batch.BlobMetadata {
 		var blobHeader *core.BlobHeader
-		var proof []byte
 		// generate inclusion proof
 		if blobIndex >= len(batch.BlobHeaders) {
-			return fmt.Errorf("HandleSingleBatch: error confirming blobs: blob header at index %d not found in batch", blobIndex)
+			return fmt.Errorf("HandleSingleBatch: error preparing kv data: blob header at index %d not found in batch", blobIndex)
 		}
 		blobHeader = batch.BlobHeaders[blobIndex]
 
@@ -229,16 +222,32 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("HandleSingleBatch: failed to generate blob header inclusion proof: %w", err)
 		}
-		proof = serializeProof(merkleProof)
+		proofs = append(proofs, merkleProof)
+	}
 
+	// Dispatch encoded batch
+	log.Trace("[batcher] Dispatching encoded batch...")
+	stageTimer = time.Now()
+	_, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, proofs)
+	if err != nil {
+		return err
+	}
+	log.Trace("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
+
+	// Mark the blobs as complete
+	log.Trace("[batcher] Marking blobs as complete...")
+	stageTimer = time.Now()
+	blobsToRetry := make([]*disperser.BlobMetadata, 0)
+	var updateConfirmationInfoErr error
+	for blobIndex, metadata := range batch.BlobMetadata {
 		confirmationInfo := &disperser.ConfirmationInfo{
 			BatchHeaderHash:      headerHash,
 			BlobIndex:            uint32(blobIndex),
 			ReferenceBlockNumber: uint32(batch.BatchHeader.ReferenceBlockNumber),
 			BatchRoot:            batch.BatchHeader.BatchRoot[:],
-			BlobInclusionProof:   proof,
+			BlobInclusionProof:   serializeProof(proofs[blobIndex]),
 			BlobCommitment:       &batch.BlobHeaders[blobIndex].BlobCommitments,
-			BatchID:              uint32(batchID),
+			// BatchID:              uint32(batchID),
 			// TODO_F: get tx hash & block number
 			// ConfirmationTxnHash:
 			// ConfirmationBlockNumber:
@@ -274,14 +283,6 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) error {
 	return nil
 }
 
-func serializeProof(proof *merkletree.Proof) []byte {
-	proofBytes := make([]byte, 0)
-	for _, hash := range proof.Hashes {
-		proofBytes = append(proofBytes, hash[:]...)
-	}
-	return proofBytes
-}
-
 func (b *Batcher) parseBatchIDFromReceipt(ctx context.Context, txReceipt *types.Receipt) (uint32, error) {
 	if len(txReceipt.Logs) == 0 {
 		return 0, fmt.Errorf("failed to get transaction receipt with logs")
@@ -308,7 +309,7 @@ func (b *Batcher) parseBatchIDFromReceipt(ctx context.Context, txReceipt *types.
 			}
 
 			// There should be exactly two inputs in the data field, batchId and fee.
-			// ref: https://github.com/zero-gravity-labs/zgda/blob/master/contracts/src/interfaces/IEigenDAServiceManager.sol#L20
+			// ref: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L20
 			if len(unpackedData) != 2 {
 				return 0, fmt.Errorf("BatchConfirmed log should contain exactly 2 inputs. Found %d", len(unpackedData))
 			}

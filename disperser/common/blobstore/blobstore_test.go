@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/zero-gravity-labs/zgda/common/aws"
-	"github.com/zero-gravity-labs/zgda/common/aws/dynamodb"
-	test_utils "github.com/zero-gravity-labs/zgda/common/aws/dynamodb/utils"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
+	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
 
 	"github.com/ory/dockertest/v3"
-	cmock "github.com/zero-gravity-labs/zgda/common/mock"
-	"github.com/zero-gravity-labs/zgda/core"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
-	"github.com/zero-gravity-labs/zgda/inabox/deploy"
+	cmock "github.com/zero-gravity-labs/zerog-data-avail/common/mock"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (
@@ -34,7 +34,7 @@ var (
 		Data: []byte("test"),
 	}
 	s3Client   = cmock.NewS3Client()
-	bucketName = "test-eigenda-blobstore"
+	bucketName = "test-zgda-blobstore"
 	blobHash   = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 	blobSize   = uint(len(blob.Data))
 

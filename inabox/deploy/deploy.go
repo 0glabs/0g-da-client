@@ -9,16 +9,16 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 )
 
 const (
-	churnerImage   = "ghcr.io/layr-labs/eigenda/churner:local"
-	disImage       = "ghcr.io/layr-labs/eigenda/disperser:local"
-	encoderImage   = "ghcr.io/layr-labs/eigenda/encoder:local"
-	batcherImage   = "ghcr.io/layr-labs/eigenda/batcher:local"
-	nodeImage      = "ghcr.io/layr-labs/eigenda/node:local"
-	retrieverImage = "ghcr.io/layr-labs/eigenda/retriever:local"
+	churnerImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/churner:local"
+	disImage       = "ghcr.io/zero-gravity-labs/zerog-storage-client/disperser:local"
+	encoderImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/encoder:local"
+	batcherImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/batcher:local"
+	nodeImage      = "ghcr.io/zero-gravity-labs/zerog-storage-client/node:local"
+	retrieverImage = "ghcr.io/zero-gravity-labs/zerog-storage-client/retriever:local"
 )
 
 func (env *Config) getKeyString(name string) string {
@@ -30,7 +30,7 @@ func (env *Config) getKeyString(name string) string {
 	return keyInt.String()
 }
 
-func (env *Config) generateEigenDADeployConfig() EigenDADeployConfig {
+func (env *Config) generateZGDADeployConfig() ZGDADeployConfig {
 
 	operators := make([]string, 0)
 	stakers := make([]string, 0)
@@ -59,7 +59,7 @@ func (env *Config) generateEigenDADeployConfig() EigenDADeployConfig {
 		operators = append(operators, env.getKeyString(operatorName))
 	}
 
-	config := EigenDADeployConfig{
+	config := ZGDADeployConfig{
 		UseDefaults:         true,
 		NumStrategies:       numStrategies,
 		MaxOperatorCount:    maxOperatorCount,
@@ -72,29 +72,29 @@ func (env *Config) generateEigenDADeployConfig() EigenDADeployConfig {
 
 }
 
-func (env *Config) deployEigenDAContracts() {
-	log.Print("Deploy the EigenDA and EigenLayer contracts")
+func (env *Config) deployZGDAContracts() {
+	log.Print("Deploy the ZGDA and EigenLayer contracts")
 
 	// get deployer
-	deployer, ok := env.GetDeployer(env.EigenDA.Deployer)
+	deployer, ok := env.GetDeployer(env.ZGDA.Deployer)
 	if !ok {
 		log.Panicf("Deployer improperly configured")
 	}
 
 	changeDirectory(filepath.Join(env.rootPath, "contracts"))
 
-	eigendaDeployConfig := env.generateEigenDADeployConfig()
-	data, err := json.Marshal(&eigendaDeployConfig)
+	zgdaDeployConfig := env.generateZGDADeployConfig()
+	data, err := json.Marshal(&zgdaDeployConfig)
 	if err != nil {
 		log.Panicf("Error: %s", err.Error())
 	}
-	writeFile("script/eigenda_deploy_config.json", data)
+	writeFile("script/zgda_deploy_config.json", data)
 
-	execForgeScript("script/SetUpEigenDA.s.sol:SetupEigenDA", env.Pks.EcdsaMap[deployer.Name].PrivateKey, deployer, nil)
+	execForgeScript("script/SetUpZGDA.s.sol:SetupZGDA", env.Pks.EcdsaMap[deployer.Name].PrivateKey, deployer, nil)
 
 	//add relevant addresses to path
-	data = readFile("script/output/eigenda_deploy_output.json")
-	err = json.Unmarshal(data, &env.EigenDA)
+	data = readFile("script/output/zgda_deploy_output.json")
+	err = json.Unmarshal(data, &env.ZGDA)
 	if err != nil {
 		log.Panicf("Error: %s", err.Error())
 	}
@@ -114,7 +114,7 @@ func (env *Config) deployEigenDAContracts() {
 		log.Panicf("Error: %s", err.Error())
 	}
 	hashStr := fmt.Sprintf("%x", hash)
-	execForgeScript("script/MockRollupDeployer.s.sol:MockRollupDeployer", env.Pks.EcdsaMap[deployer.Name].PrivateKey, deployer, []string{"--sig", "run(address,bytes32,uint256)", env.EigenDA.ServiceManager, hashStr, big.NewInt(1e18).String()})
+	execForgeScript("script/MockRollupDeployer.s.sol:MockRollupDeployer", env.Pks.EcdsaMap[deployer.Name].PrivateKey, deployer, []string{"--sig", "run(address,bytes32,uint256)", env.ZGDA.ServiceManager, hashStr, big.NewInt(1e18).String()})
 
 	//add rollup address to path
 	data = readFile("script/output/mock_rollup_deploy_output.json")
@@ -127,7 +127,7 @@ func (env *Config) deployEigenDAContracts() {
 	env.MockRollup = rollupAddr.MockRollup
 }
 
-// Deploys a EigenDA experiment
+// Deploys a ZGDA experiment
 func (env *Config) DeployExperiment() {
 	changeDirectory(filepath.Join(env.rootPath, "inabox"))
 	defer env.SaveTestConfig()
@@ -149,12 +149,12 @@ func (env *Config) DeployExperiment() {
 		log.Panicf("could not load private keys: %v", err)
 	}
 
-	if env.EigenDA.Deployer != "" && !env.IsEigenDADeployed() {
-		fmt.Println("Deploying EigenDA")
-		env.deployEigenDAContracts()
+	if env.ZGDA.Deployer != "" && !env.IsZGDADeployed() {
+		fmt.Println("Deploying ZGDA")
+		env.deployZGDAContracts()
 	}
 
-	if deployer, ok := env.GetDeployer(env.EigenDA.Deployer); ok && deployer.DeploySubgraphs {
+	if deployer, ok := env.GetDeployer(env.ZGDA.Deployer); ok && deployer.DeploySubgraphs {
 		startBlock := GetLatestBlockNumber(env.Deployers[0].RPC)
 		env.deploySubgraphs(startBlock)
 	}
@@ -215,7 +215,7 @@ func (env *Config) RunNodePluginBinary(operation string, operator OperatorVars) 
 		"NODE_QUORUM_ID_LIST=" + operator.NODE_QUORUM_ID_LIST,
 		"NODE_CHAIN_RPC=" + operator.NODE_CHAIN_RPC,
 		"NODE_BLS_OPERATOR_STATE_RETRIVER=" + operator.NODE_BLS_OPERATOR_STATE_RETRIVER,
-		"NODE_EIGENDA_SERVICE_MANAGER=" + operator.NODE_EIGENDA_SERVICE_MANAGER,
+		"NODE_ZGDA_SERVICE_MANAGER=" + operator.NODE_ZGDA_SERVICE_MANAGER,
 		"NODE_CHURNER_URL=" + operator.NODE_CHURNER_URL,
 		"NODE_NUM_CONFIRMATIONS=0",
 	}

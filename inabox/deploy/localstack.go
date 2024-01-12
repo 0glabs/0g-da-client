@@ -12,11 +12,11 @@ import (
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/zero-gravity-labs/zgda/common/aws"
-	"github.com/zero-gravity-labs/zgda/common/store"
-	"github.com/zero-gravity-labs/zgda/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 
-	test_utils "github.com/zero-gravity-labs/zgda/common/aws/dynamodb/utils"
+	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
 )
 
 func StartDockertestWithLocalstackContainer(localStackPort string) (*dockertest.Pool, *dockertest.Resource, error) {

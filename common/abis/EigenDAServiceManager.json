@@ -23,7 +23,7 @@
         },
         {
           "internalType": "contract IPaymentManager",
-          "name": "_eigenDAPaymentManager",
+          "name": "_zerogDAPaymentManager",
           "type": "address"
         }
       ],
@@ -480,7 +480,7 @@
               "type": "uint32"
             }
           ],
-          "internalType": "struct IEigenDAServiceManager.BatchHeader",
+          "internalType": "struct IZGDAServiceManager.BatchHeader",
           "name": "batchHeader",
           "type": "tuple"
         },
@@ -600,7 +600,7 @@
     },
     {
       "inputs": [],
-      "name": "eigenDAPaymentManager",
+      "name": "zerogDAPaymentManager",
       "outputs": [
         {
           "internalType": "contract IPaymentManager",

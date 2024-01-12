@@ -2,7 +2,7 @@
 
 ## Generate Anvil State for 4 Operators for Anvil Chain to run on Kubernetes:
 1. Update InitialSupply in the contract to 100000 ether enough for 200 operators
-[Click here to view the highlighted code on GitHub](https://github.com/zero-gravity-labs/zgda/blob/7a16b44b8b06e770e15d372108df2fd220720697/contracts/script/SetUpEigenDA.s.sol#L58C38-L58C38)
+[Click here to view the highlighted code on GitHub](https://github.com/zero-gravity-labs/zerog-data-avail/blob/7a16b44b8b06e770e15d372108df2fd220720697/contracts/script/SetUpZGDA.s.sol#L58C38-L58C38)
 
 
 ```solidity
@@ -24,7 +24,7 @@ deployers:
   deploySubgraphs: true
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:
@@ -73,7 +73,7 @@ anvil --port 8545 --dump-state opr-state.json
 
 Output:
 ```
-forge script script/SetUpEigenDA.s.sol:SetupEigenDA --rpc-url http://127.0.0.1:8545 \
+forge script script/SetUpZGDA.s.sol:SetupZGDA --rpc-url http://127.0.0.1:8545 \
     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
     --broadcast
 
@@ -86,9 +86,9 @@ Generating variables
 Test environment has succesfully deployed!
 ```
 
-Copy generated states to states directory in this repo [here](https://github.com/zero-gravity-labs/zgda-devops/tree/master/charts/anvil-chain/states)
+Copy generated states to states directory in this repo [here](https://github.com/zero-gravity-labs/zerog-data-avail-devops/tree/master/charts/anvil-chain/states)
 ```
-1. Copy the generated state: opr-state.json and build docker image. Instructions here https://github.com/zero-gravity-labs/zgda-devops/blob/master/charts/anvil-chain/README.md
+1. Copy the generated state: opr-state.json and build docker image. Instructions here https://github.com/zero-gravity-labs/zerog-data-avail-devops/blob/master/charts/anvil-chain/README.md
 ```
 
 ## Generate Anvil State for 200 Operators for Anvil Chain to run on Kubernetes:
@@ -108,7 +108,7 @@ deployers:
   deploySubgraphs: true
   slow: false
 
-eigenda:
+zgda:
   deployer: "default"
 
 privateKeys:

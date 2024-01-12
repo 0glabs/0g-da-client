@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/shurcooL/graphql"
-	"github.com/zero-gravity-labs/zgda/core"
+	"github.com/zero-gravity-labs/zerog-data-avail/core"
 )
 
 var (
