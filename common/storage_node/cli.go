@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	StorageNodeURLsFlagName     = "storage.node-urls"
+	StorageNodeURLsFlagName     = "storage.node-url"
 	KVNodeURLFlagName           = "storage.kv-url"
 	KVStreamIDFlagName          = "storage.kv-stream-id"
 	FlowContractAddressFlagName = "storage.flow-contract"

@@ -4,5 +4,7 @@ inabox/anvil.pid
 test/testdata/*
 inabox/resources/kzg/SRSTables/*
 
+run/
+
 **/bin/*
 coverage.*

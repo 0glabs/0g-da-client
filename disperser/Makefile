@@ -32,10 +32,11 @@ run_batcher: build_batcher
 	--encoding-timeout 10s \
 	--chain-read-timeout 12s \
 	--chain-write-timeout 13s \
-	--batcher.storage.node-urls http://0.0.0.0:5678,http://0.0.0.0:6789 \
+	--batcher.storage.node-url http://0.0.0.0:5678 \
+	--batcher.storage.node-url http://0.0.0.0:6789 \
 	--batcher.storage.kv-url http://0.0.0.0:7890 \
 	--batcher.storage.kv-stream-id 000000000000000000000000000000000000000000000000000000000000f2bd \
-	--batcher.storage.flow-contract FLOW_CONTRACT_ADDR
+	--batcher.storage.flow-contract	FLOW_CONTRACT_ADDR
 
 run_server: build_server
 	./bin/server \

@@ -16,16 +16,18 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.5.1
+	github.com/openweb3/go-rpc-provider v0.2.7
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.2
 	github.com/urfave/cli v1.22.14
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
 	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0
-	github.com/zero-gravity-labs/zerog-storage-client v0.1.2
+	github.com/zero-gravity-labs/zerog-storage-client v0.1.3
 	go.uber.org/automaxprocs v1.5.2
 	go.uber.org/goleak v1.2.0
 	google.golang.org/grpc v1.59.0
@@ -119,13 +121,11 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/opencontainers/runc v1.1.5 // indirect
-	github.com/openweb3/go-rpc-provider v0.2.7 // indirect
 	github.com/openweb3/go-sdk-common v0.0.0-20220720074746-a7134e1d372c // indirect
 	github.com/openweb3/web3go v0.2.1-0.20221026093812-d63d83edcfec // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rs/zerolog v1.29.1 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
