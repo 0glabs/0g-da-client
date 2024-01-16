@@ -58,13 +58,11 @@ func NewRetrievalClient(
 }
 
 func (r *retrievalClient) fetchBlobInfo(batchHeaderHash [32]byte, blobIndex uint32) (*core.KVBlobInfo, error) {
-	key, err := (&core.KVBlobInfoKey{
+	key := (&core.KVBlobInfoKey{
 		BatchHeaderHash: batchHeaderHash,
 		BlobIndex:       blobIndex,
-	}).Serialize()
-	if err != nil {
-		return nil, errors.WithMessage(err, "Failed to serialize blob info key")
-	}
+	}).Bytes()
+
 	val, err := r.KVNode.GetValue(r.StreamId, key)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to get blob info from kv node")
@@ -94,9 +92,9 @@ func (r *retrievalClient) fetchProofAndValidate(
 		if err != nil {
 			r.logger.Info("Download segment error", "dataRoot", dataRoot, "clientIndex", clientIndex)
 		}
-		if uint(len(data)) == core.ProofSize {
+		entryOffset := proofOffset % core.EntrySize
+		if uint(len(data)) >= entryOffset+core.ProofSize {
 			// read proof
-			entryOffset := proofOffset % core.EntrySize
 			var proof [64]byte
 			copy(proof[:], data[entryOffset:entryOffset+core.ProofSize])
 			// generate chunk
@@ -123,6 +121,7 @@ func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInf
 
 	chunkOffset := blobInfo.ChunkOffset
 	proofOffset := blobInfo.ProofOffset
+	r.logger.Debug("offsets", "chunkOffset", chunkOffset, "proofOffset", proofOffset)
 
 	requiredNum := (encodingParams.NumChunks + 1) / 2
 	chunks := make([]*core.Chunk, 0)
@@ -131,7 +130,6 @@ func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInf
 	for i := uint(0); i < encodingParams.NumChunks; i++ {
 		// fetch i-th chunk coeffs
 		clientIndex := chunkOffset / core.SegmentSize % uint(len(r.Nodes))
-		coeffs := make([]byte, 0)
 		for j := 0; j < len(r.Nodes); j++ {
 			data, err := r.Nodes[clientIndex].ZeroGStorage().DownloadSegment(
 				dataRoot,
@@ -139,19 +137,23 @@ func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInf
 				uint64((chunkOffset+coeffLength+core.EntrySize-1)/core.EntrySize),
 			)
 			if err != nil {
-				r.logger.Info("Download segment error", "dataRoot", dataRoot, "clientIndex", clientIndex)
+				r.logger.Debug("Download chunk error", "chunk_index", i, "dataRoot", dataRoot, "clientIndex", clientIndex)
+				clientIndex = (clientIndex + 1) % uint(len(r.Nodes))
+				continue
 			}
-			if uint(len(data)) == coeffLength {
+			entryOffset := chunkOffset % core.EntrySize
+			if len(data) >= int(entryOffset+coeffLength) {
 				// read coeffs
-				entryOffset := chunkOffset % core.EntrySize
-				coeffs = append(coeffs, data[entryOffset:entryOffset+coeffLength]...)
+				coeffs := data[entryOffset : entryOffset+coeffLength]
 				// fetch proof
-				chunk, _ := r.fetchProofAndValidate(dataRoot, encodingParams, blobInfo.BlobHeader, i, proofOffset, core.BytesToCoeffs(coeffs))
+				chunk, err := r.fetchProofAndValidate(dataRoot, encodingParams, blobInfo.BlobHeader, i, proofOffset, core.BytesToCoeffs(coeffs))
 				if chunk != nil {
 					// verified successfully
 					chunks = append(chunks, chunk)
 					indices = append(indices, i)
 					break
+				} else {
+					r.logger.Debug("Validate chunk failed", "chunk_index", i, "clientIndex", clientIndex, "error", err)
 				}
 			}
 			clientIndex = (clientIndex + 1) % uint(len(r.Nodes))
@@ -211,6 +213,8 @@ func (r *retrievalClient) RetrieveBlob(
 	if err != nil {
 		return nil, err
 	}
+
+	r.logger.Debugf("encoding params: %v\n", encodingParams)
 
 	// Fetch chunks from all zgs nodes
 	chunks, indices, err := r.fetchChunksWithProof(batchDataRoot, blobInfo, encodingParams)

@@ -338,13 +338,22 @@ func (c *Commitment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (h *KVBlobInfoKey) Serialize() ([]byte, error) {
-	return encode(h)
+func (h *KVBlobInfoKey) Bytes() []byte {
+	b := make([]byte, 0)
+	b = append(b, h.BatchHeaderHash[:]...)
+	blobIndex := make([]byte, 4)
+	binary.BigEndian.PutUint32(blobIndex, h.BlobIndex)
+	b = append(b, blobIndex...)
+	return b
 }
 
-func (h *KVBlobInfoKey) Deserialize(data []byte) (*KVBlobInfoKey, error) {
-	err := decode(data, h)
-	return h, err
+func (h *KVBlobInfoKey) FromBytes(data []byte) (*KVBlobInfoKey, error) {
+	if len(data) < 36 {
+		return nil, errors.New("data length mismatch")
+	}
+	copy(h.BatchHeaderHash[:], data[:32])
+	h.BlobIndex = binary.BigEndian.Uint32(data[32:36])
+	return h, nil
 }
 
 func (h *KVBlobInfo) Serialize() ([]byte, error) {

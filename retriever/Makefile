@@ -7,18 +7,16 @@ build: clean
 	go build -o ./bin/server ./cmd
 
 run: build
-	DA_RETRIEVER_HOSTNAME=localhost \
-	DA_RETRIEVER_GRPC_PORT=50051 \
-	DA_RETRIEVER_TIMEOUT=10s \
 	./bin/server \
 	--retriever.hostname localhost \
 	--retriever.grpc-port 32011 \
-	--retriever.timeout 10s \
-	--retriever.bls-operator-state-retriever 0x9d4454B023096f34B160D6B654540c56A1F81688 \
-	--retriever.zgda-service-manager 0x67d269191c92Caf3cD7723F116c85e6E9bf55933 \
-	--kzg.g1-path ../inabox/resources/kzg/g1.point \
-	--kzg.g2-path ../inabox/resources/kzg/g2.point \
+	--retriever.storage.node-url http://0.0.0.0:5678 \
+	--retriever.storage.node-url http://0.0.0.0:6789 \
+	--retriever.storage.kv-url http://0.0.0.0:7890 \
+	--retriever.storage.kv-stream-id 000000000000000000000000000000000000000000000000000000000000f2bd \
+	--retriever.storage.flow-contract 0xD46b1B603377085E082b48B5e7AB9b7417633401 \
+	--retriever.log.level-std debug \
+	--kzg.g1-path ../inabox/resources/kzg/g1.point.300000 \
+	--kzg.g2-path ../inabox/resources/kzg/g2.point.300000 \
 	--kzg.cache-path ../inabox/resources/kzg/SRSTables \
-	--kzg.srs-order 3000 \
-	--chain.rpc http://localhost:8545 \
-	--chain.private-key=""
+	--kzg.srs-order 300000

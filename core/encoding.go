@@ -65,7 +65,7 @@ func GetBlobLength(blobSize uint) uint {
 
 func SplitToChunks(blobLength uint) (uint, uint) {
 	nextPow2 := uint(encoder.NextPowerOf2(uint64(blobLength)))
-	chunkLength := min(MaxChunkLength, nextPow2)
+	chunkLength := min(MaxChunkLength, nextPow2*2)
 	chunkNum := (nextPow2*2 + MaxChunkLength - 1) / MaxChunkLength
 	return chunkLength, chunkNum
 }

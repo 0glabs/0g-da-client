@@ -73,6 +73,7 @@ func (s *Server) RetrieveBlob(ctx context.Context, req *pb.BlobRequest) (*pb.Blo
 	if err != nil {
 		return nil, err
 	}
+	s.logger.Debug("server fetched batch header: %v\n", *batchHeader)
 
 	data, err := s.retrievalClient.RetrieveBlob(
 		ctx,

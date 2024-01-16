@@ -135,13 +135,11 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	}
 	batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchHeader)
 	for blobIndex := range blobs {
-		key, err := (&core.KVBlobInfoKey{
+		key := (&core.KVBlobInfoKey{
 			BatchHeaderHash: batchHeaderHash,
 			BlobIndex:       uint32(blobIndex),
-		}).Serialize()
-		if err != nil {
-			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize blob info key")
-		}
+		}).Bytes()
+
 		value, err := (&core.KVBlobInfo{
 			BlobHeader:  blobs[blobIndex].BlobHeader,
 			MerkleProof: proofs[blobIndex],
@@ -180,5 +178,5 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		return eth_common.Hash{}, fmt.Errorf("Failed to upload file: %v", err)
 	}
 
-	return tree.Root(), nil
+	return batchHeader.DataRoot, nil
 }
