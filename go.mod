@@ -28,7 +28,7 @@ require (
 	github.com/zero-gravity-labs/zerog-storage-client v0.1.4
 	go.uber.org/automaxprocs v1.5.2
 	go.uber.org/goleak v1.2.0
-	google.golang.org/grpc v1.59.0
+	google.golang.org/grpc v1.60.1
 )
 
 require (
@@ -144,9 +144,9 @@ require (
 	golang.org/x/arch v0.4.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
+	golang.org/x/oauth2 v0.13.0 // indirect
+	golang.org/x/sync v0.4.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
