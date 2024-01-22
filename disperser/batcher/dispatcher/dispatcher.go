@@ -162,7 +162,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	kvData := zg_core.NewDataInMemory(rawKVData)
 
 	// upload batchly
-	if err := uploader.BatchUpload([]zg_core.IterableData{encodedBlobsData, kvData}, []transfer.UploadOption{
+	txHash, err := uploader.BatchUpload([]zg_core.IterableData{encodedBlobsData, kvData}, false, []transfer.UploadOption{
 		// encoded blobs options
 		{
 			Tags:     hexutil.MustDecode("0x"),
@@ -174,9 +174,10 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 			Tags:     batcher.BuildTags(),
 			Force:    true,
 			Disperse: false,
-		}}); err != nil {
+		}})
+	if err != nil {
 		return eth_common.Hash{}, fmt.Errorf("Failed to upload file: %v", err)
 	}
 
-	return batchHeader.DataRoot, nil
+	return txHash, nil
 }

@@ -20,6 +20,7 @@ run_batcher: build_batcher
 	--batcher.pull-interval 10s \
 	--chain.rpc ETH_RPC_ENDPOINT \
 	--chain.private-key YOUR_PRIVATE_KEY \
+	--batcher.finalizer-interval 20s \
 	--batcher.aws.region us-east-1 \
 	--batcher.aws.access-key-id localstack \
 	--batcher.aws.secret-access-key localstack \

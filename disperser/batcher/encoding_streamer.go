@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/wealdtech/go-merkletree"
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	"github.com/zero-gravity-labs/zerog-data-avail/core"
@@ -39,9 +40,6 @@ type StreamerConfig struct {
 
 	// EncodingQueueLimit is the maximum number of encoding requests that can be queued
 	EncodingQueueLimit int
-
-	// TargetNumChunks is the target number of chunks per encoded blob
-	TargetNumChunks uint
 }
 
 type EncodingStreamer struct {
@@ -72,6 +70,7 @@ type batch struct {
 	BatchHeader  *core.BatchHeader
 	State        *core.IndexedOperatorState
 	MerkleTree   *merkletree.MerkleTree
+	TxHash       eth_common.Hash
 }
 
 func NewEncodedSizeNotifier(notify chan struct{}, threshold uint64) *EncodedSizeNotifier {
@@ -253,15 +252,12 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 		EncodingParams: params,
 	}
 
-	// Create a new context for encoding request
-	// This allows us to cancel all outstanding encoding requests when we create a new batch
-	// This is necessary because an encoding request is dependent on the reference block number
-	// If the reference block number changes, we need to cancel all outstanding encoding requests
-	// and re-request them with the new reference block number
 	encodingCtx, cancel := context.WithTimeout(ctx, e.EncodingRequestTimeout)
-	e.mu.Lock()
-	e.encodingCtxCancelFuncs = append(e.encodingCtxCancelFuncs, cancel)
-	e.mu.Unlock()
+	/*
+		e.mu.Lock()
+		e.encodingCtxCancelFuncs = append(e.encodingCtxCancelFuncs, cancel)
+		e.mu.Unlock()
+	*/
 	e.Pool.Submit(func() {
 		defer cancel()
 		commits, chunks, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data, pending.EncodingParams)
@@ -317,7 +313,7 @@ func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result Encod
 // If successful, it returns a batch, and updates the reference block number for next batch to use.
 // Otherwise, it returns an error and keeps the blobs in the encoded blob store.
 // This function is meant to be called periodically in a single goroutine as it resets the state of the encoded blob store.
-func (e *EncodingStreamer) CreateBatch() (*batch, error) {
+func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 	// Cancel outstanding encoding requests
 	// Assumption: `CreateBatch` will be called at an interval longer than time it takes to encode a single blob
 	if len(e.encodingCtxCancelFuncs) > 0 {
@@ -329,7 +325,8 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 	}
 
 	// Get all encoded blobs
-	encodedResults := e.EncodedBlobstore.GetNewEncodingResults()
+	ts := uint64(time.Now().Nanosecond())
+	encodedResults := e.EncodedBlobstore.GetNewEncodingResults(ts)
 
 	// Reset the notifier
 	e.EncodedSizeNotifier.mu.Lock()
@@ -338,7 +335,7 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 
 	e.logger.Info("[CreateBatch] creating a batch...", "numBlobs", len(encodedResults), "refblockNumber", e.ReferenceBlockNumber)
 	if len(encodedResults) == 0 {
-		return nil, errNoEncodedResults
+		return nil, ts, errNoEncodedResults
 	}
 
 	encodedBlobByKey := make(map[disperser.BlobKey]*core.EncodedBlob)
@@ -389,7 +386,7 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 
 	tree, err := batchHeader.SetBatchRoot(blobHeaders)
 	if err != nil {
-		return nil, err
+		return nil, ts, err
 	}
 
 	e.ReferenceBlockNumber = 0
@@ -400,9 +397,17 @@ func (e *EncodingStreamer) CreateBatch() (*batch, error) {
 		BlobHeaders:  blobHeaders,
 		BlobMetadata: metadatas,
 		MerkleTree:   tree,
-	}, nil
+	}, ts, nil
 }
 
 func (e *EncodingStreamer) RemoveEncodedBlob(metadata *disperser.BlobMetadata) {
 	e.EncodedBlobstore.DeleteEncodingResult(metadata.GetBlobKey())
+}
+
+func (e *EncodingStreamer) RemoveBatching() {
+
+}
+
+func (e *EncodingStreamer) RemoveBatchingStatus(ts uint64) {
+	e.EncodedBlobstore.DeleteBatchingStatus(ts)
 }

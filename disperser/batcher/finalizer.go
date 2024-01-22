@@ -34,11 +34,13 @@ type finalizer struct {
 	logger               common.Logger
 }
 
-func NewFinalizer(timeout time.Duration, loopInterval time.Duration, blobStore disperser.BlobStore, maxNumRetriesPerBlob uint, logger common.Logger) Finalizer {
+func NewFinalizer(timeout time.Duration, loopInterval time.Duration, blobStore disperser.BlobStore, ethClient common.EthClient, rpcClient common.RPCEthClient, maxNumRetriesPerBlob uint, logger common.Logger) Finalizer {
 	return &finalizer{
 		timeout:              timeout,
 		loopInterval:         loopInterval,
 		blobStore:            blobStore,
+		ethClient:            ethClient,
+		rpcClient:            rpcClient,
 		maxNumRetriesPerBlob: maxNumRetriesPerBlob,
 		logger:               logger,
 	}

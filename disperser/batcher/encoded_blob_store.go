@@ -16,6 +16,8 @@ type encodedBlobStore struct {
 
 	requested map[requestID]struct{}
 	encoded   map[requestID]*EncodingResult
+	batching  map[requestID]uint64
+	batches   map[uint64][]requestID
 	// encodedResultSize is the total size of all the chunks in the encoded results in bytes
 	encodedResultSize uint64
 
@@ -43,6 +45,8 @@ func newEncodedBlobStore(logger common.Logger) *encodedBlobStore {
 	return &encodedBlobStore{
 		requested:         make(map[requestID]struct{}),
 		encoded:           make(map[requestID]*EncodingResult),
+		batching:          make(map[requestID]uint64),
+		batches:           make(map[uint64][]requestID),
 		encodedResultSize: 0,
 		logger:            logger,
 	}
@@ -130,18 +134,39 @@ func (e *encodedBlobStore) DeleteEncodingResult(blobKey disperser.BlobKey) {
 
 	delete(e.encoded, requestID)
 	e.encodedResultSize -= getChunksSize(encodedResult)
+	// remove from batching status
+	delete(e.batching, requestID)
 }
 
 // GetNewEncodingResults returns all the fresh encoded results
-func (e *encodedBlobStore) GetNewEncodingResults() []*EncodingResult {
+func (e *encodedBlobStore) GetNewEncodingResults(ts uint64) []*EncodingResult {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 	fetched := make([]*EncodingResult, 0)
-	for _, encodedResult := range e.encoded {
-		fetched = append(fetched, encodedResult)
+	if _, ok := e.batches[ts]; !ok {
+		e.batches[ts] = make([]requestID, 0)
+	}
+	for id, encodedResult := range e.encoded {
+		if _, ok := e.batching[id]; !ok {
+			fetched = append(fetched, encodedResult)
+			e.batching[id] = ts
+			e.batches[ts] = append(e.batches[ts], id)
+		}
 	}
 	e.logger.Trace("consumed encoded results", "fetched", len(fetched), "encodedSize", e.encodedResultSize)
 	return fetched
+}
+
+func (e *encodedBlobStore) DeleteBatchingStatus(ts uint64) {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+
+	if batch, ok := e.batches[ts]; ok {
+		for _, id := range batch {
+			delete(e.batching, id)
+		}
+	}
+	delete(e.batches, ts)
 }
 
 // GetEncodedResultSize returns the total size of all the chunks in the encoded results in bytes
