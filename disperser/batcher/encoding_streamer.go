@@ -279,18 +279,21 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 		}
 	})
 	e.EncodedBlobstore.PutEncodingRequest(blobKey)
+	e.logger.Trace("requested encoding for blob", "blob_hash", blobKey.BlobHash)
 }
 
 func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result EncodingResultOrStatus) error {
 	if result.Err != nil {
 		e.EncodedBlobstore.DeleteEncodingRequest(result.BlobMetadata.GetBlobKey())
-		return fmt.Errorf("error encoding blob: %w", result.Err)
+		return fmt.Errorf("error encoding blob: %w, blob hash: %v", result.Err, result.BlobMetadata.BlobHash)
 	}
 
 	err := e.EncodedBlobstore.PutEncodingResult(&result.EncodingResult)
 	if err != nil {
 		return fmt.Errorf("failed to putEncodedBlob: %w", err)
 	}
+
+	e.logger.Trace("blob encoded", "blob_hash", result.BlobMetadata.BlobHash)
 
 	count, encodedSize := e.EncodedBlobstore.GetEncodedResultSize()
 	e.metrics.UpdateEncodedBlobs(count, encodedSize)
@@ -402,10 +405,6 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 
 func (e *EncodingStreamer) RemoveEncodedBlob(metadata *disperser.BlobMetadata) {
 	e.EncodedBlobstore.DeleteEncodingResult(metadata.GetBlobKey())
-}
-
-func (e *EncodingStreamer) RemoveBatching() {
-
 }
 
 func (e *EncodingStreamer) RemoveBatchingStatus(ts uint64) {

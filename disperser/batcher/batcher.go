@@ -86,7 +86,7 @@ func NewBatcher(
 	)
 	streamerConfig := StreamerConfig{
 		SRSOrder:               config.SRSOrder,
-		EncodingRequestTimeout: config.PullInterval,
+		EncodingRequestTimeout: timeoutConfig.EncodingTimeout,
 		EncodingQueueLimit:     config.EncodingRequestQueueSize,
 	}
 	encodingWorkerPool := workerpool.New(config.NumConnections)

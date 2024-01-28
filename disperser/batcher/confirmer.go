@@ -150,6 +150,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 			c.Metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Confirmed)
 			// remove encoded blob from storage so we don't disperse it again
 			c.EncodingStreamer.RemoveEncodedBlob(metadata)
+			c.logger.Trace("blob confirmed", "blob_hash", metadata.BlobHash)
 		}
 		if updateConfirmationInfoErr != nil {
 			c.logger.Error("HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)

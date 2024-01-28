@@ -140,8 +140,8 @@ func (e *encodedBlobStore) DeleteEncodingResult(blobKey disperser.BlobKey) {
 
 // GetNewEncodingResults returns all the fresh encoded results
 func (e *encodedBlobStore) GetNewEncodingResults(ts uint64) []*EncodingResult {
-	e.mu.RLock()
-	defer e.mu.RUnlock()
+	e.mu.Lock()
+	defer e.mu.Unlock()
 	fetched := make([]*EncodingResult, 0)
 	if _, ok := e.batches[ts]; !ok {
 		e.batches[ts] = make([]requestID, 0)
@@ -158,8 +158,8 @@ func (e *encodedBlobStore) GetNewEncodingResults(ts uint64) []*EncodingResult {
 }
 
 func (e *encodedBlobStore) DeleteBatchingStatus(ts uint64) {
-	e.mu.RLock()
-	defer e.mu.RUnlock()
+	e.mu.Lock()
+	defer e.mu.Unlock()
 
 	if batch, ok := e.batches[ts]; ok {
 		for _, id := range batch {
@@ -185,7 +185,7 @@ func getChunksSize(result *EncodingResult) uint64 {
 	var size uint64
 
 	for _, chunk := range result.Chunks {
-		size += uint64(len(chunk.Coeffs) * 256) // 256 bytes per symbol
+		size += uint64(len(chunk.Coeffs) * 32) // 256 bytes per symbol
 	}
-	return size + 256*2 // + 256 * 2 bytes for proof
+	return size + 64 // + 256 * 2 bytes for proof
 }
