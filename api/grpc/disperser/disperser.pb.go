@@ -428,7 +428,7 @@ type SecurityParams struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The ID of the quorum.
-	// The quorum must be already registered on EigenLayer. The ID must be
+	// The quorum must be already registered on ZeroGLayer. The ID must be
 	// in range [0, 255].
 	QuorumId uint32 `protobuf:"varint,1,opt,name=quorum_id,json=quorumId,proto3" json:"quorum_id,omitempty"`
 	// The max percentage of stake within the quorum that can be held by or delegated

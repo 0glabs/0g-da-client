@@ -73,7 +73,7 @@ func (env *Config) generateZGDADeployConfig() ZGDADeployConfig {
 }
 
 func (env *Config) deployZGDAContracts() {
-	log.Print("Deploy the ZGDA and EigenLayer contracts")
+	log.Print("Deploy the ZGDA and ZeroGLayer contracts")
 
 	// get deployer
 	deployer, ok := env.GetDeployer(env.ZGDA.Deployer)

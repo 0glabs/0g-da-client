@@ -34,7 +34,7 @@ make run-e2e
 
 ### Preliminary setup steps
 
-Ensure that all submodules (e.g. EigenLayer smart contracts) are checked out to the correct branch, and then build the binaries.
+Ensure that all submodules (e.g. ZeroGLayer smart contracts) are checked out to the correct branch, and then build the binaries.
 ```
 $ git submodule update --init --recursive
 $ make build

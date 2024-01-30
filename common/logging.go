@@ -73,13 +73,13 @@ type Logger interface {
 	//	log.Fatal("msg", "key1", val1, "key2", val2)
 	Fatal(msg string, ctx ...interface{})
 
-	// We add the below methods to be compliant with the eigensdk Logger interface
+	// We add the below methods to be compliant with the zerogsdk Logger interface
 	Debugf(template string, args ...interface{})
 	Infof(template string, args ...interface{})
 	Warnf(template string, args ...interface{})
 	Errorf(template string, args ...interface{})
 	Critf(template string, args ...interface{})
-	// eigensdk uses fatal instead of crit so we add it,
+	// zerogsdk uses fatal instead of crit so we add it,
 	// but should have same semantic as Critf
 	Fatalf(template string, args ...interface{})
 }

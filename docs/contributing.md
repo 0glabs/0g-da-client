@@ -13,7 +13,7 @@ In general, the `core` project contains implementation of all the important busi
 <pre>
 ┌── <a href="./api">api</a> Protobuf definitions and contract bindings
 ├── <a href="./contracts">contracts</a>
-|   ├── <a href="./contracts/eignlayer-contracts">eigenlayer-contracts</a>: Contracts for the EigenLayer restaking platform
+|   ├── <a href="./contracts/eignlayer-contracts">zeroglayer-contracts</a>: Contracts for the ZeroGLayer restaking platform
 ┌── <a href="./core">core</a>: Core logic of the ZGDA protocol
 ├── <a href="./disperser">disperser</a>: Disperser service
 ├── <a href="./docs">docs</a>: Documentation and specification

@@ -243,7 +243,7 @@ SecurityParams contains the security parameters for a given quorum.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| quorum_id | [uint32](#uint32) |  | The ID of the quorum. The quorum must be already registered on EigenLayer. The ID must be in range [0, 255]. |
+| quorum_id | [uint32](#uint32) |  | The ID of the quorum. The quorum must be already registered on ZeroGLayer. The ID must be in range [0, 255]. |
 | adversary_threshold | [uint32](#uint32) |  | The max percentage of stake within the quorum that can be held by or delegated to adversarial operators.
 
 Clients use this to customize the trust assumption (safety).

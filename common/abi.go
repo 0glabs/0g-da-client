@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-//go:embed abis/EigenDAServiceManager.json
+//go:embed abis/ZGDAServiceManager.json
 var ServiceManagerAbi []byte
 
 var BatchConfirmedEventSigHash = crypto.Keccak256Hash([]byte("BatchConfirmed(bytes32,uint32,uint96)"))

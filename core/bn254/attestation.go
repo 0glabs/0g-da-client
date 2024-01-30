@@ -149,7 +149,7 @@ func MakePubkeyRegistrationData(privKey *fr.Element, operatorAddress common.Addr
 	toHash = append(toHash, compendiumAddress.Bytes()...)
 	// make sure chainId is 32 bytes
 	toHash = append(toHash, common.LeftPadBytes(chainId.Bytes(), 32)...)
-	toHash = append(toHash, []byte("EigenLayer_BN254_Pubkey_Registration")...)
+	toHash = append(toHash, []byte("ZeroGLayer_BN254_Pubkey_Registration")...)
 
 	msgHash := crypto.Keccak256(toHash)
 	// convert to [32]byte

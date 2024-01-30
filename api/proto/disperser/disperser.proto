@@ -79,7 +79,7 @@ message RetrieveBlobReply {
 // SecurityParams contains the security parameters for a given quorum.
 message SecurityParams {
 	// The ID of the quorum.
-	// The quorum must be already registered on EigenLayer. The ID must be
+	// The quorum must be already registered on ZeroGLayer. The ID must be
 	// in range [0, 255].
 	uint32 quorum_id = 1;
 	// The max percentage of stake within the quorum that can be held by or delegated
