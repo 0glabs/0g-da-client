@@ -189,11 +189,6 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 
 	e.logger.Trace("[encodingstreamer] new metadatas to encode", "numMetadata", len(metadatas), "duration", time.Since(stageTimer))
 
-	metadataByKey := make(map[disperser.BlobKey]*disperser.BlobMetadata, 0)
-	for _, metadata := range metadatas {
-		metadataByKey[metadata.GetBlobKey()] = metadata
-	}
-
 	stageTimer = time.Now()
 	blobs, err := e.blobStore.GetBlobsByMetadata(ctx, metadatas)
 	if err != nil {

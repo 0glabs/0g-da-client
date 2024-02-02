@@ -33,6 +33,8 @@ type Confirmer struct {
 
 	routines uint
 
+	retryOption blockchain.RetryOption
+
 	logger  common.Logger
 	Metrics *Metrics
 }
@@ -62,8 +64,12 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 		ConfirmChan:    make(chan *BatchInfo),
 		pendingBatches: make([]*BatchInfo, 0),
 		routines:       routines,
-		logger:         logger,
-		Metrics:        metrics,
+		retryOption: blockchain.RetryOption{
+			Rounds:   ethConfig.ReceiptPollingRounds,
+			Interval: ethConfig.ReceiptPollingInterval,
+		},
+		logger:  logger,
+		Metrics: metrics,
 	}, nil
 }
 
@@ -145,7 +151,7 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, uint32, erro
 	}
 	c.logger.Info("[confirmer] Waiting batch be confirmed", "transaction hash", txHash)
 	// data is not duplicate, there is a new transaction
-	receipt, err := c.Flow.WaitForReceipt(txHash, true)
+	receipt, err := c.Flow.WaitForReceipt(txHash, true, c.retryOption)
 	if err != nil {
 		return 0, 0, err
 	}

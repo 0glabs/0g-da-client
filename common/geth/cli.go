@@ -1,22 +1,28 @@
 package geth
 
 import (
+	"time"
+
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 var (
-	rpcUrlFlagName           = "chain.rpc"
-	privateKeyFlagName       = "chain.private-key"
-	numConfirmationsFlagName = "chain.num-confirmations"
-	txGasLimitFlagName       = "chain.gas-limit"
+	rpcUrlFlagName                 = "chain.rpc"
+	privateKeyFlagName             = "chain.private-key"
+	numConfirmationsFlagName       = "chain.num-confirmations"
+	txGasLimitFlagName             = "chain.gas-limit"
+	receiptPollingRoundsFlagName   = "chain.receipt-wait-rounds"
+	receiptPollingIntervalFlagName = "chain.receipt-wait-interval"
 )
 
 type EthClientConfig struct {
-	RPCURL           string
-	PrivateKeyString string
-	NumConfirmations int
-	TxGasLimit       int
+	RPCURL                 string
+	PrivateKeyString       string
+	NumConfirmations       int
+	TxGasLimit             int
+	ReceiptPollingRounds   uint
+	ReceiptPollingInterval time.Duration
 }
 
 func EthClientFlags(envPrefix string) []cli.Flag {
@@ -47,6 +53,20 @@ func EthClientFlags(envPrefix string) []cli.Flag {
 			Value:    0,
 			EnvVar:   common.PrefixEnvVar(envPrefix, "TX_GAS_LIMIT"),
 		},
+		cli.UintFlag{
+			Name:     receiptPollingRoundsFlagName,
+			Usage:    "Rounds of receipt polling",
+			Required: false,
+			Value:    60,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "RECEIPT_POLLING_ROUNDS"),
+		},
+		cli.DurationFlag{
+			Name:     receiptPollingIntervalFlagName,
+			Usage:    "Interval of receipt polling",
+			Required: false,
+			Value:    time.Second,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "RECEIPT_POLLING_INTERVAL"),
+		},
 	}
 }
 
@@ -56,6 +76,8 @@ func ReadEthClientConfig(ctx *cli.Context) EthClientConfig {
 	cfg.PrivateKeyString = ctx.GlobalString(privateKeyFlagName)
 	cfg.NumConfirmations = ctx.GlobalInt(numConfirmationsFlagName)
 	cfg.TxGasLimit = ctx.GlobalInt(txGasLimitFlagName)
+	cfg.ReceiptPollingRounds = ctx.GlobalUint(receiptPollingRoundsFlagName)
+	cfg.ReceiptPollingInterval = ctx.GlobalDuration(receiptPollingIntervalFlagName)
 	return cfg
 }
 

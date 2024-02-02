@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"net/http"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -95,8 +97,28 @@ func (s *client) DownloadObject(ctx context.Context, bucket string, key string) 
 	return buffer.Bytes(), nil
 }
 
+func (s *client) keyExists(ctx context.Context, bucket string, key string) (bool, error) {
+	_, err := s.s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		var responseError *awshttp.ResponseError
+		if errors.As(err, &responseError) && responseError.ResponseError.HTTPStatusCode() == http.StatusNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *client) UploadObject(ctx context.Context, bucket string, key string, data []byte) error {
 	var partMiBs int64 = 10
+	uploaded, _ := s.keyExists(ctx, bucket, key)
+	if uploaded {
+		s.logger.Info("object already uploaded, skip", "key", key)
+		return nil
+	}
 	uploader := manager.NewUploader(s.s3Client, func(u *manager.Uploader) {
 		u.PartSize = partMiBs * 1024 * 1024 // 10MB per part
 		u.Concurrency = 3                   //The number of goroutines to spin up in parallel per call to Upload when sending parts
