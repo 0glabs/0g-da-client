@@ -149,9 +149,9 @@ func (b *Batcher) Start(ctx context.Context) error {
 				if ts, err := b.HandleSingleBatch(ctx); err != nil {
 					b.EncodingStreamer.RemoveBatchingStatus(ts)
 					if errors.Is(err, errNoEncodedResults) {
-						b.logger.Warn("no encoded results to make a batch with")
+						b.logger.Warn("no encoded results to make a batch with(Notified)")
 					} else {
-						b.logger.Error("failed to process a batch", "err", err)
+						b.logger.Error("failed to process a batch(Notified)", "err", err)
 					}
 				}
 				ticker.Reset(b.PullInterval)
@@ -196,6 +196,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	defer timer.ObserveDuration()
 
 	stageTimer := time.Now()
+	log.Trace("[batcher] Creating batch", "ts", stageTimer)
 	batch, ts, err := b.EncodingStreamer.CreateBatch()
 	if err != nil {
 		return ts, err

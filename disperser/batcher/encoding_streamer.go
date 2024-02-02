@@ -329,6 +329,7 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 
 	// Get all encoded blobs
 	ts := uint64(time.Now().Nanosecond())
+	e.logger.Info("[CreateBatch] fetching new encoding results", "ts", ts)
 	encodedResults := e.EncodedBlobstore.GetNewEncodingResults(ts)
 
 	// Reset the notifier

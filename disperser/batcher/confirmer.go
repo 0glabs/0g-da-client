@@ -3,6 +3,7 @@ package batcher
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	eth_common "github.com/ethereum/go-ethereum/common"
@@ -19,12 +20,15 @@ import (
 )
 
 type Confirmer struct {
+	mu sync.RWMutex
+
 	Queue            disperser.BlobStore
 	EncodingStreamer *EncodingStreamer
 
 	Flow        *contract.FlowContract
 	ConfirmChan chan *BatchInfo
 
+	pendingBatches       []*BatchInfo
 	MaxNumRetriesPerBlob uint
 
 	logger  common.Logger
@@ -47,11 +51,12 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 	}
 
 	return &Confirmer{
-		Queue:       queue,
-		Flow:        flow,
-		ConfirmChan: make(chan *BatchInfo),
-		logger:      logger,
-		Metrics:     metrics,
+		Queue:          queue,
+		Flow:           flow,
+		ConfirmChan:    make(chan *BatchInfo),
+		pendingBatches: make([]*BatchInfo, 0),
+		logger:         logger,
+		Metrics:        metrics,
 	}, nil
 }
 
@@ -62,12 +67,51 @@ func (c *Confirmer) Start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case batchInfo := <-c.ConfirmChan:
-				if err := c.ConfirmBatch(ctx, batchInfo); err != nil {
-					c.logger.Error("failed to confirm batch", "err", err)
+				c.putPendingBatches(batchInfo)
+			}
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				batchInfo := c.getPendingBatch()
+				if batchInfo != nil {
+					if err := c.ConfirmBatch(ctx, batchInfo); err != nil {
+						c.logger.Error("[confirmer] failed to confirm batch", "err", err)
+					}
 				}
 			}
 		}
 	}()
+}
+
+func (c *Confirmer) putPendingBatches(info *BatchInfo) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.pendingBatches = append(c.pendingBatches, info)
+	c.logger.Info(`[confirmer] received pending batch`, "queue size", len(c.pendingBatches))
+}
+
+func (c *Confirmer) getPendingBatch() *BatchInfo {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if len(c.pendingBatches) == 0 {
+		c.logger.Info(`[confirmer] pending batch queue is empty`)
+		return nil
+	}
+	info := c.pendingBatches[0]
+	c.pendingBatches = c.pendingBatches[1:]
+	c.logger.Info(`[confirmer] retreived one pending batch`, "queue size", len(c.pendingBatches))
+	return info
 }
 
 func (c *Confirmer) handleFailure(ctx context.Context, blobMetadatas []*disperser.BlobMetadata, reason FailReason) error {

@@ -120,7 +120,10 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	}
 
 	// encoded blobs
-	encodedBlobsData := zg_core.NewDataInMemory(encoded)
+	encodedBlobsData, err := zg_core.NewDataInMemory(encoded)
+	if err != nil {
+		return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
+	}
 	tree, err := zg_core.MerkleTree(encodedBlobsData)
 	if err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "failed to get encoded data merkle tree")
@@ -159,7 +162,10 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	if err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to encode stream data")
 	}
-	kvData := zg_core.NewDataInMemory(rawKVData)
+	kvData, err := zg_core.NewDataInMemory(rawKVData)
+	if err != nil {
+		return eth_common.Hash{}, errors.WithMessage(err, "failed to build kv data")
+	}
 
 	// upload batchly
 	txHash, err := uploader.BatchUpload([]zg_core.IterableData{encodedBlobsData, kvData}, false, []transfer.UploadOption{
