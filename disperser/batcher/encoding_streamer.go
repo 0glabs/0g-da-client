@@ -329,7 +329,7 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 	e.EncodedSizeNotifier.active = true
 	e.EncodedSizeNotifier.mu.Unlock()
 
-	e.logger.Info("[CreateBatch] creating a batch...", "numBlobs", len(encodedResults), "refblockNumber", e.ReferenceBlockNumber)
+	e.logger.Info("[CreateBatch] creating a batch", "numBlobs", len(encodedResults), "refblockNumber", e.ReferenceBlockNumber)
 	if len(encodedResults) == 0 {
 		return nil, ts, errNoEncodedResults
 	}
