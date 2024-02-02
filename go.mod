@@ -25,7 +25,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
 	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0
-	github.com/zero-gravity-labs/zerog-storage-client v0.1.8
+	github.com/zero-gravity-labs/zerog-storage-client v0.1.9
 	go.uber.org/automaxprocs v1.5.2
 	go.uber.org/goleak v1.2.0
 	google.golang.org/grpc v1.59.0
@@ -97,6 +97,7 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -126,6 +127,8 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/spf13/cobra v1.5.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
