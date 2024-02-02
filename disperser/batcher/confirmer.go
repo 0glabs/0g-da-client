@@ -31,6 +31,8 @@ type Confirmer struct {
 	pendingBatches       []*BatchInfo
 	MaxNumRetriesPerBlob uint
 
+	routines uint
+
 	logger  common.Logger
 	Metrics *Metrics
 }
@@ -42,7 +44,7 @@ type BatchInfo struct {
 	proofs     []*merkletree.Proof
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
 	contractAddr := eth_common.HexToAddress(storageNodeConfig.FlowContractAddress)
 	flow, err := contract.NewFlowContract(contractAddr, client)
@@ -55,6 +57,7 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 		Flow:           flow,
 		ConfirmChan:    make(chan *BatchInfo),
 		pendingBatches: make([]*BatchInfo, 0),
+		routines:       routines,
 		logger:         logger,
 		Metrics:        metrics,
 	}, nil
@@ -72,24 +75,26 @@ func (c *Confirmer) Start(ctx context.Context) {
 		}
 	}()
 
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
+	for i := 0; i < int(c.routines); i++ {
+		go func() {
+			ticker := time.NewTicker(1 * time.Second)
+			defer ticker.Stop()
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				batchInfo := c.getPendingBatch()
-				if batchInfo != nil {
-					if err := c.ConfirmBatch(ctx, batchInfo); err != nil {
-						c.logger.Error("[confirmer] failed to confirm batch", "err", err)
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+					batchInfo := c.getPendingBatch()
+					if batchInfo != nil {
+						if err := c.ConfirmBatch(ctx, batchInfo); err != nil {
+							c.logger.Error("[confirmer] failed to confirm batch", "err", err)
+						}
 					}
 				}
 			}
-		}
-	}()
+		}()
+	}
 }
 
 func (c *Confirmer) putPendingBatches(info *BatchInfo) {
@@ -105,7 +110,6 @@ func (c *Confirmer) getPendingBatch() *BatchInfo {
 	defer c.mu.Unlock()
 
 	if len(c.pendingBatches) == 0 {
-		c.logger.Info(`[confirmer] pending batch queue is empty`)
 		return nil
 	}
 	info := c.pendingBatches[0]
@@ -189,12 +193,12 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 			ConfirmationTxnHash:     batch.TxHash,
 			ConfirmationBlockNumber: blockNumber,
 		}
-
+		c.logger.Trace("confirming blob", "blob key", metadata.GetBlobKey())
 		if _, updateConfirmationInfoErr = c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo); updateConfirmationInfoErr == nil {
 			c.Metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Confirmed)
 			// remove encoded blob from storage so we don't disperse it again
 			c.EncodingStreamer.RemoveEncodedBlob(metadata)
-			c.logger.Trace("blob confirmed", "blob_hash", metadata.BlobHash)
+			c.logger.Trace("blob confirmed", "blob key", metadata.GetBlobKey())
 		}
 		if updateConfirmationInfoErr != nil {
 			c.logger.Error("HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)

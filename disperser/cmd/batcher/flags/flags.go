@@ -117,6 +117,13 @@ var (
 		EnvVar:   common.PrefixEnvVar(envVarPrefix, "MAX_NUM_RETRIES_PER_BLOB"),
 		Value:    2,
 	}
+	NumConfirmer = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "num-confirmer"),
+		Usage:    "Number of confirmer go routines",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(envVarPrefix, "NUM_CONFIRMER"),
+		Value:    1,
+	}
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
 	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
 	// downloaded by light clients for DAS.

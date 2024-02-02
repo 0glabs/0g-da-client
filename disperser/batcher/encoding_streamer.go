@@ -152,6 +152,7 @@ func (e *EncodingStreamer) Start(ctx context.Context) error {
 func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan EncodingResultOrStatus) error {
 	stageTimer := time.Now()
 	// pull new blobs and send to encoder
+	e.logger.Info("[encodingstreamer] requesting processing blobs..")
 	metadatas, err := e.blobStore.GetBlobMetadataByStatus(ctx, disperser.Processing)
 	if err != nil {
 		return fmt.Errorf("error getting blob metadatas: %w", err)
@@ -171,10 +172,6 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	}
 
 	e.logger.Trace("[encodingstreamer] metadata in processing status", "numMetadata", len(metadatas))
-	if len(metadatas) == 0 {
-		e.logger.Info("no new metadatas to encode")
-		return nil
-	}
 
 	waitingQueueSize := e.Pool.WaitingQueueSize()
 	numMetadatastoProcess := e.EncodingQueueLimit - waitingQueueSize
@@ -279,7 +276,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 		}
 	})
 	e.EncodedBlobstore.PutEncodingRequest(blobKey)
-	e.logger.Trace("requested encoding for blob", "blob_hash", blobKey.BlobHash)
+	e.logger.Trace("requested encoding for blob", "blob key", blobKey)
 }
 
 func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result EncodingResultOrStatus) error {
@@ -293,7 +290,7 @@ func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result Encod
 		return fmt.Errorf("failed to putEncodedBlob: %w", err)
 	}
 
-	e.logger.Trace("blob encoded", "blob_hash", result.BlobMetadata.BlobHash)
+	e.logger.Trace("blob encoded", "blob key", result.BlobMetadata.GetBlobKey())
 
 	count, encodedSize := e.EncodedBlobstore.GetEncodedResultSize()
 	e.metrics.UpdateEncodedBlobs(count, encodedSize)

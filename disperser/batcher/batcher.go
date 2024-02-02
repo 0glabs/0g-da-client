@@ -51,6 +51,7 @@ type Config struct {
 	// BatchSizeMBLimit is the maximum size of a batch in MB
 	BatchSizeMBLimit     uint
 	MaxNumRetriesPerBlob uint
+	NumConfirmer         uint
 }
 
 type Batcher struct {
