@@ -117,11 +117,11 @@ var (
 		EnvVar:   common.PrefixEnvVar(envVarPrefix, "MAX_NUM_RETRIES_PER_BLOB"),
 		Value:    2,
 	}
-	NumConfirmer = cli.UintFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "num-confirmer"),
+	ConfirmerNumFlag = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "confirmer-num"),
 		Usage:    "Number of confirmer go routines",
 		Required: false,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "NUM_CONFIRMER"),
+		EnvVar:   common.PrefixEnvVar(envVarPrefix, "CONFIRMER_NUM"),
 		Value:    1,
 	}
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
@@ -155,6 +155,7 @@ var optionalFlags = []cli.Flag{
 	FinalizerIntervalFlag,
 	EncodingRequestQueueSizeFlag,
 	MaxNumRetriesPerBlobFlag,
+	ConfirmerNumFlag,
 	TargetNumChunksFlag,
 }
 

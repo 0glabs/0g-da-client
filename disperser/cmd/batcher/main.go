@@ -107,7 +107,7 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.NumConfirmer, logger, metrics)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, logger, metrics)
 	if err != nil {
 		return err
 	}

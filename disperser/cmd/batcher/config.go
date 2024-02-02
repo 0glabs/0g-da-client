@@ -43,7 +43,7 @@ func NewConfig(ctx *cli.Context) Config {
 			BatchSizeMBLimit:         ctx.GlobalUint(flags.BatchSizeLimitFlag.Name),
 			SRSOrder:                 ctx.GlobalInt(flags.SRSOrderFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(flags.MaxNumRetriesPerBlobFlag.Name),
-			NumConfirmer:             ctx.GlobalUint(flags.NumConfirmer.Name),
+			ConfirmerNum:             ctx.GlobalUint(flags.ConfirmerNumFlag.Name),
 		},
 		TimeoutConfig: batcher.TimeoutConfig{
 			EncodingTimeout:   ctx.GlobalDuration(flags.EncodingTimeoutFlag.Name),
