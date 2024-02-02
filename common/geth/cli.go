@@ -9,12 +9,14 @@ var (
 	rpcUrlFlagName           = "chain.rpc"
 	privateKeyFlagName       = "chain.private-key"
 	numConfirmationsFlagName = "chain.num-confirmations"
+	txGasLimitFlagName       = "chain.gas-limit"
 )
 
 type EthClientConfig struct {
 	RPCURL           string
 	PrivateKeyString string
 	NumConfirmations int
+	TxGasLimit       int
 }
 
 func EthClientFlags(envPrefix string) []cli.Flag {
@@ -38,6 +40,13 @@ func EthClientFlags(envPrefix string) []cli.Flag {
 			Value:    0,
 			EnvVar:   common.PrefixEnvVar(envPrefix, "NUM_CONFIRMATIONS"),
 		},
+		cli.IntFlag{
+			Name:     txGasLimitFlagName,
+			Usage:    "Gas limit for transaction",
+			Required: false,
+			Value:    0,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "TX_GAS_LIMIT"),
+		},
 	}
 }
 
@@ -46,6 +55,7 @@ func ReadEthClientConfig(ctx *cli.Context) EthClientConfig {
 	cfg.RPCURL = ctx.GlobalString(rpcUrlFlagName)
 	cfg.PrivateKeyString = ctx.GlobalString(privateKeyFlagName)
 	cfg.NumConfirmations = ctx.GlobalInt(numConfirmationsFlagName)
+	cfg.TxGasLimit = ctx.GlobalInt(txGasLimitFlagName)
 	return cfg
 }
 

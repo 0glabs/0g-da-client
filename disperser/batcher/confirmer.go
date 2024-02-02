@@ -52,6 +52,10 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 		return nil, fmt.Errorf("NewConfirmer: failed to create flow contract: %v", err)
 	}
 
+	if ethConfig.TxGasLimit > 0 {
+		blockchain.CustomGasLimit = uint64(ethConfig.TxGasLimit)
+	}
+
 	return &Confirmer{
 		Queue:          queue,
 		Flow:           flow,
@@ -175,7 +179,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 	}
 
 	batchID := txSeq
-	c.logger.Info("[confirmer] batch confirmed.", "batch ID", batchID)
+	c.logger.Info("[confirmer] batch confirmed.", "batch ID", batchID, "transaction hash", batch.TxHash)
 	// Mark the blobs as complete
 	c.logger.Trace("[confirmer] Marking blobs as complete...")
 	stageTimer := time.Now()
