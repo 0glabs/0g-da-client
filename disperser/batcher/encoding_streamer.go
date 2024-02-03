@@ -171,7 +171,7 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 		return nil
 	}
 
-	e.logger.Trace("[encodingstreamer] metadata in processing status", "numMetadata", len(metadatas))
+	e.logger.Info("[encodingstreamer] metadata in processing status", "numMetadata", len(metadatas))
 
 	waitingQueueSize := e.Pool.WaitingQueueSize()
 	numMetadatastoProcess := e.EncodingQueueLimit - waitingQueueSize
@@ -245,11 +245,6 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 	}
 
 	encodingCtx, cancel := context.WithTimeout(ctx, e.EncodingRequestTimeout)
-	/*
-		e.mu.Lock()
-		e.encodingCtxCancelFuncs = append(e.encodingCtxCancelFuncs, cancel)
-		e.mu.Unlock()
-	*/
 	e.Pool.Submit(func() {
 		defer cancel()
 		commits, chunks, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data, pending.EncodingParams)
@@ -309,19 +304,8 @@ func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result Encod
 // Otherwise, it returns an error and keeps the blobs in the encoded blob store.
 // This function is meant to be called periodically in a single goroutine as it resets the state of the encoded blob store.
 func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
-	// Cancel outstanding encoding requests
-	// Assumption: `CreateBatch` will be called at an interval longer than time it takes to encode a single blob
-	if len(e.encodingCtxCancelFuncs) > 0 {
-		e.logger.Info("[CreateBatch] canceling outstanding encoding requests", "count", len(e.encodingCtxCancelFuncs))
-		for _, cancel := range e.encodingCtxCancelFuncs {
-			cancel()
-		}
-		e.encodingCtxCancelFuncs = make([]context.CancelFunc, 0)
-	}
-
 	// Get all encoded blobs
 	ts := uint64(time.Now().Nanosecond())
-	e.logger.Info("[CreateBatch] fetching new encoding results", "ts", ts)
 	encodedResults := e.EncodedBlobstore.GetNewEncodingResults(ts)
 
 	// Reset the notifier
@@ -329,7 +313,6 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 	e.EncodedSizeNotifier.active = true
 	e.EncodedSizeNotifier.mu.Unlock()
 
-	e.logger.Info("[CreateBatch] creating a batch", "numBlobs", len(encodedResults), "refblockNumber", e.ReferenceBlockNumber)
 	if len(encodedResults) == 0 {
 		return nil, ts, errNoEncodedResults
 	}

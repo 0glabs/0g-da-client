@@ -197,12 +197,12 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	defer timer.ObserveDuration()
 
 	stageTimer := time.Now()
-	log.Trace("[batcher] Creating batch", "ts", stageTimer)
+	log.Info("[batcher] Creating batch", "ts", stageTimer)
 	batch, ts, err := b.EncodingStreamer.CreateBatch()
 	if err != nil {
 		return ts, err
 	}
-	log.Trace("[batcher] CreateBatch took", "duration", time.Since(stageTimer))
+	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.EncodedBlobs))
 
 	// Get the batch header hash
 	log.Trace("[batcher] Getting batch header hash...")
@@ -234,13 +234,13 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	}
 
 	// Dispatch encoded batch
-	log.Trace("[batcher] Dispatching encoded batch...")
+	log.Info("[batcher] Dispatching encoded batch...")
 	stageTimer = time.Now()
 	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, proofs)
 	if err != nil {
 		return ts, err
 	}
-	log.Trace("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
+	log.Info("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
 
 	b.confirmer.ConfirmChan <- &BatchInfo{
 		headerHash: headerHash,

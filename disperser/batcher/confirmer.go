@@ -187,7 +187,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 	batchID := txSeq
 	c.logger.Info("[confirmer] batch confirmed.", "batch ID", batchID, "transaction hash", batch.TxHash)
 	// Mark the blobs as complete
-	c.logger.Trace("[confirmer] Marking blobs as complete...")
+	c.logger.Info("[confirmer] Marking blobs as complete...")
 	stageTimer := time.Now()
 	blobsToRetry := make([]*disperser.BlobMetadata, 0)
 	var updateConfirmationInfoErr error
@@ -225,7 +225,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 		}
 	}
 
-	c.logger.Trace("[confirmer] Update confirmation info took", "duration", time.Since(stageTimer))
+	c.logger.Info("[confirmer] Update confirmation info took", "duration", time.Since(stageTimer))
 	c.Metrics.ObserveLatency("UpdateConfirmationInfo", float64(time.Since(stageTimer).Milliseconds()))
 	batchSize := int64(0)
 	for _, blobMeta := range batch.BlobMetadata {
