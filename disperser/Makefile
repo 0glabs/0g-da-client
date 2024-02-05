@@ -17,10 +17,14 @@ build_dataapi:
 
 run_batcher: build_batcher
 	./bin/batcher \
-	--batcher.pull-interval 10s \
+	--batcher.pull-interval 5s \
 	--chain.rpc ETH_RPC_ENDPOINT \
 	--chain.private-key YOUR_PRIVATE_KEY \
-	--batcher.finalizer-interval 20s \
+	--chain.receipt-wait-rounds 180 \
+	--chain.receipt-wait-interval 1s \
+	--chain.gas-limit 2000000 \
+	--batcher.finalizer-interval 300s \
+	--batcher.confirmer-num 3 \
 	--batcher.aws.region us-east-1 \
 	--batcher.aws.access-key-id localstack \
 	--batcher.aws.secret-access-key localstack \
@@ -28,7 +32,7 @@ run_batcher: build_batcher
 	--batcher.s3-bucket-name test-zgda-blobstore \
 	--batcher.dynamodb-table-name test-BlobMetadata \
 	--encoder-socket 0.0.0.0:34000 \
-	--batcher.batch-size-limit 10000 \
+	--batcher.batch-size-limit 50 \
 	--batcher.srs-order 300000 \
 	--encoding-timeout 10s \
 	--chain-read-timeout 12s \

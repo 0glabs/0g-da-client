@@ -88,6 +88,7 @@ func (e *Encoder) Encode(data []byte, params core.EncodingParams) (core.BlobComm
 	}
 
 	if e.Config.CacheEncodedBlobs {
+		cacheKey = hashBlob(data, params)
 		e.Cache.Add(cacheKey, encodedValue{
 			commitments: commitments,
 			chunks:      chunks,
