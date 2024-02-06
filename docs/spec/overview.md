@@ -5,13 +5,13 @@
 3. [Data Model](data-model.md)
 4. [Architecture](architecture.md)
 5. Flows
-   * [Dispersal](flows/dispersal.md)
+   * [Dispersal](broken-reference)
    * Retrieval
    * Payment
 6. Protocol Modules
    * [Attestation](protocol-modules/attestation/attestation.md)
    * [Storage](protocol-modules/storage/overview.md)
-   * [Retrieval](protocol-modules/retrieval/retrieval.md)
+   * [Retrieval](broken-reference)
    * Payment
 7. System Properties
    * [Throughput](broken-reference)
