@@ -24,15 +24,17 @@ type Config struct {
 	EthClientURL      string
 	PrivateKeyString  string
 	StorageNodeConfig storage_node.ClientConfig
+	UploadTaskSize    uint
 }
 
 type dispatcher struct {
 	*Config
 
-	Flow     *contract.FlowContract
-	Nodes    []*node.Client
-	KVNode   *kv.Client
-	StreamId eth_common.Hash
+	Flow           *contract.FlowContract
+	Nodes          []*node.Client
+	KVNode         *kv.Client
+	StreamId       eth_common.Hash
+	UploadTaskSize uint
 
 	logger common.Logger
 }
@@ -46,12 +48,13 @@ func NewDispatcher(cfg *Config, logger common.Logger) (*dispatcher, error) {
 	}
 
 	return &dispatcher{
-		Config:   cfg,
-		logger:   logger,
-		Flow:     flow,
-		Nodes:    node.MustNewClients(cfg.StorageNodeConfig.StorageNodeURLs),
-		KVNode:   kv.NewClient(node.MustNewClient(cfg.StorageNodeConfig.KVNodeURL), nil),
-		StreamId: cfg.StorageNodeConfig.KVStreamId,
+		Config:         cfg,
+		logger:         logger,
+		Flow:           flow,
+		Nodes:          node.MustNewClients(cfg.StorageNodeConfig.StorageNodeURLs),
+		KVNode:         kv.NewClient(node.MustNewClient(cfg.StorageNodeConfig.KVNodeURL), nil),
+		StreamId:       cfg.StorageNodeConfig.KVStreamId,
+		UploadTaskSize: cfg.StorageNodeConfig.UploadTaskSize,
 	}, nil
 }
 
@@ -169,12 +172,14 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 			Tags:     hexutil.MustDecode("0x"),
 			Force:    true,
 			Disperse: true,
+			TaskSize: c.UploadTaskSize,
 		},
 		// kv options
 		{
 			Tags:     batcher.BuildTags(),
 			Force:    true,
 			Disperse: false,
+			TaskSize: c.UploadTaskSize,
 		}})
 	if err != nil {
 		return eth_common.Hash{}, fmt.Errorf("Failed to upload file: %v", err)

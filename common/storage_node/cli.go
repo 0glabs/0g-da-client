@@ -11,6 +11,7 @@ var (
 	KVNodeURLFlagName           = "storage.kv-url"
 	KVStreamIDFlagName          = "storage.kv-stream-id"
 	FlowContractAddressFlagName = "storage.flow-contract"
+	UploadTaskSizeFlagName      = "storage.upload-task-size"
 )
 
 type ClientConfig struct {
@@ -18,6 +19,7 @@ type ClientConfig struct {
 	FlowContractAddress string
 	KVNodeURL           string
 	KVStreamId          eth_common.Hash
+	UploadTaskSize      uint
 }
 
 func ClientFlags(envPrefix string, flagPrefix string) []cli.Flag {
@@ -46,6 +48,13 @@ func ClientFlags(envPrefix string, flagPrefix string) []cli.Flag {
 			Required: true,
 			EnvVar:   common.PrefixEnvVar(envPrefix, "KV_NODE_URL"),
 		},
+		cli.UintFlag{
+			Name:     common.PrefixFlag(flagPrefix, UploadTaskSizeFlagName),
+			Usage:    "number of segments in single upload rpc request",
+			Required: false,
+			Value:    10,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "UPLOAD_TASK_SIZE"),
+		},
 	}
 }
 
@@ -56,5 +65,6 @@ func ReadClientConfig(ctx *cli.Context, flagPrefix string) ClientConfig {
 		FlowContractAddress: ctx.GlobalString(common.PrefixFlag(flagPrefix, FlowContractAddressFlagName)),
 		KVNodeURL:           ctx.GlobalString(common.PrefixFlag(flagPrefix, KVNodeURLFlagName)),
 		KVStreamId:          streamId,
+		UploadTaskSize:      ctx.GlobalUint(common.PrefixFlag(flagPrefix, UploadTaskSizeFlagName)),
 	}
 }
