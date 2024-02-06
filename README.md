@@ -8,7 +8,7 @@ To dive deep into the technical details, continue reading [ZeroGDA protocol spec
 
 ## API Documentation
 
-The ZeroGDA public API is documented [here](api/docs/).
+The ZeroGDA public API is documented [here](docs/docs/).
 
 ## Prerequisites
 
