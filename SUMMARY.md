@@ -8,8 +8,6 @@
     * [Data Model](docs/spec/data-model.md)
     * [Definitions](docs/spec/definitions.md)
     * [Introduction](docs/spec/introduction.md)
-    * [ZGDA Throughput Characteristics](docs/spec/throughput.md)
-    * [Upgrading](docs/spec/upgrading.md)
     * [components](docs/spec/components/README.md)
       * [Indexer](docs/spec/components/indexer.md)
       * [Blob Encoding Constraints](docs/spec/components/node-encoding.md)
