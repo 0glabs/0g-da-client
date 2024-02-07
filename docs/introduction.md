@@ -1,29 +1,26 @@
 # Introduction
 
-The ZGDA system is a scalable Data Availability (DA) service that is secured by Ethereum stakers via EigenLayer. In informal terms, DA is a guarantee that a given piece of data is available to anyone who wishes to retrieve it. ZGDA is focused on providing DA with both high security and throughput.
+The ZeroGDA (ZGDA) system is a scalable Data Availability (DA) service which interacts with [ZeroG Storage Node](https://github.com/zero-gravity-labs/zerog-storage-rust) to store and retrieve data. In informal terms, DA is a guarantee that a given piece of data is available to anyone who wishes to retrieve it. ZGDA is focused on providing DA with both high security and throughput.
 
 At a high level, a DA system is one which accepts blobs of data via some interface and then makes them available to retrievers through another interface.
 
-Two important aspects of a DA system are
+Two important aspects of a DA system are:
 
 1. Security: The security of a DA system constitutes the set of conditions which are sufficient to ensure that all data blobs certified by the system as available are indeed available for honest retrievers to download.
 2. Throughput: The throughput of a DA system is the rate at which the system is able to accept blobs of data, typically measured in bytes/second.
-
-## EigenLayer Quorums
-
-Most baseline ZGDA security guarantees are derived under a Byzantine model which stipulates that a maximum percentage of validators will behave adversarially at any given moment in time. As an EigenLayer AVS, ZGDA makes use of the validator set represented by validators who have restaked Ether or other staking assets via the EigenLayer platform. Consequently, all constraints on adversarial behavior per the Byzantine modeling approach take the form of a maximum amount of stake which can be held by adversarial agents.
-
-An important aspect of restaking on EigenLayer is the notion of a quorum. EigenLayer supports restaking of various types of assets, from natively staked Ether and Liquid Staking Tokens (LSTs) to the wrapped assets of other protocols such as Ethereum rollups. Since these different categories of assets can have arbitrary and variable exchange rates, EigenLayer supports the quorum as a means for the users of protocols such as ZGDA to specify the nominal level of security that each staking token is taken to provide. In practice, a quorum is a vector specifying the relative weight of each staking strategy supported by EigenLayer.
-
-\[TODO: Reference EigenLayer SDK quorum documentation]
 
 ## Essential Properties of ZGDA
 
 ### ZGDA Security
 
-When an end user posts a blob of data to ZGDA, they can specify a list of [security parameters](data-model.md#quorum-information), each of which consists of a `QuorumID` identifying a particular quorum registered with ZGDA and an `AdversaryThreshold` which specifies the Byzantine adversarial tolerance that the user expects the blobs availability to respect.
+The security of ZGDA is guaranteed at retrieval phase. When an end user posts a blob of data to ZGDA, the disperser determines which place to store the data and does two things:
 
-For such a blob accepted by the system (See [Dispersal Flow](broken-reference)), ZGDA delivers the following security guarantee: Unless more than an `AdversaryThreshold` of stakers acts adversarially in every quorum associated with the blob, the blob will be available to any honest retriever. How this guarantee is supported is discussed further in [The Modules of Data Availability](overview-1/)
+1. Directly store the data into the pre-configured s3 bucket.
+2. Send the blob request into a queue for the batcher to batch multiple blobs together and send out to ZeroG Storage Node for DA. The batcher will also append the KZG commitment to the batch for later verification use.
+
+When an end user wants to retrieve a blob of data from ZGDA, he can directly call the disperser to download the blob from the s3 provided that he trusts the disperser. Otherwise, he can start his own retriever service, and retrieve the blob from ZeroG Storage Node. Here comes with the security guarantee. The retriever service will verify the KZG commitments to check the authentication of the data and send the authenticated data back to the user.
+
+In this way, ZGDA provides not only security guarantee to the data but also efficiency for the user to quickly retrieve the data from the disperser.
 
 ### ZGDA Throughput
 

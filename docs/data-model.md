@@ -1,13 +1,11 @@
 # Data Model
 
-### Quorum Information
+### Security Parameter
 
 ```go
-// QuorumID is a unique identifier for a quorum; initially ZGDA will support up to 256 quorums
-type QuorumID = uint8
-
-// SecurityParam contains the quorum ID and the adversary threshold for the quorum;
+// SecurityParam contains the adversary threshold for the quorum;
 type SecurityParam struct {
+	// DEPRECATED
 	QuorumID QuorumID
 	// AdversaryThreshold is the maximum amount of stake that can be controlled by an adversary in the quorum as a percentage of the total stake in the quorum
 	AdversaryThreshold uint8
