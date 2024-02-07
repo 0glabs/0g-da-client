@@ -365,6 +365,15 @@ func (h *KVBlobInfo) Deserialize(data []byte) (*KVBlobInfo, error) {
 	return h, err
 }
 
+func (h *KVBatchInfo) Serialize() ([]byte, error) {
+	return encode(h)
+}
+
+func (h *KVBatchInfo) Deserialize(data []byte) (*KVBatchInfo, error) {
+	err := decode(data, h)
+	return h, err
+}
+
 func encode(obj any) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)

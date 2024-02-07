@@ -22,7 +22,8 @@ type RetrievalClient interface {
 		batchDataRoot eth_common.Hash,
 		blobIndex uint32,
 		referenceBlockNumber uint,
-		batchRoot [32]byte) ([]byte, error)
+		batchRoot [32]byte,
+		blobLengths []uint) ([]byte, error)
 }
 
 type retrievalClient struct {
@@ -74,54 +75,8 @@ func (r *retrievalClient) fetchBlobInfo(batchHeaderHash [32]byte, blobIndex uint
 	return blobInfo, nil
 }
 
-func (r *retrievalClient) fetchProofAndValidate(
-	dataRoot eth_common.Hash,
-	encodingParams core.EncodingParams,
-	blobHeader *core.BlobHeader,
-	index core.ChunkNumber,
-	proofOffset uint,
-	coeffs []core.Symbol,
-) (*core.Chunk, error) {
-	clientIndex := proofOffset / core.SegmentSize % uint(len(r.Nodes))
-	for j := 0; j < len(r.Nodes); j++ {
-		data, err := r.Nodes[clientIndex].ZeroGStorage().DownloadSegment(
-			dataRoot,
-			uint64(proofOffset/core.EntrySize),
-			uint64((proofOffset+core.ProofSize+core.EntrySize-1)/core.EntrySize),
-		)
-		if err != nil {
-			r.logger.Info("Download segment error", "dataRoot", dataRoot, "clientIndex", clientIndex)
-		}
-		entryOffset := proofOffset % core.EntrySize
-		if uint(len(data)) >= entryOffset+core.ProofSize {
-			// read proof
-			var proof [64]byte
-			copy(proof[:], data[entryOffset:entryOffset+core.ProofSize])
-			// generate chunk
-			chunk := &core.Chunk{
-				Coeffs: coeffs,
-				Proof:  core.BytesToProof(proof),
-			}
-			err = r.encoder.VerifyChunks([]*core.Chunk{chunk}, []core.ChunkNumber{index}, blobHeader.BlobCommitments, encodingParams)
-			if err != nil {
-				r.logger.Error("failed to verify chunk", "chunk index", index, "err", err)
-			} else {
-				// verified
-				r.logger.Info("verified chunk", "chunk index", index)
-				return chunk, nil
-			}
-		}
-		clientIndex = (clientIndex + 1) % uint(len(r.Nodes))
-	}
-	return nil, errors.New("chunk verification failed")
-}
-
-func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInfo *core.KVBlobInfo, encodingParams core.EncodingParams) ([]*core.Chunk, []core.ChunkNumber, error) {
+func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInfo *core.KVBlobInfo, encodingParams core.EncodingParams, location *core.BlobLocation) ([]*core.Chunk, []core.ChunkNumber, error) {
 	coeffLength := encodingParams.ChunkLength * core.CoeffSize
-
-	chunkOffset := blobInfo.ChunkOffset
-	proofOffset := blobInfo.ProofOffset
-	r.logger.Debug("offsets", "chunkOffset", chunkOffset, "proofOffset", proofOffset)
 
 	requiredNum := (encodingParams.NumChunks + 1) / 2
 	chunks := make([]*core.Chunk, 0)
@@ -129,31 +84,40 @@ func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInf
 
 	for i := uint(0); i < encodingParams.NumChunks; i++ {
 		// fetch i-th chunk coeffs
-		clientIndex := chunkOffset / core.SegmentSize % uint(len(r.Nodes))
+		offset := location.SegmentIndexes[i]*core.SegmentSize + location.Offsets[i]
+		clientIndex := location.SegmentIndexes[i] % uint(len(r.Nodes))
 		for j := 0; j < len(r.Nodes); j++ {
 			data, err := r.Nodes[clientIndex].ZeroGStorage().DownloadSegment(
 				dataRoot,
-				uint64(chunkOffset/core.EntrySize),
-				uint64((chunkOffset+coeffLength+core.EntrySize-1)/core.EntrySize),
+				uint64(offset/core.EntrySize),
+				uint64((offset+coeffLength+core.ProofSize+core.EntrySize-1)/core.EntrySize),
 			)
 			if err != nil {
 				r.logger.Debug("Download chunk error", "chunk_index", i, "dataRoot", dataRoot, "clientIndex", clientIndex)
 				clientIndex = (clientIndex + 1) % uint(len(r.Nodes))
 				continue
 			}
-			entryOffset := chunkOffset % core.EntrySize
-			if len(data) >= int(entryOffset+coeffLength) {
+			entryOffset := offset % core.EntrySize
+			if len(data) >= int(entryOffset+coeffLength+core.ProofSize) {
 				// read coeffs
-				coeffs := data[entryOffset : entryOffset+coeffLength]
-				// fetch proof
-				chunk, err := r.fetchProofAndValidate(dataRoot, encodingParams, blobInfo.BlobHeader, i, proofOffset, core.BytesToCoeffs(coeffs))
-				if chunk != nil {
+				coeffs := core.BytesToCoeffs(data[entryOffset : entryOffset+coeffLength])
+				// read proof
+				var proof [64]byte
+				copy(proof[:], data[entryOffset+coeffLength:entryOffset+coeffLength+core.ProofSize])
+				// generate chunk
+				chunk := &core.Chunk{
+					Coeffs: coeffs,
+					Proof:  core.BytesToProof(proof),
+				}
+				err = r.encoder.VerifyChunks([]*core.Chunk{chunk}, []core.ChunkNumber{i}, blobInfo.BlobHeader.BlobCommitments, encodingParams)
+				if err != nil {
+					r.logger.Debug("Validate chunk failed", "chunk_index", i, "clientIndex", clientIndex, "error", err)
+				} else {
 					// verified successfully
+					r.logger.Info("verified chunk", "chunk index", i)
 					chunks = append(chunks, chunk)
 					indices = append(indices, i)
 					break
-				} else {
-					r.logger.Debug("Validate chunk failed", "chunk_index", i, "clientIndex", clientIndex, "error", err)
 				}
 			}
 			clientIndex = (clientIndex + 1) % uint(len(r.Nodes))
@@ -162,9 +126,6 @@ func (r *retrievalClient) fetchChunksWithProof(dataRoot eth_common.Hash, blobInf
 		if len(chunks) >= int(requiredNum) {
 			return chunks, indices, nil
 		}
-		// move forward
-		chunkOffset += coeffLength
-		proofOffset += core.ProofSize
 	}
 	return nil, nil, errors.New("failed to download enough verified chunks")
 }
@@ -175,7 +136,8 @@ func (r *retrievalClient) RetrieveBlob(
 	batchDataRoot eth_common.Hash,
 	blobIndex uint32,
 	referenceBlockNumber uint,
-	batchRoot [32]byte) ([]byte, error) {
+	batchRoot [32]byte,
+	blobLengths []uint) ([]byte, error) {
 
 	// Get blob header from any operator
 	blobInfo, err := r.fetchBlobInfo(batchHeaderHash, blobIndex)
@@ -216,8 +178,21 @@ func (r *retrievalClient) RetrieveBlob(
 
 	r.logger.Debugf("encoding params: %v\n", encodingParams)
 
+	// blob locations
+	blobLocations := make([]*core.BlobLocation, len(blobLengths))
+	for i, l := range blobLengths {
+		chunkLength, chunkNum := core.SplitToChunks(l)
+		blobLocations[i] = &core.BlobLocation{
+			ChunkLength:    chunkLength,
+			ChunkNum:       chunkNum,
+			SegmentIndexes: make([]uint, chunkNum),
+			Offsets:        make([]uint, chunkNum),
+		}
+	}
+	core.AllocateChunks(blobLocations)
+
 	// Fetch chunks from all zgs nodes
-	chunks, indices, err := r.fetchChunksWithProof(batchDataRoot, blobInfo, encodingParams)
+	chunks, indices, err := r.fetchChunksWithProof(batchDataRoot, blobInfo, encodingParams, blobLocations[blobIndex])
 	if err != nil {
 		return nil, err
 	}

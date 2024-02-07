@@ -914,6 +914,8 @@ github.com/zero-gravity-labs/zerog-storage-client v0.1.10 h1:iIa6kqkBVPIoyjaPYxI
 github.com/zero-gravity-labs/zerog-storage-client v0.1.10/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
 github.com/zero-gravity-labs/zerog-storage-client v0.1.11 h1:oxHBlbL55uO8v8G4SjgYbdXLVW1WEU1j2VUTqavQWoo=
 github.com/zero-gravity-labs/zerog-storage-client v0.1.11/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
+github.com/zero-gravity-labs/zerog-storage-client v0.1.12 h1:jIHUfhAw3KREyqMuksJ/2K9pLl/9uN9c317mJuHadKY=
+github.com/zero-gravity-labs/zerog-storage-client v0.1.12/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

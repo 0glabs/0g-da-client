@@ -13,7 +13,7 @@ const (
 	SegmentSize     = EntrySize * EntryPerSegment // 256KB
 	CoeffSize       = 32                          // 32B
 	ProofSize       = 64                          // 64B
-	MaxChunkLength  = SegmentSize / CoeffSize     // 8192
+	TargetChunkNum  = 32
 )
 
 // Commitments
@@ -63,10 +63,11 @@ func GetBlobLength(blobSize uint) uint {
 	return (blobSize + symSize - 1) / symSize
 }
 
+// SplitToChunks calculate chunk length and chunk nums for encoded blob, try to split it into TargetChunkNum chunks
 func SplitToChunks(blobLength uint) (uint, uint) {
-	nextPow2 := uint(encoder.NextPowerOf2(uint64(blobLength)))
-	chunkLength := min(MaxChunkLength, nextPow2*2)
-	chunkNum := (nextPow2*2 + MaxChunkLength - 1) / MaxChunkLength
+	expectedLength := uint(encoder.NextPowerOf2(uint64(blobLength * 2)))
+	chunkLength := (expectedLength-1)/TargetChunkNum + 1
+	chunkNum := (expectedLength-1)/chunkLength + 1
 	return chunkLength, chunkNum
 }
 

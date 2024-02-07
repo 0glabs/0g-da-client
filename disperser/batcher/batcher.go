@@ -23,12 +23,6 @@ const (
 	indexerWarmupDelay = 2 * time.Second
 )
 
-type BatchPlan struct {
-	IncludedBlobs []*disperser.BlobMetadata
-	Quorums       map[core.QuorumID]QuorumInfo
-	State         *core.IndexedOperatorState
-}
-
 type QuorumInfo struct {
 	Assignments        map[core.OperatorID]core.Assignment
 	Info               core.AssignmentInfo

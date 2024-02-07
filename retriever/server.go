@@ -48,16 +48,16 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) fetchBatchHeader(batchHeaderHash []byte) (*core.BatchHeader, error) {
+func (s *Server) fetchBatchInfo(batchHeaderHash []byte) (*core.KVBatchInfo, error) {
 	val, err := s.KVNode.GetValue(s.StreamId, batchHeaderHash)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to get batch header from kv node")
 	}
-	batchHeader, err := new(core.BatchHeader).Deserialize(val.Data)
+	batchInfo, err := new(core.KVBatchInfo).Deserialize(val.Data)
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to deserialize batch header")
 	}
-	return batchHeader, nil
+	return batchInfo, nil
 }
 
 func (s *Server) RetrieveBlob(ctx context.Context, req *pb.BlobRequest) (*pb.BlobReply, error) {
@@ -69,19 +69,20 @@ func (s *Server) RetrieveBlob(ctx context.Context, req *pb.BlobRequest) (*pb.Blo
 	var batchHeaderHash [32]byte
 	copy(batchHeaderHash[:], req.GetBatchHeaderHash())
 
-	batchHeader, err := s.fetchBatchHeader(req.GetBatchHeaderHash())
+	batchInfo, err := s.fetchBatchInfo(req.GetBatchHeaderHash())
 	if err != nil {
 		return nil, err
 	}
-	s.logger.Debugf("server fetched batch header: %v", *batchHeader)
+	s.logger.Debugf("server fetched batch header: %v", *batchInfo.BatchHeader)
 
 	data, err := s.retrievalClient.RetrieveBlob(
 		ctx,
 		batchHeaderHash,
-		batchHeader.DataRoot,
+		batchInfo.BatchHeader.DataRoot,
 		req.GetBlobIndex(),
-		uint(batchHeader.ReferenceBlockNumber),
-		batchHeader.BatchRoot,
+		uint(batchInfo.BatchHeader.ReferenceBlockNumber),
+		batchInfo.BatchHeader.BatchRoot,
+		batchInfo.BlobLengths,
 	)
 	if err != nil {
 		return nil, err

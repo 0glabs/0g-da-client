@@ -60,46 +60,29 @@ func NewDispatcher(cfg *Config, logger common.Logger) (*dispatcher, error) {
 
 var _ disperser.Dispatcher = (*dispatcher)(nil)
 
-func DumpEncodedBlobs(blobs []*core.EncodedBlob) ([]byte, []uint, []uint, error) {
-	res := make([]byte, 0)
-	chunkOffsets := make([]uint, 0)
-	offset := 0
-	for _, blob := range blobs {
-		empty := core.SegmentSize - offset%core.SegmentSize
-		// check padding, we can just do this check before looping over chunks
-		if empty < core.SegmentSize {
-			if len(blob.Bundles[0].Coeffs)*core.CoeffSize > empty {
-				offset += empty
-				zeros := make([]byte, empty)
-				res = append(res, zeros...)
-			}
-		}
-		chunkOffsets = append(chunkOffsets, uint(offset))
-		for _, chunk := range blob.Bundles {
-			bytes := chunk.CoeffsToBytes()
-			res = append(res, bytes...)
-			offset += len(bytes)
+func DumpEncodedBlobs(blobs []*core.EncodedBlob) ([]byte, error) {
+	blobLocations := make([]*core.BlobLocation, len(blobs))
+	for i, blob := range blobs {
+		chunkLength, chunkNum := core.SplitToChunks(blob.BlobHeader.Length)
+		blobLocations[i] = &core.BlobLocation{
+			ChunkLength:    chunkLength,
+			ChunkNum:       chunkNum,
+			SegmentIndexes: make([]uint, chunkNum),
+			Offsets:        make([]uint, chunkNum),
 		}
 	}
-	proofOffsets := make([]uint, 0)
-	empty := core.SegmentSize - offset%core.SegmentSize
-	for _, blob := range blobs {
-		proofOffsets = append(proofOffsets, uint(offset))
-		for _, chunk := range blob.Bundles {
-			// check padding
-			if core.ProofSize > empty && empty > 0 {
-				offset += empty
-				zeros := make([]byte, empty)
-				res = append(res, zeros...)
-			}
-			empty = (empty + core.SegmentSize - core.CoeffSize) % core.SegmentSize
-			// insert proof
-			bytes := chunk.ProofToBytes()
-			res = append(res, bytes[:]...)
-			offset += len(bytes)
+	segmentNum := core.AllocateChunks(blobLocations)
+	res := make([]byte, segmentNum*core.SegmentSize)
+	for i, location := range blobLocations {
+		for j := range location.SegmentIndexes {
+			offset := location.SegmentIndexes[j]*core.SegmentSize + location.Offsets[j]
+			coeffs := blobs[i].Bundles[j].CoeffsToBytes()
+			proof := blobs[i].Bundles[j].ProofToBytes()
+			copy(res[offset:], coeffs)
+			copy(res[offset+uint(len(coeffs)):], proof[:])
 		}
 	}
-	return res, chunkOffsets, proofOffsets, nil
+	return res, nil
 }
 
 func GetSegRoot(path string) (eth_common.Hash, error) {
@@ -117,7 +100,7 @@ func GetSegRoot(path string) (eth_common.Hash, error) {
 
 func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobs []*core.EncodedBlob, proofs []*merkletree.Proof) (eth_common.Hash, error) {
 	uploader := transfer.NewUploader(c.Flow, c.Nodes)
-	encoded, chunkOffsets, proofOffsets, err := DumpEncodedBlobs(blobs)
+	encoded, err := DumpEncodedBlobs(blobs)
 	if err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "NewClient: cannot get chainId: %w")
 	}
@@ -129,12 +112,22 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	}
 
 	// kv
+	// batcher info
 	batcher := c.KVNode.Batcher()
-	serializedBatchHeader, err := batchHeader.Serialize()
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize batch header")
+	blobLengths := make([]uint, len(blobs))
+	for i, blob := range blobs {
+		blobLengths[i] = blob.BlobHeader.Length
 	}
-	batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchHeader)
+	kvBatchInfo := core.KVBatchInfo{
+		BatchHeader: batchHeader,
+		BlobLengths: blobLengths,
+	}
+	serializedBatchInfo, err := kvBatchInfo.Serialize()
+	if err != nil {
+		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize batch info")
+	}
+	batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchInfo)
+	// blob info
 	for blobIndex := range blobs {
 		key := (&core.KVBlobInfoKey{
 			BatchHeaderHash: batchHeaderHash,
@@ -144,8 +137,6 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		value, err := (&core.KVBlobInfo{
 			BlobHeader:  blobs[blobIndex].BlobHeader,
 			MerkleProof: proofs[blobIndex],
-			ChunkOffset: chunkOffsets[blobIndex],
-			ProofOffset: proofOffsets[blobIndex],
 		}).Serialize()
 		if err != nil {
 			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize blob info")

@@ -210,6 +210,18 @@ type KVBlobInfoKey struct {
 type KVBlobInfo struct {
 	BlobHeader  *BlobHeader
 	MerkleProof *merkletree.Proof // to prove blob exists in batch
-	ChunkOffset uint              // start index of first chunk in batch data
-	ProofOffset uint              // start index of first proof in batch data
+}
+
+// KVBatchInfo to write to KV stream, blob lengths are used to recompute the chunks allocations
+type KVBatchInfo struct {
+	*BatchHeader
+	BlobLengths []uint
+}
+
+// BlobLocation the segment index and offset of chunks in encoded blob
+type BlobLocation struct {
+	ChunkLength    uint
+	ChunkNum       uint
+	SegmentIndexes []uint
+	Offsets        []uint
 }
