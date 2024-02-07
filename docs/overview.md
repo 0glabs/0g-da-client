@@ -12,6 +12,4 @@
    * [Attestation](protocol-modules/attestation/attestation.md)
    * [Storage](protocol-modules/storage/overview.md)
    * [Retrieval](broken-reference)
-   * Payment
-7. System Properties
-   * [Throughput](broken-reference)
+7.

@@ -12,6 +12,3 @@
 
 **Retriever**. The Retriever is an off-chain component which implements a protocol for receiving data blobs from the set of DA nodes.
 
-## Staking Concepts
-
-**Quorum**

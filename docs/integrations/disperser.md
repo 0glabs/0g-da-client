@@ -37,7 +37,7 @@ func BlobStoreRequestsToPoly(blobStoreRequests []BlobStoreRequest) ([]fr.Element
 }
 ```
 
-The disperser returns to each requester the KZG commitment to the `overallPoly` that their data was included in, its start and end degrees, and the corresponding [DataStoreHeader](../spec/types/node-types.md#datastoreheader) that the blob was included in.
+The disperser returns to each requester the KZG commitment to the `overallPoly` that their data was included in, its start and end degrees, and the corresponding [DataStoreHeader](../spec/spec/types/node-types.md#datastoreheader) that the blob was included in.
 
 ### Encoding
 

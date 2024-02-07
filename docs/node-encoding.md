@@ -2,7 +2,7 @@
 
 The DA nodes expect for blobs to correspond to evaluations of a polynomial of a certain degree. The blob payload delivered to the node contains a KZG polynomial commitment identifying the polynomial, as well as a separate commitment allowing the node to verify its degree. The payload also contains KZG reveal proofs allowing the node to verify that its received data corresponds to evaluations of the polynomial at a specific evaluation index. This document describes in detail how the node performs all verifications, including calculating the evaluation indices.
 
-Based on the `referenceBlockNumber` contained in the [`DataStoreHeader`](components/types/node-types.md#datastoreheader) structure, the DA node construct a [`StateView`](components/types/node-types.md#stateview) object using the [Indexer](broken-reference) service.
+Based on the `referenceBlockNumber` contained in the [`DataStoreHeader`](spec/components/types/node-types.md#datastoreheader) structure, the DA node construct a [`StateView`](spec/components/types/node-types.md#stateview) object using the [Indexer](broken-reference) service.
 
 The operator node will then perform the following checks for each quorum they are a part of to ensure that the `StoreChunksRequest` is valid:
 

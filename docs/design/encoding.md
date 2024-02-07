@@ -1,4 +1,4 @@
-# KZG FFT Encoder Backend
+# KZG Encoder Backend
 
 It is important that the encoding and commitment tasks are able to be performed in seconds and that the dominating complexity of the computation is nearly linear in the degree of the polynomial. This is done using algorithms based on the Fast Fourier Transform (FFT).
 
@@ -8,7 +8,7 @@ We will also highlight the additional constraints on the Encoding interface whic
 
 ## Deriving the polynomial coefficients and commitment
 
-As described in the [Encoding Module Specification](../spec/protocol-modules/storage/encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum\_{i=0}^{m-1} c\_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c\_i)\_{i=0}^{m-1}$.
+As described in the [Encoding Module Specification](../protocol-modules/storage/encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum\_{i=0}^{m-1} c\_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c\_i)\_{i=0}^{m-1}$.
 
 In the case of the KZG-FFT encoder, the polynomial lives on the field associated with the BN-254 elliptic curve, which as order \[TODO: fill in order].
 
