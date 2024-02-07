@@ -512,7 +512,6 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/imdario/mergo v0.3.12 h1:b6R2BslTbIEToALKP7LxUvijTsNI9TAe80pLWN2g/HU=
 github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imkira/go-interpol v1.1.0/go.mod h1:z0h2/2T3XF8kyEPpRgJ3kmNv+C43p+I/CoI+jC3w2iA=
-github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/influxdata/flux v0.65.1/go.mod h1:J754/zds0vvpfwuq7Gc2wRdVwEodfpCFM7mYlOw2LqY=
 github.com/influxdata/influxdb v1.8.3/go.mod h1:JugdFhsvvI8gadxOI6noqNeeBHvWNTbfYGtiAn+2jhI=
@@ -803,12 +802,8 @@ github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B
 github.com/spf13/cast v1.3.0/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cobra v0.0.3/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
 github.com/spf13/cobra v0.0.5/go.mod h1:3K3wKZymM7VvHMDS9+Akkh4K60UwM26emMESw8tLCHU=
-github.com/spf13/cobra v1.5.0 h1:X+jTBEBqF0bHN+9cSMgmfuvv2VHJ9ezmFNf9Y/XstYU=
-github.com/spf13/cobra v1.5.0/go.mod h1:dWXEIy2H428czQCjInthrTRUg7yKbok+2Qi/yBIJoUM=
 github.com/spf13/jwalterweatherman v1.0.0/go.mod h1:cQK4TGJAtQXfYWX+Ddv3mKDzgVb68N+wFjFa4jdeBTo=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
-github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
-github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/spf13/viper v1.3.2/go.mod h1:ZiWeW+zYFKm7srdB9IoDzzZXaJaI5eL9QjNiN/DMA2s=
 github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4/go.mod h1:RZLeN1LMWmRsyYjvAu+I6Dm9QmlDaIIt+Y+4Kd7Tp+Q=
 github.com/status-im/keycard-go v0.2.0 h1:QDLFswOQu1r5jsycloeQh3bVU8n/NatHHaZobtDnDzA=
@@ -906,14 +901,6 @@ github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.8 h1:ceUxq7alFqUsaPIuk9/RxzjfMh+q5AZNaf1LhqGeAMk=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.8/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.9 h1:Ns/iQXEfDJWyU0L8e13RPt1xdYJwVYWLwYIqNRDG2Cs=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.9/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.10 h1:iIa6kqkBVPIoyjaPYxId4qs1yL9lxM8x1nwOJb2d1xM=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.10/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.11 h1:oxHBlbL55uO8v8G4SjgYbdXLVW1WEU1j2VUTqavQWoo=
-github.com/zero-gravity-labs/zerog-storage-client v0.1.11/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
 github.com/zero-gravity-labs/zerog-storage-client v0.1.12 h1:jIHUfhAw3KREyqMuksJ/2K9pLl/9uN9c317mJuHadKY=
 github.com/zero-gravity-labs/zerog-storage-client v0.1.12/go.mod h1:X0u50IkiCmB9hchf8mEiIWyk6bLlo0d2xAxrPPK8IZ4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=

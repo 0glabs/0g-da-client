@@ -111,6 +111,13 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
 	}
 
+	// calculate data root
+	tree, err := zg_core.MerkleTree(encodedBlobsData)
+	if err != nil {
+		return eth_common.Hash{}, errors.WithMessage(err, "failed to get encoded data merkle tree")
+	}
+	batchHeader.DataRoot = tree.Root()
+
 	// kv
 	// batcher info
 	batcher := c.KVNode.Batcher()

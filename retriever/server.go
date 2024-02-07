@@ -2,6 +2,7 @@ package retriever
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	eth_common "github.com/ethereum/go-ethereum/common"
@@ -73,7 +74,7 @@ func (s *Server) RetrieveBlob(ctx context.Context, req *pb.BlobRequest) (*pb.Blo
 	if err != nil {
 		return nil, err
 	}
-	s.logger.Debugf("server fetched batch header: %v", *batchInfo.BatchHeader)
+	s.logger.Debugf("server fetched batch header, batch root: %v, data root: %v", hex.EncodeToString(batchInfo.BatchHeader.BatchRoot[:]), batchInfo.DataRoot)
 
 	data, err := s.retrievalClient.RetrieveBlob(
 		ctx,
