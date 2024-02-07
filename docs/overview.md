@@ -3,7 +3,7 @@
 1. [Introduction](introduction.md)
 2. [Glossary](definitions.md)
 3. [Data Model](data-model.md)
-4. [Architecture](architecture.md)
+4. [Architecture](architecture/)
 5. Flows
    * [Dispersal](broken-reference)
    * Retrieval
