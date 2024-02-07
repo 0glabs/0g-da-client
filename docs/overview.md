@@ -8,8 +8,10 @@
    * [Dispersal](broken-reference)
    * Retrieval
    * Payment
-6. Protocol Modules
-   * [Attestation](protocol-modules/attestation/attestation.md)
-   * [Storage](protocol-modules/storage/overview.md)
+6. Security Guarantee
+   * [Attestation](overview-1/attestation.md)
+   * [Storage](overview-1/storage/overview.md)
    * [Retrieval](broken-reference)
-7.
+7. API
+   * [Disperser API](docs/disperser.md)
+   * [Retriever API](docs/retriever.md)

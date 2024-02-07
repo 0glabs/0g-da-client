@@ -23,7 +23,7 @@ An important aspect of restaking on EigenLayer is the notion of a quorum. EigenL
 
 When an end user posts a blob of data to ZGDA, they can specify a list of [security parameters](data-model.md#quorum-information), each of which consists of a `QuorumID` identifying a particular quorum registered with ZGDA and an `AdversaryThreshold` which specifies the Byzantine adversarial tolerance that the user expects the blobs availability to respect.
 
-For such a blob accepted by the system (See [Dispersal Flow](broken-reference)), ZGDA delivers the following security guarantee: Unless more than an `AdversaryThreshold` of stakers acts adversarially in every quorum associated with the blob, the blob will be available to any honest retriever. How this guarantee is supported is discussed further in [The Modules of Data Availability](protocol-modules/overview.md)
+For such a blob accepted by the system (See [Dispersal Flow](broken-reference)), ZGDA delivers the following security guarantee: Unless more than an `AdversaryThreshold` of stakers acts adversarially in every quorum associated with the blob, the blob will be available to any honest retriever. How this guarantee is supported is discussed further in [The Modules of Data Availability](overview-1/)
 
 ### ZGDA Throughput
 

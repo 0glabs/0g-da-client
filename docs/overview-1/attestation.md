@@ -22,11 +22,11 @@ This document discusses how these properties are achieved by the attestation pro
 
 ### Sufficient stake checking
 
-The [BLSRegistry.sol](../../spec/protocol-modules/contracts-registry.md) maintains the `pubkeyToStakeHistory` and `pubKeyToIndexHistory` storage variables, which allow for the current stake and index of each operator to be retrieved for an arbitrary block number. These variables are updated whenever DA nodes register or deregister.
+The [BLSRegistry.sol](../spec/protocol-modules/contracts-registry.md) maintains the `pubkeyToStakeHistory` and `pubKeyToIndexHistory` storage variables, which allow for the current stake and index of each operator to be retrieved for an arbitrary block number. These variables are updated whenever DA nodes register or deregister.
 
 TODO: Describe quorum storage variables.
 
-Whenever the `confirmBatch` method of the [ServiceMananger.sol](../../spec/protocol-modules/contracts-service-manager.md) is called, the following checks are used to ensure that sufficient stake is held by the set of signatories.
+Whenever the `confirmBatch` method of the [ServiceMananger.sol](../spec/protocol-modules/contracts-service-manager.md) is called, the following checks are used to ensure that sufficient stake is held by the set of signatories.
 
 * Signature verification. The signature of the calculated aggregate public key is verified.
 * Quorum threshold check. The total stake of the signing DA nodes is verified to be above the quorum thresholds for each quorum.
@@ -47,7 +47,7 @@ These requirements result in the following design choices:
 
 The first and second decision satisfies requirements 1 and 2. The three decisions together satisfy requirement 3.
 
-Whenever the `confirmBatch` method of the [ServiceMananger.sol](../../spec/protocol-modules/contracts-service-manager.md) is called, the following checks are used to ensure that only finalized registration state is utilized:
+Whenever the `confirmBatch` method of the [ServiceMananger.sol](../spec/protocol-modules/contracts-service-manager.md) is called, the following checks are used to ensure that only finalized registration state is utilized:
 
 * Stake staleness check. The `referenceBlockNumber` is verified to be within `BLOCK_STALE_MEASURE` blocks before the confirmation block.This is to make sure that batches using outdated stakes are not confirmed. It is assured that stakes from within `BLOCK_STALE_MEASURE` blocks before confirmation are valid by delaying removal of stake by `BLOCK_STALE_MEASURE + MAX_DURATION_BLOCKS`.
 

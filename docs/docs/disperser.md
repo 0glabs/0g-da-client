@@ -1,57 +1,50 @@
-# Protocol Documentation
-<a name="top"></a>
+# Disperser API
 
 ## Table of Contents
 
-- [disperser.proto](#disperser-proto)
-    - [BatchHeader](#disperser-BatchHeader)
-    - [BatchMetadata](#disperser-BatchMetadata)
-    - [BlobHeader](#disperser-BlobHeader)
-    - [BlobInfo](#disperser-BlobInfo)
-    - [BlobQuorumParam](#disperser-BlobQuorumParam)
-    - [BlobStatusReply](#disperser-BlobStatusReply)
-    - [BlobStatusRequest](#disperser-BlobStatusRequest)
-    - [BlobVerificationProof](#disperser-BlobVerificationProof)
-    - [DisperseBlobReply](#disperser-DisperseBlobReply)
-    - [DisperseBlobRequest](#disperser-DisperseBlobRequest)
-    - [RetrieveBlobReply](#disperser-RetrieveBlobReply)
-    - [RetrieveBlobRequest](#disperser-RetrieveBlobRequest)
-    - [SecurityParams](#disperser-SecurityParams)
-  
-    - [BlobStatus](#disperser-BlobStatus)
-  
-    - [Disperser](#disperser-Disperser)
-  
-- [Scalar Value Types](#scalar-value-types)
+* [Service](disperser.md#service)
+  * [Disperser](disperser.md#disperser-Disperser)
+* [Data Structure](disperser.md#data-structure)
+  * [BatchHeader](disperser.md#disperser-BatchHeader)
+  * [BatchMetadata](disperser.md#disperser-BatchMetadata)
+  * [BlobHeader](disperser.md#disperser-BlobHeader)
+  * [BlobInfo](disperser.md#disperser-BlobInfo)
+  * [BlobQuorumParam](disperser.md#disperser-BlobQuorumParam)
+  * [BlobStatusReply](disperser.md#disperser-BlobStatusReply)
+  * [BlobStatusRequest](disperser.md#disperser-BlobStatusRequest)
+  * [BlobVerificationProof](disperser.md#disperser-BlobVerificationProof)
+  * [DisperseBlobReply](disperser.md#disperser-DisperseBlobReply)
+  * [DisperseBlobRequest](disperser.md#disperser-DisperseBlobRequest)
+  * [RetrieveBlobReply](disperser.md#disperser-RetrieveBlobReply)
+  * [RetrieveBlobRequest](disperser.md#disperser-RetrieveBlobRequest)
+  * [SecurityParams](disperser.md#disperser-SecurityParams)
+  * [BlobStatus](disperser.md#disperser-BlobStatus)
+* [Scalar Value Types](disperser.md#scalar-value-types)
 
+[Top](disperser.md#top)
 
+## Service
 
-<a name="disperser-proto"></a>
-<p align="right"><a href="#top">Top</a></p>
+### Disperser
 
-## disperser.proto
+Disperser defines the public APIs for dispersing blobs.
 
+| Method Name   | Request Type                                                      | Response Type                                                 | Description                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DisperseBlob  | [DisperseBlobRequest](disperser.md#disperser-DisperseBlobRequest) | [DisperseBlobReply](disperser.md#disperser-DisperseBlobReply) | This API accepts blob to disperse from clients. This executes the dispersal async, i.e. it returns once the request is accepted. The client could use GetBlobStatus() API to poll the the processing status of the blob.                                                                                                          |
+| GetBlobStatus | [BlobStatusRequest](disperser.md#disperser-BlobStatusRequest)     | [BlobStatusReply](disperser.md#disperser-BlobStatusReply)     | This API is meant to be polled for the blob status.                                                                                                                                                                                                                                                                               |
+| RetrieveBlob  | [RetrieveBlobRequest](disperser.md#disperser-RetrieveBlobRequest) | [RetrieveBlobReply](disperser.md#disperser-RetrieveBlobReply) | This retrieves the requested blob from the Disperser's backend. This is a more efficient way to retrieve blobs than directly retrieving from the DA Nodes (see detail about this approach in api/proto/retriever/retriever.proto). The blob should have been initially dispersed via this Disperser service for this API to work. |
 
-
-<a name="disperser-BatchHeader"></a>
+## Data Structure
 
 ### BatchHeader
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| batch_root | [bytes](#bytes) |  | The root of the merkle tree with the hashes of blob headers as leaves. |
-| quorum_numbers | [bytes](#bytes) |  | All quorums associated with blobs in this batch. |
-| quorum_signed_percentages | [bytes](#bytes) |  | The percentage of stake that has signed for this batch. The quorum_signed_percentages[i] is percentage for the quorum_numbers[i]. |
-| reference_block_number | [uint32](#uint32) |  | The Ethereum block number at which the batch was created. The Disperser will encode and disperse the blobs based on the onchain info (e.g. operator stakes) at this block number. |
-
-
-
-
-
-
-<a name="disperser-BatchMetadata"></a>
+| Field                       | Type                          | Label | Description                                                                                                                                                                       |
+| --------------------------- | ----------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| batch\_root                 | [bytes](disperser.md#bytes)   |       | The root of the merkle tree with the hashes of blob headers as leaves.                                                                                                            |
+| quorum\_numbers             | [bytes](disperser.md#bytes)   |       | All quorums associated with blobs in this batch.                                                                                                                                  |
+| quorum\_signed\_percentages | [bytes](disperser.md#bytes)   |       | The percentage of stake that has signed for this batch. The quorum\_signed\_percentages\[i] is percentage for the quorum\_numbers\[i].                                            |
+| reference\_block\_number    | [uint32](disperser.md#uint32) |       | The Ethereum block number at which the batch was created. The Disperser will encode and disperse the blobs based on the onchain info (e.g. operator stakes) at this block number. |
 
 ### BatchMetadata
 
@@ -74,36 +67,20 @@
 
 ### BlobHeader
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| commitment | [bytes](#bytes) |  | KZG commitment to the blob. |
-| data_length | [uint32](#uint32) |  | The length of the blob in symbols (each symbol is 31 bytes). |
-| blob_quorum_params | [BlobQuorumParam](#disperser-BlobQuorumParam) | repeated | The params of the quorums that this blob participates in. |
-
-
-
-
-
-
-<a name="disperser-BlobInfo"></a>
+| Field                | Type                                                      | Label    | Description                                                  |
+| -------------------- | --------------------------------------------------------- | -------- | ------------------------------------------------------------ |
+| commitment           | [bytes](disperser.md#bytes)                               |          | KZG commitment to the blob.                                  |
+| data\_length         | [uint32](disperser.md#uint32)                             |          | The length of the blob in symbols (each symbol is 31 bytes). |
+| blob\_quorum\_params | [BlobQuorumParam](disperser.md#disperser-BlobQuorumParam) | repeated | The params of the quorums that this blob participates in.    |
 
 ### BlobInfo
+
 BlobInfo contains information needed to confirm the blob against the ZGDA contracts
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| blob_header | [BlobHeader](#disperser-BlobHeader) |  |  |
-| blob_verification_proof | [BlobVerificationProof](#disperser-BlobVerificationProof) |  |  |
-
-
-
-
-
-
-<a name="disperser-BlobQuorumParam"></a>
+| Field                     | Type                                                                  | Label | Description |
+| ------------------------- | --------------------------------------------------------------------- | ----- | ----------- |
+| blob\_header              | [BlobHeader](disperser.md#disperser-BlobHeader)                       |       |             |
+| blob\_verification\_proof | [BlobVerificationProof](disperser.md#disperser-BlobVerificationProof) |       |             |
 
 ### BlobQuorumParam
 
@@ -126,134 +103,76 @@ BlobInfo contains information needed to confirm the blob against the ZGDA contra
 
 ### BlobStatusReply
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| status | [BlobStatus](#disperser-BlobStatus) |  | The status of the blob. |
-| info | [BlobInfo](#disperser-BlobInfo) |  | The blob info needed for clients to confirm the blob against the ZGDA contracts. |
-
-
-
-
-
-
-<a name="disperser-BlobStatusRequest"></a>
+| Field  | Type                                            | Label | Description                                                                      |
+| ------ | ----------------------------------------------- | ----- | -------------------------------------------------------------------------------- |
+| status | [BlobStatus](disperser.md#disperser-BlobStatus) |       | The status of the blob.                                                          |
+| info   | [BlobInfo](disperser.md#disperser-BlobInfo)     |       | The blob info needed for clients to confirm the blob against the ZGDA contracts. |
 
 ### BlobStatusRequest
+
 BlobStatusRequest is used to query the status of a blob.
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| request_id | [bytes](#bytes) |  |  |
-
-
-
-
-
-
-<a name="disperser-BlobVerificationProof"></a>
+| Field       | Type                        | Label | Description |
+| ----------- | --------------------------- | ----- | ----------- |
+| request\_id | [bytes](disperser.md#bytes) |       |             |
 
 ### BlobVerificationProof
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| batch_id | [uint32](#uint32) |  | batch_id is an incremental ID assigned to a batch by ZGDAServiceManager |
-| blob_index | [uint32](#uint32) |  | The index of the blob in the batch (which is logically an ordered list of blobs). |
-| batch_metadata | [BatchMetadata](#disperser-BatchMetadata) |  |  |
-| inclusion_proof | [bytes](#bytes) |  | inclusion_proof is a merkle proof for a blob header&#39;s inclusion in a batch |
-| quorum_indexes | [bytes](#bytes) |  | indexes of quorums in BatchHeader.quorum_numbers that match the quorums in BlobHeader.blob_quorum_params Ex. BlobHeader.blob_quorum_params = [ 	{ 		quorum_number = 0, 		... 	}, 	{ 		quorum_number = 3, 		... 	}, 	{ 		quorum_number = 5, 		... 	}, ] BatchHeader.quorum_numbers = [0, 5, 3] =&gt; 0x000503 Then, quorum_indexes = [0, 2, 1] =&gt; 0x000201 |
-
-
-
-
-
-
-<a name="disperser-DisperseBlobReply"></a>
+| Field            | Type                                                  | Label | Description                                                                                                                                                                                                                                                                                                                                       |
+| ---------------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| batch\_id        | [uint32](disperser.md#uint32)                         |       | batch\_id is an incremental ID assigned to a batch by ZGDAServiceManager                                                                                                                                                                                                                                                                          |
+| blob\_index      | [uint32](disperser.md#uint32)                         |       | The index of the blob in the batch (which is logically an ordered list of blobs).                                                                                                                                                                                                                                                                 |
+| batch\_metadata  | [BatchMetadata](disperser.md#disperser-BatchMetadata) |       |                                                                                                                                                                                                                                                                                                                                                   |
+| inclusion\_proof | [bytes](disperser.md#bytes)                           |       | inclusion\_proof is a merkle proof for a blob header's inclusion in a batch                                                                                                                                                                                                                                                                       |
+| quorum\_indexes  | [bytes](disperser.md#bytes)                           |       | indexes of quorums in BatchHeader.quorum\_numbers that match the quorums in BlobHeader.blob\_quorum\_params Ex. BlobHeader.blob\_quorum\_params = \[ { quorum\_number = 0, ... }, { quorum\_number = 3, ... }, { quorum\_number = 5, ... }, ] BatchHeader.quorum\_numbers = \[0, 5, 3] => 0x000503 Then, quorum\_indexes = \[0, 2, 1] => 0x000201 |
 
 ### DisperseBlobReply
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| result | [BlobStatus](#disperser-BlobStatus) |  | The status of the blob associated with the request_id. |
-| request_id | [bytes](#bytes) |  | The request ID generated by the disperser. Once a request is accepted (although not processed), a unique request ID will be generated. Two different DisperseBlobRequests (determined by the hash of the DisperseBlobRequest) will have different IDs, and the same DisperseBlobRequest sent repeatedly at different times will also have different IDs. The client should use this ID to query the processing status of the request (via the GetBlobStatus API). |
-
-
-
-
-
-
-<a name="disperser-DisperseBlobRequest"></a>
+| Field       | Type                                            | Label | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------- | ----------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| result      | [BlobStatus](disperser.md#disperser-BlobStatus) |       | The status of the blob associated with the request\_id.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| request\_id | [bytes](disperser.md#bytes)                     |       | The request ID generated by the disperser. Once a request is accepted (although not processed), a unique request ID will be generated. Two different DisperseBlobRequests (determined by the hash of the DisperseBlobRequest) will have different IDs, and the same DisperseBlobRequest sent repeatedly at different times will also have different IDs. The client should use this ID to query the processing status of the request (via the GetBlobStatus API). |
 
 ### DisperseBlobRequest
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| data | [bytes](#bytes) |  | The data to be dispersed. The size of data must be &lt;= 512KiB. |
-| security_params | [SecurityParams](#disperser-SecurityParams) | repeated | Security parameters allowing clients to customize the safety (via adversary threshold) and liveness (via quorum threshold). Clients can define one SecurityParams per quorum, and specify multiple quorums. The disperser will ensure that the encoded blobs for each quorum are all processed within the same batch. |
-
-
-
-
-
-
-<a name="disperser-RetrieveBlobReply"></a>
+| Field            | Type                                                    | Label    | Description                                                                                                                                                                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| data             | [bytes](disperser.md#bytes)                             |          | The data to be dispersed. The size of data must be <= 512KiB.                                                                                                                                                                                                                                                         |
+| security\_params | [SecurityParams](disperser.md#disperser-SecurityParams) | repeated | Security parameters allowing clients to customize the safety (via adversary threshold) and liveness (via quorum threshold). Clients can define one SecurityParams per quorum, and specify multiple quorums. The disperser will ensure that the encoded blobs for each quorum are all processed within the same batch. |
 
 ### RetrieveBlobReply
+
 RetrieveBlobReply contains the retrieved blob data
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| data | [bytes](#bytes) |  |  |
-
-
-
-
-
-
-<a name="disperser-RetrieveBlobRequest"></a>
+| Field | Type                        | Label | Description |
+| ----- | --------------------------- | ----- | ----------- |
+| data  | [bytes](disperser.md#bytes) |       |             |
 
 ### RetrieveBlobRequest
+
 RetrieveBlobRequest contains parameters to retrieve the blob.
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| batch_header_hash | [bytes](#bytes) |  |  |
-| blob_index | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="disperser-SecurityParams"></a>
+| Field               | Type                          | Label | Description |
+| ------------------- | ----------------------------- | ----- | ----------- |
+| batch\_header\_hash | [bytes](disperser.md#bytes)   |       |             |
+| blob\_index         | [uint32](disperser.md#uint32) |       |             |
 
 ### SecurityParams
+
 SecurityParams contains the security parameters for a given quorum.
 
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| quorum_id | [uint32](#uint32) |  | The ID of the quorum. The quorum must be already registered on EigenLayer. The ID must be in range [0, 255]. |
-| adversary_threshold | [uint32](#uint32) |  | The max percentage of stake within the quorum that can be held by or delegated to adversarial operators.
+| Field                | Type                          | Label | Description                                                                                                   |
+| -------------------- | ----------------------------- | ----- | ------------------------------------------------------------------------------------------------------------- |
+| quorum\_id           | [uint32](disperser.md#uint32) |       | The ID of the quorum. The quorum must be already registered on EigenLayer. The ID must be in range \[0, 255]. |
+| adversary\_threshold | [uint32](disperser.md#uint32) |       | The max percentage of stake within the quorum that can be held by or delegated to adversarial operators.      |
 
 Clients use this to customize the trust assumption (safety).
 
-Requires: 1 &lt;= adversary_threshold &lt; 100 |
-| quorum_threshold | [uint32](#uint32) |  | The min percentage of stake that must attest in order to consider the dispersal is successful.
+Requires: 1 <= adversary\_threshold < 100 | | quorum\_threshold | [uint32](disperser.md#uint32) | | The min percentage of stake that must attest in order to consider the dispersal is successful.
 
 Clients use this to customize liveness requirement. The higher this number, the more operators may need to be up for attesting the blob, so the chance the dispersal request to fail may be higher (liveness for dispersal).
 
-Requires: 1 &lt;= quorum_threshld &lt;= 100 quorum_threshld &gt; adversary_threshold.
+Requires: 1 <= quorum\_threshld <= 100 quorum\_threshld > adversary\_threshold.
 
 Note: The adversary_threshold and quorum_threshold will directly influence the cost of encoding for the blob to be dispersed, roughly by a factor of 100 / (quorum_threshold - adversary_threshold). See the spec for more details: https://github.com/0glabs/0g-data-avail/blob/master/docs/spec/protocol-modules/storage/overview.md |
 
@@ -268,54 +187,31 @@ Note: The adversary_threshold and quorum_threshold will directly influence the c
 
 ### BlobStatus
 
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| UNKNOWN | 0 |  |
-| PROCESSING | 1 | PROCESSING means that the blob is currently being processed by the disperser |
-| CONFIRMED | 2 | CONFIRMED means that the blob has been dispersed to DA Nodes and the dispersed batch containing the blob has been confirmed onchain |
-| FAILED | 3 | FAILED means that the blob has failed permanently (for reasons other than insufficient signatures, which is a separate state) |
-| FINALIZED | 4 | FINALIZED means that the block containing the blob&#39;s confirmation transaction has been finalized on Ethereum |
-| INSUFFICIENT_SIGNATURES | 5 | INSUFFICIENT_SIGNATURES means that the quorum threshold for the blob was not met for at least one quorum. |
-
-
- 
-
- 
-
-
-<a name="disperser-Disperser"></a>
-
-### Disperser
-Disperser defines the public APIs for dispersing blobs.
-
-| Method Name | Request Type | Response Type | Description |
-| ----------- | ------------ | ------------- | ------------|
-| DisperseBlob | [DisperseBlobRequest](#disperser-DisperseBlobRequest) | [DisperseBlobReply](#disperser-DisperseBlobReply) | This API accepts blob to disperse from clients. This executes the dispersal async, i.e. it returns once the request is accepted. The client could use GetBlobStatus() API to poll the the processing status of the blob. |
-| GetBlobStatus | [BlobStatusRequest](#disperser-BlobStatusRequest) | [BlobStatusReply](#disperser-BlobStatusReply) | This API is meant to be polled for the blob status. |
-| RetrieveBlob | [RetrieveBlobRequest](#disperser-RetrieveBlobRequest) | [RetrieveBlobReply](#disperser-RetrieveBlobReply) | This retrieves the requested blob from the Disperser&#39;s backend. This is a more efficient way to retrieve blobs than directly retrieving from the DA Nodes (see detail about this approach in api/proto/retriever/retriever.proto). The blob should have been initially dispersed via this Disperser service for this API to work. |
-
- 
-
-
+| Name                     | Number | Description                                                                                                                         |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| UNKNOWN                  | 0      |                                                                                                                                     |
+| PROCESSING               | 1      | PROCESSING means that the blob is currently being processed by the disperser                                                        |
+| CONFIRMED                | 2      | CONFIRMED means that the blob has been dispersed to DA Nodes and the dispersed batch containing the blob has been confirmed onchain |
+| FAILED                   | 3      | FAILED means that the blob has failed permanently (for reasons other than insufficient signatures, which is a separate state)       |
+| FINALIZED                | 4      | FINALIZED means that the block containing the blob's confirmation transaction has been finalized on Ethereum                        |
+| INSUFFICIENT\_SIGNATURES | 5      | INSUFFICIENT\_SIGNATURES means that the quorum threshold for the blob was not met for at least one quorum.                          |
 
 ## Scalar Value Types
 
-| .proto Type | Notes | C++ | Java | Python | Go | C# | PHP | Ruby |
-| ----------- | ----- | --- | ---- | ------ | -- | -- | --- | ---- |
-| <a name="double" /> double |  | double | double | float | float64 | double | float | Float |
-| <a name="float" /> float |  | float | float | float | float32 | float | float | Float |
-| <a name="int32" /> int32 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
-| <a name="int64" /> int64 | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64 | long | int/long | int64 | long | integer/string | Bignum |
-| <a name="uint32" /> uint32 | Uses variable-length encoding. | uint32 | int | int/long | uint32 | uint | integer | Bignum or Fixnum (as required) |
-| <a name="uint64" /> uint64 | Uses variable-length encoding. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum or Fixnum (as required) |
-| <a name="sint32" /> sint32 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
-| <a name="sint64" /> sint64 | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s. | int64 | long | int/long | int64 | long | integer/string | Bignum |
-| <a name="fixed32" /> fixed32 | Always four bytes. More efficient than uint32 if values are often greater than 2^28. | uint32 | int | int | uint32 | uint | integer | Bignum or Fixnum (as required) |
-| <a name="fixed64" /> fixed64 | Always eight bytes. More efficient than uint64 if values are often greater than 2^56. | uint64 | long | int/long | uint64 | ulong | integer/string | Bignum |
-| <a name="sfixed32" /> sfixed32 | Always four bytes. | int32 | int | int | int32 | int | integer | Bignum or Fixnum (as required) |
-| <a name="sfixed64" /> sfixed64 | Always eight bytes. | int64 | long | int/long | int64 | long | integer/string | Bignum |
-| <a name="bool" /> bool |  | bool | boolean | boolean | bool | bool | boolean | TrueClass/FalseClass |
-| <a name="string" /> string | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode | string | string | string | String (UTF-8) |
-| <a name="bytes" /> bytes | May contain any arbitrary sequence of bytes. | string | ByteString | str | []byte | ByteString | string | String (ASCII-8BIT) |
-
+| .proto Type | Notes                                                                                                                                           | C++    | Java       | Python      | Go      | C#         | PHP            | Ruby                           |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------- | ----------- | ------- | ---------- | -------------- | ------------------------------ |
+| double      |                                                                                                                                                 | double | double     | float       | float64 | double     | float          | Float                          |
+| float       |                                                                                                                                                 | float  | float      | float       | float32 | float      | float          | Float                          |
+| int32       | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint32 instead. | int32  | int        | int         | int32   | int        | integer        | Bignum or Fixnum (as required) |
+| int64       | Uses variable-length encoding. Inefficient for encoding negative numbers – if your field is likely to have negative values, use sint64 instead. | int64  | long       | int/long    | int64   | long       | integer/string | Bignum                         |
+| uint32      | Uses variable-length encoding.                                                                                                                  | uint32 | int        | int/long    | uint32  | uint       | integer        | Bignum or Fixnum (as required) |
+| uint64      | Uses variable-length encoding.                                                                                                                  | uint64 | long       | int/long    | uint64  | ulong      | integer/string | Bignum or Fixnum (as required) |
+| sint32      | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int32s.                            | int32  | int        | int         | int32   | int        | integer        | Bignum or Fixnum (as required) |
+| sint64      | Uses variable-length encoding. Signed int value. These more efficiently encode negative numbers than regular int64s.                            | int64  | long       | int/long    | int64   | long       | integer/string | Bignum                         |
+| fixed32     | Always four bytes. More efficient than uint32 if values are often greater than 2^28.                                                            | uint32 | int        | int         | uint32  | uint       | integer        | Bignum or Fixnum (as required) |
+| fixed64     | Always eight bytes. More efficient than uint64 if values are often greater than 2^56.                                                           | uint64 | long       | int/long    | uint64  | ulong      | integer/string | Bignum                         |
+| sfixed32    | Always four bytes.                                                                                                                              | int32  | int        | int         | int32   | int        | integer        | Bignum or Fixnum (as required) |
+| sfixed64    | Always eight bytes.                                                                                                                             | int64  | long       | int/long    | int64   | long       | integer/string | Bignum                         |
+| bool        |                                                                                                                                                 | bool   | boolean    | boolean     | bool    | bool       | boolean        | TrueClass/FalseClass           |
+| string      | A string must always contain UTF-8 encoded or 7-bit ASCII text.                                                                                 | string | String     | str/unicode | string  | string     | string         | String (UTF-8)                 |
+| bytes       | May contain any arbitrary sequence of bytes.                                                                                                    | string | ByteString | str         | \[]byte | ByteString | string         | String (ASCII-8BIT)            |

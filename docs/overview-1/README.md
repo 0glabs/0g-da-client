@@ -1,4 +1,4 @@
-# The "Modules" of Data Availability
+# Security Guarantee
 
 The overall security guarantee provided by ZGDA is actually a composite of many smaller guarantees, each with its own intricacies. For the purpose of exposition, in this section we break down the ZGDA protocol into a set of three modules, which divide roughly along the lines of the guarantees for which the modules are responsible.
 
@@ -8,7 +8,7 @@ The main guarantee supported by the attestation module concerns the on-chain con
 
 * Sufficient stake checking: A blob is only accepted on-chain when signatures from operators having sufficient stake on each quorum are presented.
 
-The Attestation module is largely implemented by the ZGDA smart contracts via bookkeeping of stake and associated checks performed at the batch confirmation phase of the [Disperal Flow](broken-reference). For more details, see the [Attestation module documentation](attestation/attestation.md)
+The Attestation module is largely implemented by the ZGDA smart contracts via bookkeeping of stake and associated checks performed at the batch confirmation phase of the [Disperal Flow](broken-reference). For more details, see the [Attestation module documentation](attestation.md)
 
 ## Storage
 
