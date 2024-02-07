@@ -28,7 +28,7 @@ require (
 	github.com/zero-gravity-labs/zerog-storage-client v0.1.12
 	go.uber.org/automaxprocs v1.5.2
 	go.uber.org/goleak v1.2.0
-	google.golang.org/grpc v1.59.0
+	google.golang.org/grpc v1.61.0
 )
 
 require (
@@ -144,10 +144,10 @@ require (
 	golang.org/x/arch v0.4.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/oauth2 v0.11.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	golang.org/x/oauth2 v0.14.0 // indirect
+	golang.org/x/sync v0.5.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
@@ -174,8 +174,8 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.1
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/uuid v1.4.0
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
@@ -199,10 +199,10 @@ require (
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
-	golang.org/x/crypto v0.14.0
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/crypto v0.15.0
+	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
