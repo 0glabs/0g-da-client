@@ -1,6 +1,6 @@
 # Security Guarantee
 
-The overall security guarantee provided by ZGDA is actually a composite of many smaller guarantees, each with its own intricacies. For the purpose of exposition, in this section we break down the ZGDA protocol into a set of three modules, which divide roughly along the lines of the guarantees for which the modules are responsible.
+The overall security guarantee provided by ZGDA is actually a composite of many smaller guarantees, each with its own intricacies. For the purpose of exposition, in this section we break down the ZGDA protocol into a set of two modules, which divide roughly along the lines of the guarantees for which the modules are responsible.
 
 ## Storage
 
@@ -8,7 +8,7 @@ The main guarantee supported by the storage module concerns the off-chain condit
 
 * Honest custody of complete blob: When the minimal adversarial threshold assumptions of a blob are met for any quorum, then on-chain acceptance of a blob implies a full blob is held by honest DA nodes of that quorum for the designated period.
 
-The Storage module is largely implemented by the DA nodes, with an untrusted supporting role by the Disperser. For more details, see the [Storage module documentation](broken-reference)
+The Storage module is largely implemented by the DA nodes, with an untrusted supporting role by the Disperser.&#x20;
 
 ## Retrieval
 

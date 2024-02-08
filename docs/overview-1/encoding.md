@@ -84,7 +84,7 @@ Note: The blob length verification here allows for the blob length to be upper-b
 
 ## The KZG-FFT Encoder Backend
 
-A design for an efficient encoding backend that makes use of amortized kzg multi-reveal generation is described [here](../../design/encoding.md).
+A design for an efficient encoding backend that makes use of amortized kzg multi-reveal generation is described in the follow section.
 
 ## Validation Actions
 

@@ -6,3 +6,8 @@ Data is made available on ZGDA through the following flow:
 2. Upon receiving signatures from the DA nodes, the disperser aggregates these signatures.
 3. Next, the disperser sends the aggregated signatures and header to the `confirmBatch` method of the `ServiceManager`
 4. Once retrievers see the confirmed Batch on chain, they can request to download the associated chunks from a set of DA nodes, in accordance with the [retrieval module](../spec/flows/protocol-modules/retrieval/retrieval.md) of the protocol.
+
+
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption><p>Figure 1. Architecture Overview</p></figcaption></figure>
+
