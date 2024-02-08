@@ -4,38 +4,42 @@
 
 
 
-### Security Parameter
+### Blob Request
 
 ```go
-// SecurityParam contains the adversary threshold for the quorum;
-type SecurityParam struct {
+type BlobRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The hash of the ReducedBatchHeader defined onchain, see:
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// This identifies the batch that this blob belongs to.
+	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
+	// Which blob in the batch this is requesting for (note: a batch is logically an
+	// ordered list of blobs).
+	BlobIndex uint32 `protobuf:"varint,2,opt,name=blob_index,json=blobIndex,proto3" json:"blob_index,omitempty"`
 	// DEPRECATED
-	QuorumID QuorumID
-	// AdversaryThreshold is the maximum amount of stake that can be controlled by an adversary in the quorum as a percentage of the total stake in the quorum
-	AdversaryThreshold uint8
-	// QuorumThreshold is the amount of stake that must sign a message for it to be considered valid as a percentage of the total stake in the quorum
-	QuorumThreshold uint8 `json:"quorum_threshold"`
-}
-
-// QuorumResult contains the quorum ID and the amount signed for the quorum
-type QuorumResult struct {
-	QuorumID QuorumID
-	// PercentSigned is percentage of the total stake for the quorum that signed for a particular batch.
-	PercentSigned uint8
+	ReferenceBlockNumber uint32 `protobuf:"varint,3,opt,name=reference_block_number,json=referenceBlockNumber,proto3" json:"reference_block_number,omitempty"`
+	// DEPRECATED
+	QuorumId uint32 `protobuf:"varint,4,opt,name=quorum_id,json=quorumId,proto3" json:"quorum_id,omitempty"`
 }
 ```
 
-### Blob Requests
+### Blob Header
 
 ```go
-// BlobHeader contains the original data size of a blob and the security required
-type BlobRequestHeader struct {
-	// BlobSize is the size of the original data in bytes
-	BlobSize uint32
-	// For a blob to be accepted by ZGDA, it satisfies the AdversaryThreshold of each quorum contained in SecurityParams
-	SecurityParams []SecurityParam
+type BlobHeader struct {
+	// KZG commitments of the blob
+	BlobCommitments
+	// DEPRECATED
+	QuorumInfos []*BlobQuorumInfo
+	// DEPRECATED
+	AccountID AccountID `json:"account_id"`
 }
 ```
+
+###
 
 ### Data Headers
 
@@ -105,28 +109,3 @@ type ChunkBatch struct {
 }
 ```
 
-### DA Node State
-
-```go
-type StakeAmount *big.Int
-
-// OperatorInfo contains information about an operator which is stored on the blockchain state,
-// corresponding to a particular quorum
-type OperatorInfo struct {
-	// Stake is the amount of stake held by the operator in the quorum
-	Stake StakeAmount
-	// Index is the index of the operator within the quorum
-	Index OperatorIndex
-}
-
-// OperatorState contains information about the current state of operators which is stored in the blockchain state
-type OperatorState struct {
-	// Operators is a map from quorum ID to a map from the operators in that quorum to their StoredOperatorInfo. Membership
-	// in the map implies membership in the quorum.
-	Operators map[QuorumID]map[OperatorID]*OperatorInfo
-	// Totals is a map from quorum ID to the total stake (Stake) and total count (Index) of all operators in that quorum
-	Totals map[QuorumID]*OperatorInfo
-	// BlockNumber is the block number at which this state was retrieved
-	BlockNumber uint
-}
-```
