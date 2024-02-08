@@ -37,25 +37,6 @@ type BlobHeader struct {
 	// DEPRECATED
 	AccountID AccountID `json:"account_id"`
 }
-```
-
-###
-
-### Data Headers
-
-```go
-type BlobHeader struct {
-	BlobCommitments
-	// QuorumInfos contains the quorum specific parameters for the blob
-	QuorumInfos []*BlobQuorumInfo
-}
-
-// BlobQuorumInfo contains the quorum IDs and parameters for a blob specific to a given quorum
-type BlobQuorumInfo struct {
-	SecurityParam
-	// ChunkLength is the number of symbols in a chunk
-	ChunkLength uint
-}
 
 // BlomCommitments contains the blob's commitment, degree proof, and the actual degree.
 type BlobCommitments struct {
@@ -63,7 +44,11 @@ type BlobCommitments struct {
 	LengthProof *Commitment
 	Length      uint
 }
+```
 
+### Batch Headers
+
+```go
 // BatchHeader contains the metadata associated with a Batch for which DA nodes must attest; DA nodes sign on the hash of the batch header
 type BatchHeader struct {
 	// BlobHeaders contains the headers of the blobs in the batch
