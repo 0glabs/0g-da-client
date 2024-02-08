@@ -40,7 +40,7 @@ $$
 C \le \text{NextPowerOf2}\left(\frac{B}{\gamma}\max\left(\frac{\min_jS_j}{\sum_jS_j}, \frac{1}{M_\text{max}} \right) \right)
 $$
 
-where $\gamma = \beta-\alpha$, with $\alpha$ and $\beta$ as defined in the [Storage Overview](overview.md).
+where $\gamma = \beta-\alpha$, with $\alpha$ and $\beta$ as defined in the [Storage Overview](broken-reference).
 
 This means that as long as an operator has a stake share of at least $1/M\_\text{max}$, then the encoded data that they will receive will be within a factor of 2 of their share of stake. Operators with less than $1/M\_\text{max}$ of stake will receive no more than a $1/M\_\text{max}$ of the encoded data. $M\_\text{max}$ represents the maximum number of chunks that the disperser can be required to encode per blob. This limit is included because proving costs scale somewhat super-linearly with the number of chunks.
 
@@ -60,7 +60,7 @@ $$
 m_i = \text{ceil}\left(\frac{B S_i}{C\gamma \sum_j S_j}\right)\tag{1}
 $$
 
-**Correctness**. Let's show that any sets $U\_q$ and $U\_a$ satisfying the constraints in the [Acceptance Guarantee](overview.md#acceptance-guarantee), the data held by the operators $U\_q \setminus U\_a$ will constitute an entire blob. The amount of data held by these operators is given by
+**Correctness**. Let's show that any sets $U\_q$ and $U\_a$ satisfying the constraints in the [Acceptance Guarantee](broken-reference), the data held by the operators $U\_q \setminus U\_a$ will constitute an entire blob. The amount of data held by these operators is given by
 
 $$
 \sum_{i \in U_q \setminus U_a} m_i C
@@ -89,6 +89,3 @@ This step ensures that each honest node has received the blobs for which it is a
 
 Since the DA nodes will allow a range of `ChunkLength` values, as long as they satisfy the constraints of the protocol, it is necessary for there to be consensus on the `ChunkLength` that is in use for a particular blob and quorum. For this reason, the `ChunkLength` is included in the `BlobQuorumParam` which is hashed to create the merkle root contained in the `BatchHeaderHash` signed by the DA nodes.
 
-### Rollup Smart Contract
-
-When the rollup confirms its blob against the ZGDA batch, it checks that the `QuorumThreshold` for the blob is greater than the `AdversaryThreshold`. This means that if the `ChunkLength` determined by the disperser is invalid, the batch cannot be confirmed as a sufficient number of nodes will not sign.
