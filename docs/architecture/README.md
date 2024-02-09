@@ -28,5 +28,7 @@ There are two approaches for data retrieval.
   3. After successful verification, the retriever will start to download and verify the KZG commitments of each data chunk.
   4. After all successful downloading and verification, the retriever returns the whole data blob to the user.
 
+In this way, ZGDA provides not only [security guarantee](../overview-1/) to the data but also efficiency for the user to quickly retrieve the data from the disperser.
+
 <figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p>Figure 1. Architecture Overview </p></figcaption></figure>
 

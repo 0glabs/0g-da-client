@@ -13,15 +13,6 @@ The merkle root is constructed from the multiple blobs in the batch by the batch
 
 ## Retrieval
 
-The security of ZGDA is guaranteed at retrieval phase. When an end user posts a blob of data to ZGDA, the [disperser](../architecture/disperser.md) determines which place to store the data and does two things:
-
-1. Directly store the data into the pre-configured s3 bucket.
-2. Send the blob request into a queue for the [batcher](../architecture/batcher.md) to batch multiple blobs together and send out to ZeroG Storage Node for DA. The batcher will also append the [KZG commitment](../pkg/kzg.md) to the batch for later verification use.
-
-When an end user wants to retrieve a blob of data from ZGDA, he can directly call the disperser to download the blob from the s3 provided that he trusts the disperser. Otherwise, he can start his own [retriever](../architecture/retriever.md) service, and retrieve the blob from ZeroG Storage Node. Here comes with the security guarantee. The retriever service will verify the KZG commitment to check the authentication of the data and send the authenticated data back to the user.
-
-In this way, ZGDA provides not only security guarantee to the data but also efficiency for the user to quickly retrieve the data from the disperser.
-
 The ZGDA retrievers expect for blobs to correspond to evaluations of a polynomial of a certain degree. The blob payload delivered to the receiver contains a KZG polynomial commitment identifying the polynomial, as well as a separate commitment allowing the retriever to verify its degree.
 
 The receiver will perform the following checks for each retrieval request to ensure that the `BlobRequest` is valid:

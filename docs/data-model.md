@@ -57,28 +57,6 @@ type BlobMetadata struct {
 }
 ```
 
-### Blob Request
-
-```go
-type BlobRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
-	// This identifies the batch that this blob belongs to.
-	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
-	// Which blob in the batch this is requesting for (note: a batch is logically an
-	// ordered list of blobs).
-	BlobIndex uint32 `protobuf:"varint,2,opt,name=blob_index,json=blobIndex,proto3" json:"blob_index,omitempty"`
-	// DEPRECATED
-	ReferenceBlockNumber uint32 `protobuf:"varint,3,opt,name=reference_block_number,json=referenceBlockNumber,proto3" json:"reference_block_number,omitempty"`
-	// DEPRECATED
-	QuorumId uint32 `protobuf:"varint,4,opt,name=quorum_id,json=quorumId,proto3" json:"quorum_id,omitempty"`
-}
-```
-
 ### Blob Header
 
 ```go
@@ -144,3 +122,26 @@ type Proof struct {
 }
 ```
 
+## Retriever
+
+### Blob Request
+
+```go
+type BlobRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The hash of the ReducedBatchHeader defined onchain, see:
+	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// This identifies the batch that this blob belongs to.
+	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
+	// Which blob in the batch this is requesting for (note: a batch is logically an
+	// ordered list of blobs).
+	BlobIndex uint32 `protobuf:"varint,2,opt,name=blob_index,json=blobIndex,proto3" json:"blob_index,omitempty"`
+	// DEPRECATED
+	ReferenceBlockNumber uint32 `protobuf:"varint,3,opt,name=reference_block_number,json=referenceBlockNumber,proto3" json:"reference_block_number,omitempty"`
+	// DEPRECATED
+	QuorumId uint32 `protobuf:"varint,4,opt,name=quorum_id,json=quorumId,proto3" json:"quorum_id,omitempty"`
+}
+```
