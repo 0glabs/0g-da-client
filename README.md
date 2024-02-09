@@ -2,9 +2,9 @@
 
 ## Overview
 
-ZeroGDA is a decentralized data availability (DA) service with deep consideration in security and high throughput. Users interact with ZeroGDA to submit and store their data into [ZeroG Storage](https://github.com/zero-gravity-labs/zerog-storage-client) for later retrieval.
+ZeroGDA is a decentralized data availability (DA) service with deep consideration in security, scalability and decentralization. Users interact with ZeroGDA to submit and store their data into [ZeroG Storage](https://github.com/zero-gravity-labs/zerog-storage-client) for later retrieval.
 
-To dive deep into the technical details, continue reading [ZeroGDA protocol spec](docs/overview.md).
+To dive deep into the technical details, continue reading [ZeroGDA protocol spec](docs/overview.md).&#x20;
 
 ## API Documentation
 
