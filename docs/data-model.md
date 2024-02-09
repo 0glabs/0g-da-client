@@ -1,6 +1,19 @@
 # Data Model
 
-###
+### Disperser
+
+```go
+type DisperseBlobRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The data to be dispersed.
+	// The size of data must be <= 512KiB.
+	Data []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	SecurityParams []*SecurityParams `protobuf:"bytes,2,rep,name=security_params,json=securityParams,proto3" json:"security_params,omitempty"`
+}
+```
 
 
 
