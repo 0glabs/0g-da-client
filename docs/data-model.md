@@ -2,6 +2,8 @@
 
 ### Disperser
 
+#### Request
+
 ```go
 type DisperseBlobRequest struct {
 	state         protoimpl.MessageState
@@ -15,7 +17,36 @@ type DisperseBlobRequest struct {
 }
 ```
 
+#### Blob Key
 
+```go
+type BlobKey struct {
+	BlobHash     BlobHash
+	MetadataHash MetadataHash
+}
+```
+
+#### Blob Metadata
+
+```go
+type BlobMetadata struct {
+	BlobHash     BlobHash     `json:"blob_hash"`
+	MetadataHash MetadataHash `json:"metadata_hash"`
+	BlobStatus   BlobStatus   `json:"blob_status"`
+	// Expiry is unix epoch time in seconds at which the blob will expire
+	Expiry uint64 `json:"expiry"`
+	// NumRetries is the number of times the blob has been retried
+	// After few failed attempts, the blob will be marked as failed
+	NumRetries uint `json:"num_retries"`
+	// RequestMetadata is the request metadata of the blob when it was requested
+	// This field is omitted when marshalling to DynamoDB attributevalue as this field will be flattened
+	RequestMetadata *RequestMetadata `json:"request_metadata" dynamodbav:"-"`
+	// ConfirmationInfo is the confirmation metadata of the blob when it was confirmed
+	// This field is nil if the blob has not been confirmed
+	// This field is omitted when marshalling to DynamoDB attributevalue as this field will be flattened
+	ConfirmationInfo *ConfirmationInfo `json:"blob_confirmation_info" dynamodbav:"-"`
+}
+```
 
 ### Blob Request
 
