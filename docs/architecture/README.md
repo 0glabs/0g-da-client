@@ -18,7 +18,15 @@ As is shown in Figure 1, data is made available on 0G DA through the following f
 
 #### Blob Retrieval
 
-1.
+There are two approaches for data retrieval.
+
+* If a user trusts an existing disperser service.
+  1. A user can directly request a disperser to download the blob data from s3, provided that the user trusts the disperser. This can bring high efficiency in retrieval phase since it relies on p2p trust to skip the expensive data verification process. As a result, it unlocks the super high throughput of 0G DA system.
+* If a user doesn't trust any disperser.
+  1. A user can start its own retriever service.
+  2. The retriever service will verify the metadata and merkle proof of the blob before fetching the full data chunks.
+  3. After successful verification, the retriever will start to download and verify the KZG commitments of each data chunk.
+  4. After all successful downloading and verification, the retriever returns the whole data blob to the user.
 
 <figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption><p>Figure 1. Architecture Overview </p></figcaption></figure>
 
