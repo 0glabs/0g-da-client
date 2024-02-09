@@ -1,8 +1,8 @@
 # Data Model
 
-### Disperser
+## Disperser
 
-#### Request
+### Request
 
 ```go
 type DisperseBlobRequest struct {
@@ -15,9 +15,18 @@ type DisperseBlobRequest struct {
 	Data []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 	SecurityParams []*SecurityParams `protobuf:"bytes,2,rep,name=security_params,json=securityParams,proto3" json:"security_params,omitempty"`
 }
+
+type RetrieveBlobRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
+	BlobIndex       uint32 `protobuf:"varint,2,opt,name=blob_index,json=blobIndex,proto3" json:"blob_index,omitempty"`
+}
 ```
 
-#### Blob Key
+### Blob Key
 
 ```go
 type BlobKey struct {
@@ -26,7 +35,7 @@ type BlobKey struct {
 }
 ```
 
-#### Blob Metadata
+### Blob Metadata
 
 ```go
 type BlobMetadata struct {
@@ -90,51 +99,48 @@ type BlobCommitments struct {
 }
 ```
 
-### Batch Headers
+## Batcher
+
+### Batch Header
 
 ```go
-// BatchHeader contains the metadata associated with a Batch for which DA nodes must attest; DA nodes sign on the hash of the batch header
 type BatchHeader struct {
-	// BlobHeaders contains the headers of the blobs in the batch
-	BlobHeaders []*BlobHeader
-	// QuorumResults contains the quorum parameters for each quorum that must sign the batch; all quorum parameters must be satisfied
-	// for the batch to be considered valid
-	QuorumResults []QuorumResult
 	// ReferenceBlockNumber is the block number at which all operator information (stakes, indexes, etc.) is taken from
 	ReferenceBlockNumber uint
 	// BatchRoot is the root of a Merkle tree whose leaves are the hashes of the blobs in the batch
 	BatchRoot [32]byte
+	// DataRoot is the root of a Merkle tree whos leaves are the merkle root encoded data blobs divided in zgs segment size
+	DataRoot eth_common.Hash
 }
 ```
 
-### Encoded Data Products
+### Encoded Blob
 
 ```go
-// EncodedBatch is a container for a batch of blobs. DA nodes receive and attest to the blobs in a batch together to amortize signature verification costs
-type EncodedBatch struct {
-	ChunkBatches map[OperatorID]ChunkBatch
+type EncodedBlob = BlobMessage
+
+type BlobMessage struct {
+	BlobHeader *BlobHeader
+	Bundles    Bundles
 }
 
-// Chunks
+type Bundles = []*Chunk
 
-// Chunk is the smallest unit that is distributed to DA nodes, including both data and the associated polynomial opening proofs.
-// A chunk corresponds to a set of evaluations of the global polynomial whose coefficients are used to construct the blob Commitment.
 type Chunk struct {
-	// The Coeffs field contains the coefficients of the polynomial which interpolates these evaluations. This is the same as the
+	// The Coeffs field contains the coefficients of the polynomial which interolates these evaluations. This is the same as the
 	// interpolating polynomial, I(X), used in the KZG multi-reveal (https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html#multiproofs)
 	Coeffs []Symbol
 	Proof  Proof
 }
+```
 
-func (c *Chunk) Length() int {
-	return len(c.Coeffs)
-}
+### Merkle Tree Proof
 
-// ChunkBatch is the collection of chunks associated with a single operator and a single batch.
-type ChunkBatch struct {
-	// Bundles contains the chunks associated with each blob in the batch; each bundle contains the chunks associated with a single blob
-	// The number of bundles should be equal to the total number of blobs in the batch. The number of chunks per bundle will vary
-	Bundles [][]*Chunk
+```go
+// Proof is a proof of a Merkle tree.
+type Proof struct {
+	Hashes [][]byte
+	Index  uint64
 }
 ```
 

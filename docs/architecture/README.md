@@ -28,5 +28,5 @@ There are two approaches for data retrieval.
   3. After successful verification, the retriever will start to download and verify the KZG commitments of each data chunk.
   4. After all successful downloading and verification, the retriever returns the whole data blob to the user.
 
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption><p>Figure 1. Architecture Overview </p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p>Figure 1. Architecture Overview </p></figcaption></figure>
 
