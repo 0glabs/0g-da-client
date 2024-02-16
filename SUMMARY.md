@@ -1,7 +1,7 @@
 # Table of contents
 
 * [ZeroGDA](README.md)
-* [docs](docs/README.md)
+* [ZeroG DA Spec](docs/README.md)
   * [Overview](docs/overview.md)
   * [Introduction](docs/introduction.md)
   * [Architecture](docs/architecture/README.md)
