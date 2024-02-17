@@ -5,20 +5,20 @@
 * [Service](disperser.md#service)
   * [Disperser](disperser.md#disperser)
 * [Data Structure](disperser.md#data-structure)
-  * [BatchHeader](disperser.md#disperser-BatchHeader)
-  * [BatchMetadata](disperser.md#disperser-BatchMetadata)
-  * [BlobHeader](disperser.md#disperser-BlobHeader)
-  * [BlobInfo](disperser.md#disperser-BlobInfo)
-  * [BlobQuorumParam](disperser.md#disperser-BlobQuorumParam)
-  * [BlobStatusReply](disperser.md#disperser-BlobStatusReply)
-  * [BlobStatusRequest](disperser.md#disperser-BlobStatusRequest)
-  * [BlobVerificationProof](disperser.md#disperser-BlobVerificationProof)
-  * [DisperseBlobReply](disperser.md#disperser-DisperseBlobReply)
-  * [DisperseBlobRequest](disperser.md#disperser-DisperseBlobRequest)
-  * [RetrieveBlobReply](disperser.md#disperser-RetrieveBlobReply)
-  * [RetrieveBlobRequest](disperser.md#disperser-RetrieveBlobRequest)
-  * [SecurityParams](disperser.md#disperser-SecurityParams)
-  * [BlobStatus](disperser.md#disperser-BlobStatus)
+  * [BatchHeader](disperser.md#batchheader)
+  * [BatchMetadata](disperser.md#batchmetadata)
+  * [BlobHeader](disperser.md#blobheader)
+  * [BlobInfo](disperser.md#blobinfo)
+  * [BlobQuorumParam](disperser.md#blobquorumparam)
+  * [BlobStatusReply](disperser.md#blobstatusreply)
+  * [BlobStatusRequest](disperser.md#blobstatusrequest)
+  * [BlobVerificationProof](disperser.md#blobverificationproof)
+  * [DisperseBlobReply](disperser.md#disperseblobreply)
+  * [DisperseBlobRequest](disperser.md#disperseblobrequest)
+  * [RetrieveBlobRequest](disperser.md#retrieveblobrequest)
+  * [RetrieveBlobReply](disperser.md#retrieveblobreply)
+  * [SecurityParams](disperser.md#securityparams)
+  * [BlobStatus](disperser.md#blobstatus)
 * [Scalar Value Types](disperser.md#scalar-value-types)
 
 [Top](disperser.md#top)
@@ -107,14 +107,6 @@ BlobStatusRequest is used to query the status of a blob.
 
 <table><thead><tr><th width="183">Field</th><th>Type</th><th width="135">Label</th><th>Description</th></tr></thead><tbody><tr><td>data</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>The data to be dispersed. The size of data must be &#x3C;= 512KiB.</td></tr><tr><td>security_params</td><td><a href="disperser.md#disperser-SecurityParams">SecurityParams</a></td><td>repeated</td><td>Security parameters allowing clients to customize the safety (via adversary threshold) and liveness (via quorum threshold). Clients can define one SecurityParams per quorum, and specify multiple quorums. The disperser will ensure that the encoded blobs for each quorum are all processed within the same batch.</td></tr></tbody></table>
 
-### RetrieveBlobReply
-
-RetrieveBlobReply contains the retrieved blob data
-
-| Field | Type                        | Label | Description |
-| ----- | --------------------------- | ----- | ----------- |
-| data  | [bytes](disperser.md#bytes) |       |             |
-
 ### RetrieveBlobRequest
 
 RetrieveBlobRequest contains parameters to retrieve the blob.
@@ -123,6 +115,14 @@ RetrieveBlobRequest contains parameters to retrieve the blob.
 | ------------------- | ----------------------------- | ----- | ----------- |
 | batch\_header\_hash | [bytes](disperser.md#bytes)   |       |             |
 | blob\_index         | [uint32](disperser.md#uint32) |       |             |
+
+### RetrieveBlobReply
+
+RetrieveBlobReply contains the retrieved blob data
+
+| Field | Type                        | Label | Description |
+| ----- | --------------------------- | ----- | ----------- |
+| data  | [bytes](disperser.md#bytes) |       |             |
 
 ### SecurityParams
 
