@@ -4,14 +4,13 @@
 2. [Glossary](definitions.md)
 3. [Data Model](data-model.md)
 4. [Architecture](architecture/)
-   * Disperser
-   * Batcher
-   * Retriever
-5. [Security Guarantee](overview-1/)
-   * [Attestation](broken-reference)
-   * [Storage](broken-reference)
-   * [Retrieval](broken-reference)
-6. API
+   * [Disperser](architecture/disperser.md)
+   * [Batcher](architecture/batcher.md)
+   * [Retriever](architecture/retriever.md)
+5. [Security Guarantee](security/)
+   * [Encoding](security/encoding.md)
+   * [KZG Encoder Backend](security/kzg.md)
+6. [API](docs/)
    * [Disperser API](docs/disperser.md)
    * [Retriever API](docs/retriever.md)
 7. [Dependent Package](pkg/)
