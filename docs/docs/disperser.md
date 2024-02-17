@@ -3,7 +3,7 @@
 ## Table of Contents
 
 * [Service](disperser.md#service)
-  * [Disperser](disperser.md#disperser-Disperser)
+  * [Disperser](disperser.md#disperser)
 * [Data Structure](disperser.md#data-structure)
   * [BatchHeader](disperser.md#disperser-BatchHeader)
   * [BatchMetadata](disperser.md#disperser-BatchMetadata)

@@ -6,15 +6,15 @@ ZeroGDA is a decentralized data availability (DA) service with deep consideratio
 
 To dive deep into the technical details, continue reading [ZeroGDA protocol spec](docs/overview.md).&#x20;
 
-## API Documentation
+## Integration
 
 The ZeroGDA public API is documented [here](docs/docs/).
 
-## Prerequisites
+## Deployment
 
 * For local test environment, [aws-cli](https://aws.amazon.com/cn/cli/) is required.
 
-## LocalStack
+### LocalStack
 
 Create LocalStack(local aws simulation) docker image and start a docker instance:
 
@@ -24,7 +24,7 @@ cd inabox
 make deploy-localstack
 ```
 
-## Disperser
+### Disperser
 
 Build binaries:
 
