@@ -1,4 +1,4 @@
-# docs
+# ZeroG DA Spec
 
 ## Organization
 
@@ -9,13 +9,14 @@ In general, the `core` project contains implementation of all the important busi
 ## Directory structure
 
 ```
-┌──  Protobuf definitions and contract bindings
-┌── : Core logic of the ZGDA protocol
-├── : Disperser service
-├── : Documentation and specification
-├── : Dependent pkg
-|   ├── : Core encoding/decoding functionality and multiproof generation
-|   └── : kzg libraries
-├── : Retriever service
-├── : Tools for running integration tests
+┌── : api: Protobuf definitions
+├── : common: contract bindings and other basic components
+┌── : core: Core logic of the ZGDA protocol
+├── : disperser: Disperser service
+├── : docs: Documentation and specification
+├── : pkg: Dependent pkg
+|   ├── : encoding: Core encoding/decoding functionality and multiproof generation
+|   └── : kzg: kzg libraries
+├── : retriever: Retriever service
+├── : tests: Tools for running integration tests
 ```
