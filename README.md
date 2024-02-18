@@ -96,3 +96,7 @@ make build
 ```
 make run
 ```
+
+## Contributing
+
+To make contributions to the project, please follow the guidelines [here](contributing.md).
