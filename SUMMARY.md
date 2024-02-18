@@ -12,7 +12,7 @@
     * [Encoding](docs/security/encoding.md)
     * [KZG Encoder Backend](docs/security/kzg.md)
   * [Data Model](docs/data-model.md)
-  * [API](docs/docs/README.md)
+  * [gRPC API](docs/docs/README.md)
     * [Disperser API](docs/docs/disperser.md)
     * [Retriever API](docs/docs/retriever.md)
   * [Dependent Package](docs/pkg/README.md)
