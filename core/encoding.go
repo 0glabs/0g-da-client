@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	EntrySize       = 256 //256B
-	EntryPerSegment = 1024
-	SegmentSize     = EntrySize * EntryPerSegment // 256KB
-	CoeffSize       = 32                          // 32B
-	ProofSize       = 64                          // 64B
-	TargetChunkNum  = 32
+	EntrySize             = 256 //256B
+	EntryPerSegment       = 1024
+	SegmentSize           = EntrySize * EntryPerSegment // 256KB
+	CoeffSize             = 32                          // 32B
+	ProofSize             = 64                          // 64B
+	DefaultTargetChunkNum = 32
 )
 
 // Commitments
@@ -63,11 +63,16 @@ func GetBlobLength(blobSize uint) uint {
 	return (blobSize + symSize - 1) / symSize
 }
 
-// SplitToChunks calculate chunk length and chunk nums for encoded blob, try to split it into TargetChunkNum chunks
-func SplitToChunks(blobLength uint) (uint, uint) {
+// SplitToChunks calculate chunk length and chunk nums for encoded blob, try to split it into DefaultTargetChunkNum chunks if targetChunkNum is zero
+func SplitToChunks(blobLength uint, targetChunkNum uint) (uint, uint) {
 	expectedLength := uint(encoder.NextPowerOf2(uint64(blobLength * 2)))
-	chunkLength := (expectedLength-1)/TargetChunkNum + 1
-	chunkNum := (expectedLength-1)/chunkLength + 1
+	var chunkNum uint
+	if targetChunkNum == 0 {
+		chunkNum = min(DefaultTargetChunkNum, expectedLength)
+	} else {
+		chunkNum = min(uint(encoder.NextPowerOf2(uint64(targetChunkNum))), expectedLength)
+	}
+	chunkLength := (expectedLength-1)/chunkNum + 1
 	return chunkLength, chunkNum
 }
 

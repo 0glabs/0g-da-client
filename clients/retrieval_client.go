@@ -23,15 +23,13 @@ type RetrievalClient interface {
 		blobIndex uint32,
 		referenceBlockNumber uint,
 		batchRoot [32]byte,
-		blobLengths []uint) ([]byte, error)
+		blobDisperseInfos []core.BlobDisperseInfo) ([]byte, error)
 }
 
 type retrievalClient struct {
-	logger                common.Logger
-	indexedChainState     core.IndexedChainState
-	assignmentCoordinator core.AssignmentCoordinator
-	encoder               core.Encoder
-	numConnections        int
+	logger         common.Logger
+	encoder        core.Encoder
+	numConnections int
 
 	Nodes    []*node.Client
 	KVNode   *kv.Client
@@ -137,7 +135,7 @@ func (r *retrievalClient) RetrieveBlob(
 	blobIndex uint32,
 	referenceBlockNumber uint,
 	batchRoot [32]byte,
-	blobLengths []uint) ([]byte, error) {
+	blobDisperseInfos []core.BlobDisperseInfo) ([]byte, error) {
 
 	// Get blob header from any operator
 	blobInfo, err := r.fetchBlobInfo(batchHeaderHash, blobIndex)
@@ -170,7 +168,7 @@ func (r *retrievalClient) RetrieveBlob(
 	}
 
 	// encoding params
-	chunkLength, chunkNum := core.SplitToChunks(blobHeader.Length)
+	chunkLength, chunkNum := core.SplitToChunks(blobHeader.Length, blobDisperseInfos[blobIndex].BlobChunkNum)
 	encodingParams, err := core.GetEncodingParams(chunkLength, chunkNum)
 	if err != nil {
 		return nil, err
@@ -179,9 +177,9 @@ func (r *retrievalClient) RetrieveBlob(
 	r.logger.Debugf("encoding params: %v\n", encodingParams)
 
 	// blob locations
-	blobLocations := make([]*core.BlobLocation, len(blobLengths))
-	for i, l := range blobLengths {
-		chunkLength, chunkNum := core.SplitToChunks(l)
+	blobLocations := make([]*core.BlobLocation, len(blobDisperseInfos))
+	for i, info := range blobDisperseInfos {
+		chunkLength, chunkNum := core.SplitToChunks(info.BlobLength, info.BlobChunkNum)
 		blobLocations[i] = &core.BlobLocation{
 			ChunkLength:    chunkLength,
 			ChunkNum:       chunkNum,

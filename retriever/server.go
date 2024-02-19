@@ -83,7 +83,7 @@ func (s *Server) RetrieveBlob(ctx context.Context, req *pb.BlobRequest) (*pb.Blo
 		req.GetBlobIndex(),
 		uint(batchInfo.BatchHeader.ReferenceBlockNumber),
 		batchInfo.BatchHeader.BatchRoot,
-		batchInfo.BlobLengths,
+		batchInfo.BlobDisperseInfos,
 	)
 	if err != nil {
 		return nil, err

@@ -221,7 +221,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 
 	blobLength := core.GetBlobLength(metadata.RequestMetadata.BlobSize)
 
-	chunkLength, chunkNum := core.SplitToChunks(blobLength)
+	chunkLength, chunkNum := core.SplitToChunks(blobLength, uint(blob.RequestHeader.TargetChunkNum))
 
 	params, err := core.GetEncodingParams(chunkLength, chunkNum)
 	if err != nil {

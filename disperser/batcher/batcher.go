@@ -280,25 +280,3 @@ func (b *Batcher) parseBatchIDFromReceipt(ctx context.Context, txReceipt *types.
 	}
 	return 0, fmt.Errorf("failed to find BatchConfirmed log from the transaction")
 }
-
-// Determine failure status for each blob based on stake signed per quorum. We fail a blob if it received
-// insufficient signatures for any quorum
-func getBlobQuorumPassStatus(signedQuorums map[core.QuorumID]*core.QuorumResult, headers []*core.BlobHeader) ([]bool, int) {
-	numPassed := 0
-	passed := make([]bool, len(headers))
-	for ind, blob := range headers {
-		thisPassed := true
-		for _, quorum := range blob.QuorumInfos {
-			if signedQuorums[quorum.QuorumID].PercentSigned < quorum.QuorumThreshold {
-				thisPassed = false
-				break
-			}
-		}
-		passed[ind] = thisPassed
-		if thisPassed {
-			numPassed++
-		}
-	}
-
-	return passed, numPassed
-}

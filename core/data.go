@@ -50,6 +50,8 @@ type BlobRequestHeader struct {
 	SecurityParams []*SecurityParam `json:"security_params"`
 	// AccountID is the account that is paying for the blob to be stored
 	AccountID AccountID `json:"account_id"`
+	// TargetChunkNum is the number of chunks that encoded blob split into
+	TargetChunkNum uint32 `json:"target_chunk_num"`
 }
 
 func (h *BlobRequestHeader) Validate() error {
@@ -212,10 +214,15 @@ type KVBlobInfo struct {
 	MerkleProof *merkletree.Proof // to prove blob exists in batch
 }
 
+type BlobDisperseInfo struct {
+	BlobLength   uint
+	BlobChunkNum uint
+}
+
 // KVBatchInfo to write to KV stream, blob lengths are used to recompute the chunks allocations
 type KVBatchInfo struct {
 	*BatchHeader
-	BlobLengths []uint
+	BlobDisperseInfos []BlobDisperseInfo
 }
 
 // BlobLocation the segment index and offset of chunks in encoded blob

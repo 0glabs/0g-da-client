@@ -63,7 +63,8 @@ var _ disperser.Dispatcher = (*dispatcher)(nil)
 func DumpEncodedBlobs(blobs []*core.EncodedBlob) ([]byte, error) {
 	blobLocations := make([]*core.BlobLocation, len(blobs))
 	for i, blob := range blobs {
-		chunkLength, chunkNum := core.SplitToChunks(blob.BlobHeader.Length)
+		chunkLength := uint(len(blob.Bundles[0].Coeffs))
+		chunkNum := uint(len(blob.Bundles))
 		blobLocations[i] = &core.BlobLocation{
 			ChunkLength:    chunkLength,
 			ChunkNum:       chunkNum,
@@ -83,19 +84,6 @@ func DumpEncodedBlobs(blobs []*core.EncodedBlob) ([]byte, error) {
 		}
 	}
 	return res, nil
-}
-
-func GetSegRoot(path string) (eth_common.Hash, error) {
-	file, err := zg_core.Open(path)
-	defer file.Close()
-	if err != nil {
-		return eth_common.Hash{}, fmt.Errorf("Failed to open file %v: %v", path, err)
-	}
-	tree, err := zg_core.MerkleTree(file)
-	if err != nil {
-		return eth_common.Hash{}, fmt.Errorf("Failed to create file merkle tree %v: %v", file, err)
-	}
-	return tree.Root(), nil
 }
 
 func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobs []*core.EncodedBlob, proofs []*merkletree.Proof) (eth_common.Hash, error) {
@@ -121,13 +109,16 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	// kv
 	// batcher info
 	batcher := c.KVNode.Batcher()
-	blobLengths := make([]uint, len(blobs))
+	blobDisperseInfos := make([]core.BlobDisperseInfo, len(blobs))
 	for i, blob := range blobs {
-		blobLengths[i] = blob.BlobHeader.Length
+		blobDisperseInfos[i] = core.BlobDisperseInfo{
+			BlobLength:   blob.BlobHeader.Length,
+			BlobChunkNum: uint(len(blob.Bundles[0].Coeffs)),
+		}
 	}
 	kvBatchInfo := core.KVBatchInfo{
-		BatchHeader: batchHeader,
-		BlobLengths: blobLengths,
+		BatchHeader:       batchHeader,
+		BlobDisperseInfos: blobDisperseInfos,
 	}
 	serializedBatchInfo, err := kvBatchInfo.Serialize()
 	if err != nil {
