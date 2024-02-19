@@ -20,5 +20,3 @@
     * [KZG and FFT utils](docs/pkg/kzg.md)
   * [Glossary](docs/definitions.md)
 * [Contributing](contributing.md)
-* [Inabox Tests](inabox/README.md)
-  * [Anvil State Generation steps for N Operators](inabox/AnvilStateGen\_README.md)
