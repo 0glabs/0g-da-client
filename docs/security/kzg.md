@@ -8,7 +8,7 @@ We will also highlight the additional constraints on the Encoding interface whic
 
 ## Deriving the polynomial coefficients and commitment
 
-As described in the [Encoding Module Specification](encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum\_{i=0}^{m-1} c\_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c\_i)\_{i=0}^{m-1}$.
+As described in the [Encoding Module Specification](encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum_{i=0}^{m-1} c_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c_i)_{i=0}^{m-1}$.
 
 In the case of the KZG-FFT encoder, the polynomial lives on the field associated with the BN-254 elliptic curve, which as order \[TODO: fill in order].
 
@@ -24,7 +24,7 @@ $$
 p_k = \sum_{i=1}^{n}c_i (v^k)^i
 $$
 
-where $p\_k$ gives the evaluation of the polynomial at $v^k \in S$. Letting $c$ denote the vector of polynomial coefficients and $p$ the vector of polynomial evaluations, we can use the shorthand $p = DFT\[c]$. The inverse relation also holds, i.e., $c = DFT^{-1}\[p]$.
+where $p_k$ gives the evaluation of the polynomial at $v^k \in S$. Letting $c$ denote the vector of polynomial coefficients and $p$ the vector of polynomial evaluations, we can use the shorthand $p = DFT[c]$. The inverse relation also holds, i.e., $c = DFT^{-1}[p]$.
 
 To evaluate the DFT programmatically, we want $m = n$. Notice that we can achieve this when $m > n$ by simply padding $c$ with zeros to be of length $m$.
 
@@ -39,7 +39,7 @@ The construction of the multireveal proofs can also be performed using a DFT (as
 Given the group $S$ corresponding to the indices of the polynomial evaluations and a cyclic group $C$ which is a subgroup of $S$, the cosets of $C$ in $S$ are given by
 
 $$
-s+C = \{g+c : c \in C\} \text{ for } s \in S.
+s+C = {g+c : c \in C} \text{ for } s \in S.
 $$
 
 Each coset $s+C$ has size $|C|$, and there are $|S|/|C|$ unique and disjoint cosets.
