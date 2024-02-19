@@ -29,13 +29,13 @@
 
 Disperser defines the public APIs for dispersing blobs.
 
-<table><thead><tr><th width="172">Method Name</th><th>Request Type</th><th>Response Type</th><th>Description</th></tr></thead><tbody><tr><td>DisperseBlob</td><td><a href="disperser.md#disperser-DisperseBlobRequest">DisperseBlobRequest</a></td><td><a href="disperser.md#disperser-DisperseBlobReply">DisperseBlobReply</a></td><td>This API accepts blob to disperse from clients. This executes the dispersal async, i.e. it returns once the request is accepted. The client could use GetBlobStatus() API to poll the the processing status of the blob.</td></tr><tr><td>GetBlobStatus</td><td><a href="disperser.md#disperser-BlobStatusRequest">BlobStatusRequest</a></td><td><a href="disperser.md#disperser-BlobStatusReply">BlobStatusReply</a></td><td>This API is meant to be polled for the blob status.</td></tr><tr><td>RetrieveBlob</td><td><a href="disperser.md#disperser-RetrieveBlobRequest">RetrieveBlobRequest</a></td><td><a href="disperser.md#disperser-RetrieveBlobReply">RetrieveBlobReply</a></td><td>This retrieves the requested blob from the Disperser's backend. This is a more efficient way to retrieve blobs than directly retrieving from the DA Nodes (see detail about this approach in api/proto/retriever/retriever.proto). The blob should have been initially dispersed via this Disperser service for this API to work.</td></tr></tbody></table>
+<table><thead><tr><th width="172">Method Name</th><th>Request Type</th><th>Response Type</th><th>Description</th></tr></thead><tbody><tr><td>DisperseBlob</td><td><a href="disperser.md#disperseblobrequest">DisperseBlobRequest</a></td><td><a href="disperser.md#disperseblobreply">DisperseBlobReply</a></td><td>This API accepts blob to disperse from clients. This executes the dispersal async, i.e. it returns once the request is accepted. The client could use GetBlobStatus() API to poll the the processing status of the blob.</td></tr><tr><td>GetBlobStatus</td><td><a href="disperser.md#blobstatusrequest">BlobStatusRequest</a></td><td><a href="disperser.md#blobstatusreply">BlobStatusReply</a></td><td>This API is meant to be polled for the blob status.</td></tr><tr><td>RetrieveBlob</td><td><a href="disperser.md#retrieveblobrequest">RetrieveBlobRequest</a></td><td><a href="disperser.md#retrieveblobreply">RetrieveBlobReply</a></td><td>This retrieves the requested blob from the Disperser's backend. This is a more efficient way to retrieve blobs than directly retrieving from the DA Nodes (see detail about this approach in api/proto/retriever/retriever.proto). The blob should have been initially dispersed via this Disperser service for this API to work.</td></tr></tbody></table>
 
 ## Data Structure
 
 ### BatchHeader
 
-<table><thead><tr><th>Field</th><th>Type</th><th width="134">Label</th><th>Description</th></tr></thead><tbody><tr><td>batch_root</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>The root of the merkle tree with the hashes of blob headers as leaves.</td></tr><tr><td>quorum_numbers</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>All quorums associated with blobs in this batch.</td></tr><tr><td>quorum_signed_percentages</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>The percentage of stake that has signed for this batch. The quorum_signed_percentages[i] is percentage for the quorum_numbers[i].</td></tr><tr><td>reference_block_number</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>The Ethereum block number at which the batch was created. The Disperser will encode and disperse the blobs based on the onchain info (e.g. operator stakes) at this block number.</td></tr></tbody></table>
+<table><thead><tr><th>Field</th><th>Type</th><th width="134">Label</th><th>Description</th></tr></thead><tbody><tr><td>batch_root</td><td>bytes</td><td></td><td>The root of the merkle tree with the hashes of blob headers as leaves.</td></tr><tr><td>quorum_numbers</td><td>bytes</td><td></td><td>All quorums associated with blobs in this batch.</td></tr><tr><td>quorum_signed_percentages</td><td>bytes</td><td></td><td>The percentage of stake that has signed for this batch. The quorum_signed_percentages[i] is percentage for the quorum_numbers[i].</td></tr><tr><td>reference_block_number</td><td>uint32</td><td></td><td>The Ethereum block number at which the batch was created. The Disperser will encode and disperse the blobs based on the onchain info (e.g. operator stakes) at this block number.</td></tr></tbody></table>
 
 ### BatchMetadata
 
@@ -58,13 +58,13 @@ Disperser defines the public APIs for dispersing blobs.
 
 ### BlobHeader
 
-<table><thead><tr><th>Field</th><th>Type</th><th width="137">Label</th><th>Description</th></tr></thead><tbody><tr><td>commitment</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>KZG commitment to the blob.</td></tr><tr><td>data_length</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>The length of the blob in symbols (each symbol is 31 bytes).</td></tr><tr><td>blob_quorum_params</td><td><a href="disperser.md#disperser-BlobQuorumParam">BlobQuorumParam</a></td><td>repeated</td><td>The params of the quorums that this blob participates in.</td></tr></tbody></table>
+<table><thead><tr><th>Field</th><th>Type</th><th width="137">Label</th><th>Description</th></tr></thead><tbody><tr><td>commitment</td><td>bytes</td><td></td><td>KZG commitment to the blob.</td></tr><tr><td>data_length</td><td>uint32</td><td></td><td>The length of the blob in symbols (each symbol is 31 bytes).</td></tr><tr><td>blob_quorum_params</td><td><a href="disperser.md#blobquorumparam">BlobQuorumParam</a></td><td>repeated</td><td>The params of the quorums that this blob participates in.</td></tr></tbody></table>
 
 ### BlobInfo
 
 BlobInfo contains information needed to confirm the blob against the ZGDA contracts
 
-<table><thead><tr><th>Field</th><th>Type</th><th width="132">Label</th><th>Description</th></tr></thead><tbody><tr><td>blob_header</td><td><a href="disperser.md#disperser-BlobHeader">BlobHeader</a></td><td></td><td></td></tr><tr><td>blob_verification_proof</td><td><a href="disperser.md#disperser-BlobVerificationProof">BlobVerificationProof</a></td><td></td><td></td></tr></tbody></table>
+<table><thead><tr><th>Field</th><th>Type</th><th width="132">Label</th><th>Description</th></tr></thead><tbody><tr><td>blob_header</td><td><a href="disperser.md#blobheader">BlobHeader</a></td><td></td><td></td></tr><tr><td>blob_verification_proof</td><td><a href="disperser.md#blobverificationproof">BlobVerificationProof</a></td><td></td><td></td></tr></tbody></table>
 
 ### BlobQuorumParam
 
@@ -87,42 +87,42 @@ BlobInfo contains information needed to confirm the blob against the ZGDA contra
 
 ### BlobStatusReply
 
-<table><thead><tr><th width="171">Field</th><th width="157">Type</th><th width="138">Label</th><th>Description</th></tr></thead><tbody><tr><td>status</td><td><a href="disperser.md#disperser-BlobStatus">BlobStatus</a></td><td></td><td>The status of the blob.</td></tr><tr><td>info</td><td><a href="disperser.md#disperser-BlobInfo">BlobInfo</a></td><td></td><td>The blob info needed for clients to confirm the blob against the ZGDA contracts.</td></tr></tbody></table>
+<table><thead><tr><th width="171">Field</th><th width="157">Type</th><th width="138">Label</th><th>Description</th></tr></thead><tbody><tr><td>status</td><td><a href="disperser.md#blobstatus">BlobStatus</a></td><td></td><td>The status of the blob.</td></tr><tr><td>info</td><td><a href="disperser.md#blobinfo">BlobInfo</a></td><td></td><td>The blob info needed for clients to confirm the blob against the ZGDA contracts.</td></tr></tbody></table>
 
 ### BlobStatusRequest
 
 BlobStatusRequest is used to query the status of a blob.
 
-<table><thead><tr><th>Field</th><th width="184">Type</th><th width="130">Label</th><th>Description</th></tr></thead><tbody><tr><td>request_id</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td></td></tr></tbody></table>
+<table><thead><tr><th>Field</th><th width="184">Type</th><th width="130">Label</th><th>Description</th></tr></thead><tbody><tr><td>request_id</td><td>bytes</td><td></td><td></td></tr></tbody></table>
 
 ### BlobVerificationProof
 
-<table><thead><tr><th width="202">Field</th><th width="159">Type</th><th width="89">Label</th><th>Description</th></tr></thead><tbody><tr><td>batch_id</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>batch_id is an incremental ID assigned to a batch by ZGDAServiceManager</td></tr><tr><td>blob_index</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>The index of the blob in the batch (which is logically an ordered list of blobs).</td></tr><tr><td>batch_metadata</td><td><a href="disperser.md#disperser-BatchMetadata">BatchMetadata</a></td><td></td><td></td></tr><tr><td>inclusion_proof</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>inclusion_proof is a merkle proof for a blob header's inclusion in a batch</td></tr><tr><td>quorum_indexes</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>indexes of quorums in BatchHeader.quorum_numbers that match the quorums in BlobHeader.blob_quorum_params Ex. BlobHeader.blob_quorum_params = [ { quorum_number = 0, ... }, { quorum_number = 3, ... }, { quorum_number = 5, ... }, ] BatchHeader.quorum_numbers = [0, 5, 3] => 0x000503 Then, quorum_indexes = [0, 2, 1] => 0x000201</td></tr></tbody></table>
+<table><thead><tr><th width="202">Field</th><th width="159">Type</th><th width="89">Label</th><th>Description</th></tr></thead><tbody><tr><td>batch_id</td><td>uint32</td><td></td><td>batch_id is an incremental ID assigned to a batch by ZGDAServiceManager</td></tr><tr><td>blob_index</td><td>uint32</td><td></td><td>The index of the blob in the batch (which is logically an ordered list of blobs).</td></tr><tr><td>batch_metadata</td><td><a href="disperser.md#batchmetadata">BatchMetadata</a></td><td></td><td></td></tr><tr><td>inclusion_proof</td><td>bytes</td><td></td><td>inclusion_proof is a merkle proof for a blob header's inclusion in a batch</td></tr><tr><td>quorum_indexes</td><td>bytes</td><td></td><td>indexes of quorums in BatchHeader.quorum_numbers that match the quorums in BlobHeader.blob_quorum_params Ex. BlobHeader.blob_quorum_params = [ { quorum_number = 0, ... }, { quorum_number = 3, ... }, { quorum_number = 5, ... }, ] BatchHeader.quorum_numbers = [0, 5, 3] => 0x000503 Then, quorum_indexes = [0, 2, 1] => 0x000201</td></tr></tbody></table>
 
 ### DisperseBlobReply
 
-<table><thead><tr><th width="156">Field</th><th width="149">Type</th><th width="127">Label</th><th>Description</th></tr></thead><tbody><tr><td>result</td><td><a href="disperser.md#disperser-BlobStatus">BlobStatus</a></td><td></td><td>The status of the blob associated with the request_id.</td></tr><tr><td>request_id</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>The request ID generated by the disperser. Once a request is accepted (although not processed), a unique request ID will be generated. Two different DisperseBlobRequests (determined by the hash of the DisperseBlobRequest) will have different IDs, and the same DisperseBlobRequest sent repeatedly at different times will also have different IDs. The client should use this ID to query the processing status of the request (via the GetBlobStatus API).</td></tr></tbody></table>
+<table><thead><tr><th width="156">Field</th><th width="149">Type</th><th width="127">Label</th><th>Description</th></tr></thead><tbody><tr><td>result</td><td><a href="disperser.md#blobstatus">BlobStatus</a></td><td></td><td>The status of the blob associated with the request_id.</td></tr><tr><td>request_id</td><td>bytes</td><td></td><td>The request ID generated by the disperser. Once a request is accepted (although not processed), a unique request ID will be generated. Two different DisperseBlobRequests (determined by the hash of the DisperseBlobRequest) will have different IDs, and the same DisperseBlobRequest sent repeatedly at different times will also have different IDs. The client should use this ID to query the processing status of the request (via the GetBlobStatus API).</td></tr></tbody></table>
 
 ### DisperseBlobRequest
 
-<table><thead><tr><th width="183">Field</th><th>Type</th><th width="135">Label</th><th>Description</th></tr></thead><tbody><tr><td>data</td><td><a href="disperser.md#bytes">bytes</a></td><td></td><td>The data to be dispersed. The size of data must be &#x3C;= 512KiB.</td></tr><tr><td>security_params</td><td><a href="disperser.md#disperser-SecurityParams">SecurityParams</a></td><td>repeated</td><td>Security parameters allowing clients to customize the safety (via adversary threshold) and liveness (via quorum threshold). Clients can define one SecurityParams per quorum, and specify multiple quorums. The disperser will ensure that the encoded blobs for each quorum are all processed within the same batch.</td></tr></tbody></table>
+<table><thead><tr><th width="183">Field</th><th>Type</th><th width="135">Label</th><th>Description</th></tr></thead><tbody><tr><td>data</td><td>bytes</td><td></td><td>The data to be dispersed. The size of data must be &#x3C;= 512KiB.</td></tr><tr><td>security_params</td><td><a href="disperser.md#securityparams">SecurityParams</a></td><td>repeated</td><td>Security parameters allowing clients to customize the safety (via adversary threshold) and liveness (via quorum threshold). Clients can define one SecurityParams per quorum, and specify multiple quorums. The disperser will ensure that the encoded blobs for each quorum are all processed within the same batch.</td></tr></tbody></table>
 
 ### RetrieveBlobRequest
 
 RetrieveBlobRequest contains parameters to retrieve the blob.
 
-| Field               | Type                          | Label | Description |
-| ------------------- | ----------------------------- | ----- | ----------- |
-| batch\_header\_hash | [bytes](disperser.md#bytes)   |       |             |
-| blob\_index         | [uint32](disperser.md#uint32) |       |             |
+| Field               | Type   | Label | Description |
+| ------------------- | ------ | ----- | ----------- |
+| batch\_header\_hash | bytes  |       |             |
+| blob\_index         | uint32 |       |             |
 
 ### RetrieveBlobReply
 
 RetrieveBlobReply contains the retrieved blob data
 
-| Field | Type                        | Label | Description |
-| ----- | --------------------------- | ----- | ----------- |
-| data  | [bytes](disperser.md#bytes) |       |             |
+| Field | Type  | Label | Description |
+| ----- | ----- | ----- | ----------- |
+| data  | bytes |       |             |
 
 ### SecurityParams
 

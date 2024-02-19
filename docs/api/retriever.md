@@ -15,26 +15,11 @@
 
 ### Retriever
 
-The Retriever is a service for retrieving chunks corresponding to a blob from the ZGDA operator nodes and reconstructing the original blob from the chunks. This is a client-side library that the users are supposed to operationalize.
-
-Note: Users generally have two ways to retrieve a blob from ZGDA:
-
-1. Retrieve from the Disperser that the user initially used for dispersal: the API is Disperser.RetrieveBlob() as defined in api/proto/disperser/disperser.proto
-2. Retrieve directly from the ZGDA Nodes, which is supported by this Retriever.
-
-The Disperser.RetrieveBlob() (the 1st approach) is generally faster and cheaper as the Disperser manages the blobs that it has processed, whereas the Retriever.RetrieveBlob() (the 2nd approach here) removes the need to trust the Disperser, with the downside of worse cost and performance.
-
-| Method Name  | Request Type                                      | Response Type                                 | Description                                                                                                         |
-| ------------ | ------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| RetrieveBlob | [BlobRequest](retriever.md#retriever-BlobRequest) | [BlobReply](retriever.md#retriever-BlobReply) | This fans out request to ZGDA Nodes to retrieve the chunks and returns the reconstructed original blob in response. |
+| Method Name  | Request Type                            | Response Type                       | Description                                                                                                         |
+| ------------ | --------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| RetrieveBlob | [BlobRequest](retriever.md#blobrequest) | [BlobReply](retriever.md#blobreply) | This fans out request to ZGDA Nodes to retrieve the chunks and returns the reconstructed original blob in response. |
 
 ## Data Structure
-
-### BlobReply
-
-| Field | Type                        | Label | Description                                                               |
-| ----- | --------------------------- | ----- | ------------------------------------------------------------------------- |
-| data  | [bytes](retriever.md#bytes) |       | The blob retrieved and reconstructed from the ZGDA Nodes per BlobRequest. |
 
 ### BlobRequest
 
