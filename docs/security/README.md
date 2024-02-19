@@ -15,8 +15,8 @@ The merkle root is constructed from the multiple blobs in the batch by the batch
 
 The ZGDA retrievers expect for blobs to correspond to evaluations of a polynomial of a certain degree. The blob payload delivered to the receiver contains a KZG polynomial commitment identifying the polynomial, as well as a separate commitment allowing the retriever to verify its degree.
 
-The receiver will perform the following checks for each retrieval request to ensure that the `BlobRequest` is valid:
+The receiver will perform the following checks for each retrieval request to ensure that the [`BlobRequest`](../data-model.md#request) is valid:
 
 1. Verify the merkle proof in the requested blob metadata by calling `VerifyProofUsing`.
-2. Verify the KZG commitment by using`lowDegreeProof` to verify that `BlobCommitments` in the `BlobHeader` commits to a polynomial of degree equal to the commitments length.
+2. Verify the KZG commitment by using `lowDegreeProof` to verify that [`BlobCommitments`](../data-model.md#blob-header) in the [`BlobHeader`](../data-model.md#blob-header) commits to a polynomial of degree equal to the commitments length.
 3. Verify the KZG commitment for each blob chunk which was previously encoded into the blob during the dispersal phase.

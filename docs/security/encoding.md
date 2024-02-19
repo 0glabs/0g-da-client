@@ -66,7 +66,7 @@ Without modification, RS encoding has the following important problem: Suppose t
 
 #### Encoded Chunk Verification
 
-KZG commitments provide three important primitives, for a polynomial $p(X) = \sum_{i}c_iX^i$:
+KZG commitments provide three important primitives, for a polynomial $p(X) = \sum\_{i}c\_iX^i$:
 
 * `commit(p(X))` returns a `Commitment` which is used to identify the polynomial.
 * `prove(p(X),indices)` returns a `Proof` which can be used to verify that a set of evaluations lies on the polynomial.
@@ -78,13 +78,9 @@ KZG commitments also can be used to verify the degree of the original polynomial
 
 The KZG commitment relies on a structured random string (SRS) containing a generator point $G$ multiplied by all of the powers of some secret field element $\tau$, up to some maximum power $n$. This means that it is not possible to use this SRS to commit to a polynomial of degree greater than $n$. A consequence of this is that if $p(x)$ is a polynomial of degree greater than $m$, it will not be possible to commit to the polynomial $x^{n-m}p(x)$.
 
-The scheme thus works as follows: If the disperser wishes to claim that the polynomial $p(x)$ is of degree less than or equal to $m$, they must provide along with the commitment $C_1$ to $p$, a commitment $C_2$ to $q(x) = x^{n-m}p(x)$. A verifier can request the disperser to open both polynomials at a random point $y$, verify the values of $p(y)$ and $q(y)$, and then check that $q(y) = y^{n-m}p(y)$. If these checks pass, the verifier knows that 1) $deg(q) = deg(p) + n - m$, 2) the disperser was able to make a commitment to $q$, and so $deg(q) \le n$, and therefore 3), $deg(p) \le m$. In practice, this protocol can be made non-interactive using the Fiat-Shamir heuristic.
+The scheme thus works as follows: If the disperser wishes to claim that the polynomial $p(x)$ is of degree less than or equal to $m$, they must provide along with the commitment $C\_1$ to $p$, a commitment $C\_2$ to $q(x) = x^{n-m}p(x)$. A verifier can request the disperser to open both polynomials at a random point $y$, verify the values of $p(y)$ and $q(y)$, and then check that $q(y) = y^{n-m}p(y)$. If these checks pass, the verifier knows that 1) $deg(q) = deg(p) + n - m$, 2) the disperser was able to make a commitment to $q$, and so $deg(q) \le n$, and therefore 3), $deg(p) \le m$. In practice, this protocol can be made non-interactive using the Fiat-Shamir heuristic.
 
 Note: The blob length verification here allows for the blob length to be upper-bounded; it cannot be used to prove the exact blob length.
-
-## The KZG-FFT Encoder Backend
-
-A design for an efficient encoding backend that makes use of amortized kzg multi-reveal generation is described in the follow section.
 
 ## Validation Actions
 

@@ -10,11 +10,11 @@ To dive deep into the technical details, continue reading [ZeroGDA protocol spec
 
 Check out [this example](https://github.com/zero-gravity-labs/zerog-da-example-rust) for how to integrate the ZGDA into your own applications.
 
-For detailed public APIs, visit [gRPC API](docs/docs/) section.
+For detailed public APIs, visit [gRPC API](docs/api/) section.
 
 ## Deployment
 
-* For local test environment, [aws-cli](https://aws.amazon.com/cn/cli/) is required.
+* For local test environment, [aws-cli](https://aws.amazon.com/cli/) is required.
 * [Local Stack setup](./#localstack)
 * [Disperser](./#disperser)
 * [Retriever](./#retriever)

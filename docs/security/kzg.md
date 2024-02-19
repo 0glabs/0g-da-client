@@ -1,14 +1,17 @@
 # KZG Encoder Backend
 
-It is important that the encoding and commitment tasks are able to be performed in seconds and that the dominating complexity of the computation is nearly linear in the degree of the polynomial. This is done using algorithms based on the Fast Fourier Transform (FFT).
+It is important that the encoding and commitment tasks are able to be performed in seconds and that the dominating complexity of the computation is nearly linear in the degree of the polynomial. This is achieved using algorithms based on the Fast Fourier Transform (FFT) and amortized kzg multi-reveal generation.
 
-This document describes how the KZG-FFT encoder backend implements the `Encode(data [][]byte, params EncodingParams) (BlobCommitments, []*Chunk, error)` interface, which 1) transforms the blob into a list of `params.NumChunks` `Chunks`, where each chunk is of length `params.ChunkLength` 2) produces the associated polynomial commitments and proofs.
+This document describes how the KZG-FFT encoder backend implements the `Encode(data [][]byte, params EncodingParams) (BlobCommitments, []*Chunk, error)` interface, which
+
+1. transforms the blob into a list of `params.NumChunks` `Chunks`, where each chunk is of length `params.ChunkLength`.
+2. produces the associated polynomial commitments and proofs.
 
 We will also highlight the additional constraints on the Encoding interface which arise from the KZG-FFT encoder backend.
 
 ## Deriving the polynomial coefficients and commitment
 
-As described in the [Encoding Module Specification](encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum_{i=0}^{m-1} c_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c_i)_{i=0}^{m-1}$.
+As described in the [Encoding Module Specification](encoding.md), given a blob of data, we convert the blob to a polynomial $p(X) = \sum\_{i=0}^{m-1} c\_iX^i$ by simply slicing the data into a string of symbols, and interpreting this list of symbols as the tuple $(c\_i)\_{i=0}^{m-1}$.
 
 In the case of the KZG-FFT encoder, the polynomial lives on the field associated with the BN-254 elliptic curve, which as order \[TODO: fill in order].
 
@@ -24,7 +27,7 @@ $$
 p_k = \sum_{i=1}^{n}c_i (v^k)^i
 $$
 
-where $p_k$ gives the evaluation of the polynomial at $v^k \in S$. Letting $c$ denote the vector of polynomial coefficients and $p$ the vector of polynomial evaluations, we can use the shorthand $p = DFT[c]$. The inverse relation also holds, i.e., $c = DFT^{-1}[p]$.
+where $p\_k$ gives the evaluation of the polynomial at $v^k \in S$. Letting $c$ denote the vector of polynomial coefficients and $p$ the vector of polynomial evaluations, we can use the shorthand $p = DFT\[c]$. The inverse relation also holds, i.e., $c = DFT^{-1}\[p]$.
 
 To evaluate the DFT programmatically, we want $m = n$. Notice that we can achieve this when $m > n$ by simply padding $c$ with zeros to be of length $m$.
 
@@ -34,7 +37,7 @@ As the encoding interface calls for the construction of `NumChunks` Chunks of le
 
 ## Amortized Multireveal Proof Generation with the FFT
 
-The construction of the multireveal proofs can also be performed using a DFT (as in [“Fast Amortized Kate Proofs”](../design/https:/eprint.iacr.org/2023/033.pdf)). Leaving the full details of this process to the referenced document, we describe here only 1) the index-assignment the scheme used by the amortized multiproof generation approach and 2) the constraints that this creates for the overall encoder interface.
+The construction of the multireveal proofs can also be performed using a DFT (as in ["Fast Amortized Kate Proofs"](https://eprint.iacr.org/2023/033.pdf)). Leaving the full details of this process to the referenced document, we describe here only 1) the index-assignment the scheme used by the amortized multiproof generation approach and 2) the constraints that this creates for the overall encoder interface.
 
 Given the group $S$ corresponding to the indices of the polynomial evaluations and a cyclic group $C$ which is a subgroup of $S$, the cosets of $C$ in $S$ are given by
 

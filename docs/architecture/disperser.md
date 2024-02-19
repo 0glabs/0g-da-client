@@ -2,7 +2,7 @@
 
 ### Dispersal
 
-Requesters that want to store data on 0G Storage make requests to the disperser with the form of [`DisperseBlobRequest`](../data-model.md#disperser).
+Requesters that want to store data on 0G Storage make requests to the disperser with the form of [`DisperseBlobRequest`](../data-model.md#request).
 
 They specify the data they want to store on 0G Storage. The disperser takes each `DisperseBlobRequest` and stores it into the s3 bucket. The data that the disperser stores into the s3 bucket contains two parts: blob metadata and full blob data.
 
