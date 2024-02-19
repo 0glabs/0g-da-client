@@ -113,7 +113,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	for i, blob := range blobs {
 		blobDisperseInfos[i] = core.BlobDisperseInfo{
 			BlobLength:   blob.BlobHeader.Length,
-			BlobChunkNum: uint(len(blob.Bundles[0].Coeffs)),
+			BlobChunkNum: uint(len(blob.Bundles)),
 		}
 	}
 	kvBatchInfo := core.KVBatchInfo{
@@ -171,7 +171,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 			TaskSize: c.UploadTaskSize,
 		}})
 	if err != nil {
-		return eth_common.Hash{}, fmt.Errorf("Failed to upload file: %v", err)
+		return eth_common.Hash{}, fmt.Errorf("failed to upload file: %v", err)
 	}
 	batchHeader.DataRoot = dataRoots[0]
 
