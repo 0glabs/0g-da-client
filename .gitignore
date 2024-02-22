@@ -1,3 +1,5 @@
+.DS_Store
+
 inabox/testdata/*
 inabox/anvil.pid
 

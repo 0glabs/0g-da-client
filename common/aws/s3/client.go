@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 var (
@@ -166,3 +167,23 @@ func (s *client) ListObjects(ctx context.Context, bucket string, prefix string) 
 	}
 	return objects, nil
 }
+
+func (s *client) CreateBucket(ctx context.Context, name, region string) error {
+	_, err := s.s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
+		Bucket: aws.String(name),
+		CreateBucketConfiguration: &types.CreateBucketConfiguration{
+			LocationConstraint: types.BucketLocationConstraint(region),
+		},
+	})
+	
+	return err
+}
+
+func (s *client) DeleteBucket(ctx context.Context, name string) error {
+	_, err := s.s3Client.DeleteBucket(context.Background(), &s3.DeleteBucketInput{
+		Bucket: aws.String(name),
+	})
+	
+	return err
+}
+
