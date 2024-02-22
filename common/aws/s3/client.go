@@ -36,8 +36,10 @@ type Client struct {
 
 func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error) {
 	var err error
+	logger.Info("url", cfg.EndpointURL)
 	once.Do(func() {
 		customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			
 			if cfg.EndpointURL != "" {
 				return aws.Endpoint{
 					PartitionID:   "aws",
@@ -167,7 +169,7 @@ func (s *Client) ListObjects(ctx context.Context, bucket string, prefix string) 
 }
 
 func (s *Client) CreateBucket(ctx context.Context, name, region string) error {
-	_, err := s.s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
+	_, err := s.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(name),
 		CreateBucketConfiguration: &types.CreateBucketConfiguration{
 			LocationConstraint: types.BucketLocationConstraint(region),
@@ -178,7 +180,30 @@ func (s *Client) CreateBucket(ctx context.Context, name, region string) error {
 }
 
 func (s *Client) DeleteBucket(ctx context.Context, name string) error {
-	_, err := s.s3Client.DeleteBucket(context.Background(), &s3.DeleteBucketInput{
+	result, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket: aws.String(name),
+	})
+	
+	if err != nil {
+		return err
+	}
+
+	contents := result.Contents
+
+	var objectIds []types.ObjectIdentifier
+	for _, key := range contents {
+		objectIds = append(objectIds, types.ObjectIdentifier{Key: aws.String(*key.Key)})
+	}
+	
+	_, err = s.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		Bucket: aws.String(name),
+		Delete: &types.Delete{Objects: objectIds},
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = s.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(name),
 	})
 	

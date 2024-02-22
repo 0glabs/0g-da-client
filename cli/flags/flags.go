@@ -9,7 +9,7 @@ import (
 
 const (
 	FlagPrefix   = "aws-cli"
-	envVarPrefix = "AWS-CLI"
+	envVarPrefix = "AWS_CLI"
 )
 
 var (

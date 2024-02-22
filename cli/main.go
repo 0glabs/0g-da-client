@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-
 	"github.com/zero-gravity-labs/zerog-data-avail/cli/flags"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
@@ -28,6 +27,7 @@ func main() {
 	app.Name = "aws-cli"
 	app.Usage = "ZGDA CLI"
 	app.Description = "Service for S3 Operations"
+	app.Flags = flags.Flags
 	app.Commands = []cli.Command{
 		{
 			Name:  "bucket",
@@ -80,25 +80,21 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalf("application failed: %v", err)
 	}
-
-	select {}
 }
 
 func CreateBucket(ctx *cli.Context) error {
-	config, err := NewConfig(ctx)
+	config := NewConfig(ctx)
+
+	s3Client, err := GetS3Client(config)
 	if err != nil {
 		return err
 	}
 
-	s3Client, err := getS3Client(&config)
-	if err != nil {
-		return err
-	}
-	
 	ctx_bg := context.Background()
 	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
-	region := ctx.String(config.AwsClientConfig.Region)
-	err = s3Client.CreateBucket(ctx_bg, bucketName, region)
+	log.Println("bucketName: ", bucketName)
+	log.Println("region: ", config.AwsClientConfig.Region)
+	err = s3Client.CreateBucket(ctx_bg, bucketName, config.AwsClientConfig.Region)
 
 	if err != nil {
 		return err
@@ -108,12 +104,9 @@ func CreateBucket(ctx *cli.Context) error {
 }
 
 func DeleteBucket(ctx *cli.Context) error {
-	config, err := NewConfig(ctx)
-	if err != nil {
-		return err
-	}
+	config := NewConfig(ctx)
 
-	s3Client, err := getS3Client(&config)
+	s3Client, err := GetS3Client(config)
 	if err != nil {
 		return err
 	}
@@ -130,12 +123,9 @@ func DeleteBucket(ctx *cli.Context) error {
 }
 
 func CreateTable(ctx *cli.Context) error {
-	config, err := NewConfig(ctx)
-	if err != nil {
-		return err
-	}
+	config := NewConfig(ctx)
 
-	dynamoClient, err := getDynamodbClient(&config)
+	dynamoClient, err := getDynamodbClient(config)
 	if err != nil {
 		return err
 	}
@@ -158,12 +148,9 @@ func CreateTable(ctx *cli.Context) error {
 }
 
 func DeleteTable(ctx *cli.Context) error {
-	config, err := NewConfig(ctx)
-	if err != nil {
-		return err
-	}
+	config := NewConfig(ctx)
 
-	dynamoClient, err := getDynamodbClient(&config)
+	dynamoClient, err := getDynamodbClient(config)
 	ctx_bg := context.Background()
 
 	if err != nil {
@@ -180,12 +167,12 @@ func DeleteTable(ctx *cli.Context) error {
 	return nil
 }
 
-func getS3Client(cfg *Config) (*s3.Client, error) {
+func GetS3Client(cfg *Config) (*s3.Client, error) {
 	logger, err := logging.GetLogger(cfg.LoggerConfig)
 	if err != nil {
 		return nil, err
 	}
-
+	log.Println("cfg.AwsClientConfig: ", cfg.AwsClientConfig)
 	s3Client, err := s3.NewClient(cfg.AwsClientConfig, logger)
 	if err != nil {
 		return nil, err
