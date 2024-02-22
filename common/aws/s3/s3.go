@@ -7,4 +7,5 @@ type Client interface {
 	UploadObject(ctx context.Context, bucket string, key string, data []byte) error
 	DeleteObject(ctx context.Context, bucket string, key string) error
 	ListObjects(ctx context.Context, bucket string, prefix string) ([]Object, error)
+	CreateBucket(ctx context.Context, tableName string, region string) error
 }

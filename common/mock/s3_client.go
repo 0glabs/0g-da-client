@@ -44,3 +44,7 @@ func (s *S3Client) ListObjects(ctx context.Context, bucket string, prefix string
 	}
 	return objects, nil
 }
+
+func (s *S3Client) CreateBucket(ctx context.Context, tableName string, region string) error {
+	return nil
+}

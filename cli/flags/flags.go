@@ -5,7 +5,6 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
 )
 
 const (
@@ -29,27 +28,15 @@ var (
 	}
 	BucketTableName = cli.StringFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "rate-bucket-table-name"),
-		Usage:  "name of the dynamodb table to store rate limiter buckets. If not provided, a local store will be used",
-		Value:  "",
+		Usage:  "Name of the dynamodb table to store rate limiter buckets.",
+		Required: true,
 		EnvVar: common.PrefixEnvVar(envVarPrefix, "RATE_BUCKET_TABLE_NAME"),
 	}
 )
-
-var requiredFlags = []cli.Flag{
-	S3BucketNameFlag,
-	DynamoDBTableNameFlag,
-	BucketTableName,
-}
-
-var optionalFlags = []cli.Flag{
-}
 
 // Flags contains the list of configuration options available to the binary.
 var Flags []cli.Flag
 
 func init() {
-	Flags = append(requiredFlags, optionalFlags...)
-	Flags = append(Flags, logging.CLIFlags(envVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(envVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, aws.ClientFlags(envVarPrefix, FlagPrefix)...)
+	Flags = append(logging.CLIFlags(envVarPrefix, FlagPrefix), aws.ClientFlags(envVarPrefix, FlagPrefix)...)
 }
