@@ -11,8 +11,6 @@ type S3Client struct {
 	bucket map[string][]byte
 }
 
-var _ s3.Client = (*S3Client)(nil)
-
 func NewS3Client() *S3Client {
 	return &S3Client{bucket: make(map[string][]byte)}
 }

@@ -175,7 +175,7 @@ func RunCombinedServer(ctx *cli.Context) error {
 	var blobStore disperser.BlobStore
 
 	if !config.BlobstoreConfig.InMemory {
-		s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
+		s3Client, err := s3.NewClient(config.AwsClientConfig, logger)
 		if err != nil {
 			return err
 		}

@@ -30,35 +30,49 @@ func main() {
 	app.Description = "Service for S3 Operations"
 	app.Commands = []cli.Command{
 		{
-		  Name:    "bucket",
-		  Usage:   "bucket operation in s3",
-		  Subcommands: []cli.Command{
-			{
-			  Name:  "create",
-			  Aliases: []string{"c"},
-			  Usage: "create a new bucket",
-			  Flags: append(flags.Flags, flags.S3BucketNameFlag),
-			  Action: CreateBucket,
+			Name:  "bucket",
+			Usage: "bucket operation in s3",
+			Subcommands: []cli.Command{
+				{
+					Name:    "create",
+					Aliases: []string{"c"},
+					Usage:   "create a new bucket",
+					Flags:   append(flags.Flags, flags.S3BucketNameFlag),
+					Action:  CreateBucket,
+				},
+				{
+					Name:    "delete",
+					Aliases: []string{"d"},
+					Usage:   "delete a bucket",
+					Flags:   append(flags.Flags, flags.S3BucketNameFlag),
+					Action:  DeleteBucket,
+				},
 			},
-		  },
 		},
 		{
-			Name:    "dynamodb",
-			Usage:   "dynamodb operation in s3",
+			Name:  "dynamodb",
+			Usage: "dynamodb operation in s3",
 			Subcommands: []cli.Command{
 				{
 					Name:    "create_metadata_table",
 					Aliases: []string{"cmt"},
 					Usage:   "create a metadata table",
-					Flags: append(flags.Flags, flags.DynamoDBTableNameFlag),
-					Action:  CreateMetadataTable,
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  CreateTable,
 				},
 				{
 					Name:    "create_bucket_table",
 					Aliases: []string{"cbt"},
 					Usage:   "create a bucket table",
-					Flags: append(flags.Flags, flags.BucketTableName),
-					Action:  CreateMetadataTable,
+					Flags:   append(flags.Flags, flags.BucketTableName),
+					Action:  CreateTable,
+				},
+				{
+					Name:    "delete",
+					Aliases: []string{"d"},
+					Usage:   "delete a table",
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  DeleteTable,
 				},
 			},
 		},
@@ -76,18 +90,12 @@ func CreateBucket(ctx *cli.Context) error {
 		return err
 	}
 
-	logger, err := logging.GetLogger(config.LoggerConfig)
+	s3Client, err := getS3Client(&config)
 	if err != nil {
 		return err
 	}
-
+	
 	ctx_bg := context.Background()
-
-	s3Client, err := s3.NewClient(ctx_bg, config.AwsClientConfig, logger)
-	if err != nil {
-		return err
-	}
-
 	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
 	region := ctx.String(config.AwsClientConfig.Region)
 	err = s3Client.CreateBucket(ctx_bg, bucketName, region)
@@ -99,23 +107,40 @@ func CreateBucket(ctx *cli.Context) error {
 	return nil
 }
 
-func CreateMetadataTable(ctx *cli.Context) error {
+func DeleteBucket(ctx *cli.Context) error {
 	config, err := NewConfig(ctx)
 	if err != nil {
 		return err
 	}
 
-	logger, err := logging.GetLogger(config.LoggerConfig)
+	s3Client, err := getS3Client(&config)
 	if err != nil {
 		return err
 	}
 
 	ctx_bg := context.Background()
+	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
+	err = s3Client.DeleteBucket(ctx_bg, bucketName)
 
-	dynamoClient, err := dynamodb.NewClient(config.AwsClientConfig, logger)
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func CreateTable(ctx *cli.Context) error {
+	config, err := NewConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	dynamoClient, err := getDynamodbClient(&config)
+	if err != nil {
+		return err
+	}
+
+	ctx_bg := context.Background()
 
 	metadataTableName := ctx.String(flags.DynamoDBTableNameFlag.Name)
 	if metadataTableName != "" {
@@ -124,10 +149,61 @@ func CreateMetadataTable(ctx *cli.Context) error {
 		bucketTableName := ctx.String(flags.BucketTableName.Name)
 		_, err = dynamoClient.CreateTable(ctx_bg, config.AwsClientConfig, bucketTableName, store.GenerateTableSchema(10, 10, bucketTableName))
 	}
-	
+
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func DeleteTable(ctx *cli.Context) error {
+	config, err := NewConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	dynamoClient, err := getDynamodbClient(&config)
+	ctx_bg := context.Background()
+
+	if err != nil {
+		return err
+	}
+
+	tableName := ctx.String(flags.DynamoDBTableNameFlag.Name)
+	err = dynamoClient.DeleteTable(ctx_bg, tableName)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getS3Client(cfg *Config) (*s3.Client, error) {
+	logger, err := logging.GetLogger(cfg.LoggerConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	s3Client, err := s3.NewClient(cfg.AwsClientConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return s3Client, nil
+}
+
+func getDynamodbClient(cfg *Config) (*dynamodb.Client, error) {
+	logger, err := logging.GetLogger(cfg.LoggerConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	dynamoClient, err := dynamodb.NewClient(cfg.AwsClientConfig, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return dynamoClient, nil
 }

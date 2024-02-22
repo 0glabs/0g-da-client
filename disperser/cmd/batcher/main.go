@@ -81,7 +81,7 @@ func RunBatcher(ctx *cli.Context) error {
 	var queue disperser.BlobStore
 
 	bucketName := config.BlobstoreConfig.BucketName
-	s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
+	s3Client, err := s3.NewClient(config.AwsClientConfig, logger)
 	if err != nil {
 		return err
 	}
