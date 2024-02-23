@@ -21,7 +21,7 @@ const (
 	// dynamoBatchLimit is the maximum number of items that can be written in a single batch
 	dynamoBatchLimit = 25
 	// waiterDuration is the duration to wait for a table to be created
-	waiterDuration = 5 * time.Minute
+	waiterDuration = 1 * time.Minute
 )
 
 type batchOperation uint
@@ -107,6 +107,16 @@ func (c *Client) DeleteTable(ctx context.Context, tableName string) error {
 	if err != nil {
 		return err
 	}
+
+	waiter := dynamodb.NewTableNotExistsWaiter(c.dynamoClient)
+	err = waiter.Wait(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String(tableName),
+	}, waiterDuration)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
