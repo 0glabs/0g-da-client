@@ -62,21 +62,42 @@ func main() {
 					Aliases: []string{"cmt"},
 					Usage:   "create a metadata table",
 					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
-					Action:  CreateTable,
+					Action:  CreateMetadataTable,
 				},
 				{
 					Name:    "create_bucket_table",
 					Aliases: []string{"cbt"},
 					Usage:   "create a bucket table",
-					Flags:   append(flags.Flags, flags.BucketTableName),
-					Action:  CreateTable,
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  CreateBucketTable,
 				},
 				{
-					Name:    "delete",
-					Aliases: []string{"d"},
-					Usage:   "delete a table",
+					Name:    "delete_metadata_table",
+					Aliases: []string{"dmt"},
+					Usage:   "delete a metadata table",
 					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
 					Action:  DeleteTable,
+				},
+				{
+					Name:    "delete_bucket_table",
+					Aliases: []string{"dbt"},
+					Usage:   "delete a bucket table",
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  DeleteTable,
+				},
+				{
+					Name:    "clear_metadata_table",
+					Aliases: []string{"dmt"},
+					Usage:   "empty a metadata table",
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  ClearMetadataTable,
+				},
+				{
+					Name:    "clear_bucket_table",
+					Aliases: []string{"dbt"},
+					Usage:   "empty a bucket table",
+					Flags:   append(flags.Flags, flags.DynamoDBTableNameFlag),
+					Action:  ClearBucketTable,
 				},
 			},
 		},
@@ -145,22 +166,29 @@ func ClearBucket(ctx *cli.Context) error {
 	return nil
 }
 
-func CreateTable(ctx *cli.Context) error {
+func CreateMetadataTable(ctx *cli.Context) error {
+	return createTable(ctx, true)
+}
+
+func CreateBucketTable(ctx *cli.Context) error {
+	return createTable(ctx, false)
+}
+
+func createTable(ctx *cli.Context, isMetadata bool) error {
 	config := NewConfig(ctx)
 
 	dynamoClient, err := getDynamodbClient(config)
+	ctx_bg := context.Background()
+
 	if err != nil {
 		return err
 	}
 
-	ctx_bg := context.Background()
-
-	metadataTableName := ctx.String(flags.DynamoDBTableNameFlag.Name)
-	if metadataTableName != "" {
-		_, err = dynamoClient.CreateTable(ctx_bg, config.AwsClientConfig, metadataTableName, blobstore.GenerateTableSchema(metadataTableName, 10, 10))
+	tableName := ctx.String(flags.DynamoDBTableNameFlag.Name)
+	if isMetadata {
+		_, err = dynamoClient.CreateTable(ctx_bg, config.AwsClientConfig, tableName, blobstore.GenerateTableSchema(tableName, 10, 10))
 	} else {
-		bucketTableName := ctx.String(flags.BucketTableName.Name)
-		_, err = dynamoClient.CreateTable(ctx_bg, config.AwsClientConfig, bucketTableName, store.GenerateTableSchema(10, 10, bucketTableName))
+		_, err = dynamoClient.CreateTable(ctx_bg, config.AwsClientConfig, tableName, store.GenerateTableSchema(10, 10, tableName))
 	}
 
 	if err != nil {
@@ -190,12 +218,38 @@ func DeleteTable(ctx *cli.Context) error {
 	return nil
 }
 
+func ClearMetadataTable(ctx *cli.Context) error {
+	err := DeleteTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = CreateMetadataTable(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ClearBucketTable(ctx *cli.Context) error {
+	err := DeleteTable(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = CreateBucketTable(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func getS3Client(cfg *Config) (*s3.Client, error) {
 	logger, err := logging.GetLogger(cfg.LoggerConfig)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("cfg.AwsClientConfig: ", cfg.AwsClientConfig)
+
 	s3Client, err := s3.NewClient(cfg.AwsClientConfig, logger)
 	if err != nil {
 		return nil, err

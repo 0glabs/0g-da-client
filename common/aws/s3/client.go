@@ -195,14 +195,14 @@ func (s *Client) ClearBucket(ctx context.Context, name string) error {
 		for _, key := range contents {
 			objectIds = append(objectIds, types.ObjectIdentifier{Key: aws.String(*key.Key)})
 		}
-	
+
 		_, err = s.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: aws.String(name),
 			Delete: &types.Delete{Objects: objectIds},
 		})
 		if err != nil {
 			return err
-		}	
+		}
 
 	}
 	return nil
@@ -213,7 +213,7 @@ func (s *Client) DeleteBucket(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	_, err = s.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(name),
 	})
