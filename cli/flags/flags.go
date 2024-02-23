@@ -27,10 +27,10 @@ var (
 		EnvVar:   common.PrefixEnvVar(envVarPrefix, "DYNAMODB_TABLE_NAME"),
 	}
 	BucketTableName = cli.StringFlag{
-		Name:   common.PrefixFlag(FlagPrefix, "rate-bucket-table-name"),
-		Usage:  "Name of the dynamodb table to store rate limiter buckets.",
+		Name:     common.PrefixFlag(FlagPrefix, "rate-bucket-table-name"),
+		Usage:    "Name of the dynamodb table to store rate limiter buckets.",
 		Required: true,
-		EnvVar: common.PrefixEnvVar(envVarPrefix, "RATE_BUCKET_TABLE_NAME"),
+		EnvVar:   common.PrefixEnvVar(envVarPrefix, "RATE_BUCKET_TABLE_NAME"),
 	}
 )
 

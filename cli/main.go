@@ -34,18 +34,22 @@ func main() {
 			Usage: "bucket operation in s3",
 			Subcommands: []cli.Command{
 				{
-					Name:    "create",
-					Aliases: []string{"c"},
-					Usage:   "create a new bucket",
-					Flags:   append(flags.Flags, flags.S3BucketNameFlag),
-					Action:  CreateBucket,
+					Name:   "create",
+					Usage:  "create a new bucket",
+					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
+					Action: CreateBucket,
 				},
 				{
-					Name:    "delete",
-					Aliases: []string{"d"},
-					Usage:   "delete a bucket",
-					Flags:   append(flags.Flags, flags.S3BucketNameFlag),
-					Action:  DeleteBucket,
+					Name:   "delete",
+					Usage:  "delete a bucket",
+					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
+					Action: DeleteBucket,
+				},
+				{
+					Name:   "clear",
+					Usage:  "clear a bucket",
+					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
+					Action: ClearBucket,
 				},
 			},
 		},
@@ -85,7 +89,7 @@ func main() {
 func CreateBucket(ctx *cli.Context) error {
 	config := NewConfig(ctx)
 
-	s3Client, err := GetS3Client(config)
+	s3Client, err := getS3Client(config)
 	if err != nil {
 		return err
 	}
@@ -106,7 +110,7 @@ func CreateBucket(ctx *cli.Context) error {
 func DeleteBucket(ctx *cli.Context) error {
 	config := NewConfig(ctx)
 
-	s3Client, err := GetS3Client(config)
+	s3Client, err := getS3Client(config)
 	if err != nil {
 		return err
 	}
@@ -114,6 +118,25 @@ func DeleteBucket(ctx *cli.Context) error {
 	ctx_bg := context.Background()
 	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
 	err = s3Client.DeleteBucket(ctx_bg, bucketName)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ClearBucket(ctx *cli.Context) error {
+	config := NewConfig(ctx)
+
+	s3Client, err := getS3Client(config)
+	if err != nil {
+		return err
+	}
+
+	ctx_bg := context.Background()
+	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
+	err = s3Client.ClearBucket(ctx_bg, bucketName)
 
 	if err != nil {
 		return err
@@ -167,7 +190,7 @@ func DeleteTable(ctx *cli.Context) error {
 	return nil
 }
 
-func GetS3Client(cfg *Config) (*s3.Client, error) {
+func getS3Client(cfg *Config) (*s3.Client, error) {
 	logger, err := logging.GetLogger(cfg.LoggerConfig)
 	if err != nil {
 		return nil, err

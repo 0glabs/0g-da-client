@@ -21,7 +21,7 @@ const (
 	// dynamoBatchLimit is the maximum number of items that can be written in a single batch
 	dynamoBatchLimit = 25
 	// waiterDuration is the duration to wait for a table to be created
-	waiterDuration = 15 * time.Second
+	waiterDuration = 5*time.Minute
 )
 
 type batchOperation uint
