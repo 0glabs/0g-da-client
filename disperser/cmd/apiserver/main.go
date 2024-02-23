@@ -71,7 +71,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 	bucketName := config.BlobstoreConfig.BucketName
 	logger.Info("Creating blob store", "bucket", bucketName)
 	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
-	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, blobMetadataStore, logger)
+	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
 	if config.EnableRatelimiter {
 		globalParams := config.RatelimiterConfig.GlobalRateParams

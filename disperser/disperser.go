@@ -126,10 +126,14 @@ type ConfirmationInfo struct {
 }
 
 type BlobStore interface {
+	// MetadataHashAsBlobKey if blob key is metadatahash, the blob and metadata will be removed once confirmed
+	MetadataHashAsBlobKey() bool
 	// StoreBlob adds a blob to the queue and returns a key that can be used to retrieve the blob later
 	StoreBlob(ctx context.Context, blob *core.Blob, requestedAt uint64) (BlobKey, error)
+	// RemoveBlob remove a blob and its metadata from s3 and dynamodb
+	RemoveBlob(ctx context.Context, metadata *BlobMetadata) error
 	// GetBlobContent retrieves a blob's content
-	GetBlobContent(ctx context.Context, blobHash BlobHash) ([]byte, error)
+	GetBlobContent(ctx context.Context, blobMetadata *BlobMetadata) ([]byte, error)
 	// MarkBlobConfirmed updates blob metadata to Confirmed status with confirmation info
 	// Returns the updated metadata and error
 	MarkBlobConfirmed(ctx context.Context, existingMetadata *BlobMetadata, confirmationInfo *ConfirmationInfo) (*BlobMetadata, error)

@@ -134,6 +134,11 @@ var (
 		EnvVar:   common.PrefixEnvVar(envVarPrefix, "TARGET_NUM_CHUNKS"),
 		Value:    0,
 	}
+	MetadataHashAsBlobKey = cli.BoolFlag{
+		Name:   common.PrefixFlag(FlagPrefix, "metadata-hash-as-blob-key"),
+		Usage:  "use metadata hash as blob key",
+		EnvVar: common.PrefixEnvVar(envVarPrefix, "METADATA_HASH_AS_BLOB_KEY"),
+	}
 )
 
 var requiredFlags = []cli.Flag{
@@ -157,6 +162,7 @@ var optionalFlags = []cli.Flag{
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
 	TargetNumChunksFlag,
+	MetadataHashAsBlobKey,
 }
 
 // Flags contains the list of configuration options available to the binary.

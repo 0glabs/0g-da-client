@@ -27,8 +27,9 @@ type Config struct {
 func NewConfig(ctx *cli.Context) Config {
 	config := Config{
 		BlobstoreConfig: blobstore.Config{
-			BucketName: ctx.GlobalString(flags.S3BucketNameFlag.Name),
-			TableName:  ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			BucketName:            ctx.GlobalString(flags.S3BucketNameFlag.Name),
+			TableName:             ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			MetadataHashAsBlobKey: ctx.GlobalBool(flags.MetadataHashAsBlobKey.Name),
 		},
 		EthClientConfig: geth.ReadEthClientConfig(ctx),
 		AwsClientConfig: aws.ReadClientConfig(ctx, flags.FlagPrefix),

@@ -14,6 +14,7 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common/geth"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/transactor"
 	"github.com/zero-gravity-labs/zerog-storage-client/common/blockchain"
 	"github.com/zero-gravity-labs/zerog-storage-client/contract"
 	"github.com/zero-gravity-labs/zerog-storage-client/transfer"
@@ -35,6 +36,8 @@ type Confirmer struct {
 
 	retryOption blockchain.RetryOption
 
+	transactor *transactor.Transactor
+
 	logger  common.Logger
 	Metrics *Metrics
 }
@@ -46,7 +49,7 @@ type BatchInfo struct {
 	proofs     []*merkletree.Proof
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
 	contractAddr := eth_common.HexToAddress(storageNodeConfig.FlowContractAddress)
 	flow, err := contract.NewFlowContract(contractAddr, client)
@@ -68,8 +71,9 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 			Rounds:   ethConfig.ReceiptPollingRounds,
 			Interval: ethConfig.ReceiptPollingInterval,
 		},
-		logger:  logger,
-		Metrics: metrics,
+		logger:     logger,
+		Metrics:    metrics,
+		transactor: transactor,
 	}, nil
 }
 
@@ -173,6 +177,10 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, uint32, erro
 	return uint32(submission.SubmissionIndex.Uint64()), uint32(receipt.BlockNumber), nil
 }
 
+func (c *Confirmer) PersistConfirmedBlobs(metadatas []*disperser.BlobMetadata) {
+
+}
+
 func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) error {
 	batch := batchInfo.batch
 	proofs := batchInfo.proofs
@@ -191,6 +199,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 	stageTimer := time.Now()
 	blobsToRetry := make([]*disperser.BlobMetadata, 0)
 	var updateConfirmationInfoErr error
+	confirmedMetadatas := make([]*disperser.BlobMetadata, 0)
 	for blobIndex, metadata := range batch.BlobMetadata {
 		confirmationInfo := &disperser.ConfirmationInfo{
 			BatchHeaderHash:         batchInfo.headerHash,
@@ -204,11 +213,13 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 			ConfirmationBlockNumber: blockNumber,
 		}
 		c.logger.Trace("confirming blob", "blob key", metadata.GetBlobKey())
-		if _, updateConfirmationInfoErr = c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo); updateConfirmationInfoErr == nil {
+		if confirmedMetadata, updateConfirmationInfoErr := c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo); updateConfirmationInfoErr == nil {
 			c.Metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Confirmed)
 			// remove encoded blob from storage so we don't disperse it again
 			c.EncodingStreamer.RemoveEncodedBlob(metadata)
 			c.logger.Trace("blob confirmed", "blob key", metadata.GetBlobKey())
+
+			confirmedMetadatas = append(confirmedMetadatas, confirmedMetadata)
 		}
 		if updateConfirmationInfoErr != nil {
 			c.logger.Error("HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)
@@ -227,6 +238,12 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 	c.logger.Info("[confirmer] Update confirmation info took", "duration", time.Since(stageTimer))
 	c.Metrics.ObserveLatency("UpdateConfirmationInfo", float64(time.Since(stageTimer).Milliseconds()))
+
+	// remove blobs
+	if c.Queue.MetadataHashAsBlobKey() {
+		c.PersistConfirmedBlobs(confirmedMetadatas)
+	}
+
 	batchSize := int64(0)
 	for _, blobMeta := range batch.BlobMetadata {
 		batchSize += int64(blobMeta.RequestMetadata.BlobSize)

@@ -313,7 +313,7 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 		return nil, err
 	}
 
-	data, err := s.blobStore.GetBlobContent(ctx, blobMetadata.BlobHash)
+	data, err := s.blobStore.GetBlobContent(ctx, blobMetadata)
 	if err != nil {
 		s.logger.Error("Failed to retrieve blob", "err", err)
 		s.metrics.HandleFailedRequest(len(data), "RetrieveBlob")

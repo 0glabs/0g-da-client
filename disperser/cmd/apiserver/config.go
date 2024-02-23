@@ -42,8 +42,9 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			GrpcPort: ctx.GlobalString(flags.GrpcPortFlag.Name),
 		},
 		BlobstoreConfig: blobstore.Config{
-			BucketName: ctx.GlobalString(flags.S3BucketNameFlag.Name),
-			TableName:  ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			BucketName:            ctx.GlobalString(flags.S3BucketNameFlag.Name),
+			TableName:             ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			MetadataHashAsBlobKey: ctx.GlobalBool(flags.MetadataHashAsBlobKey.Name),
 		},
 		LoggerConfig: logging.ReadCLIConfig(ctx, flags.FlagPrefix),
 		MetricsConfig: disperser.MetricsConfig{

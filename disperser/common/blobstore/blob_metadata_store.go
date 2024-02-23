@@ -52,6 +52,17 @@ func (s *BlobMetadataStore) QueueNewBlobMetadata(ctx context.Context, blobMetada
 	return s.dynamoDBClient.PutItem(ctx, s.tableName, item)
 }
 
+func (s *BlobMetadataStore) RemoveBlobMetadata(ctx context.Context, blobMetadata *disperser.BlobMetadata) error {
+	return s.dynamoDBClient.DeleteItem(ctx, s.tableName, map[string]types.AttributeValue{
+		"BlobHash": &types.AttributeValueMemberS{
+			Value: blobMetadata.BlobHash,
+		},
+		"MetadataHash": &types.AttributeValueMemberS{
+			Value: blobMetadata.MetadataHash,
+		},
+	})
+}
+
 func (s *BlobMetadataStore) GetBlobMetadata(ctx context.Context, metadataKey disperser.BlobKey) (*disperser.BlobMetadata, error) {
 	item, err := s.dynamoDBClient.GetItem(ctx, s.tableName, map[string]types.AttributeValue{
 		"BlobHash": &types.AttributeValueMemberS{

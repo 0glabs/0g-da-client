@@ -12,6 +12,7 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
 	"github.com/zero-gravity-labs/zerog-data-avail/core"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/transactor"
 	"github.com/zero-gravity-labs/zerog-storage-client/common/blockchain"
 	"github.com/zero-gravity-labs/zerog-storage-client/contract"
 	zg_core "github.com/zero-gravity-labs/zerog-storage-client/core"
@@ -36,10 +37,12 @@ type dispatcher struct {
 	StreamId       eth_common.Hash
 	UploadTaskSize uint
 
+	transactor *transactor.Transactor
+
 	logger common.Logger
 }
 
-func NewDispatcher(cfg *Config, logger common.Logger) (*dispatcher, error) {
+func NewDispatcher(cfg *Config, transactor *transactor.Transactor, logger common.Logger) (*dispatcher, error) {
 	client := blockchain.MustNewWeb3(cfg.EthClientURL, cfg.PrivateKeyString)
 	contractAddr := eth_common.HexToAddress(cfg.StorageNodeConfig.FlowContractAddress)
 	flow, err := contract.NewFlowContract(contractAddr, client)
@@ -55,6 +58,7 @@ func NewDispatcher(cfg *Config, logger common.Logger) (*dispatcher, error) {
 		KVNode:         kv.NewClient(node.MustNewClient(cfg.StorageNodeConfig.KVNodeURL), nil),
 		StreamId:       cfg.StorageNodeConfig.KVStreamId,
 		UploadTaskSize: cfg.StorageNodeConfig.UploadTaskSize,
+		transactor:     transactor,
 	}, nil
 }
 
@@ -155,7 +159,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	}
 
 	// upload batchly
-	txHash, dataRoots, err := uploader.BatchUpload([]zg_core.IterableData{encodedBlobsData, kvData}, false, []transfer.UploadOption{
+	txHash, dataRoots, err := c.transactor.BatchUpload(uploader, []zg_core.IterableData{encodedBlobsData, kvData}, []transfer.UploadOption{
 		// encoded blobs options
 		{
 			Tags:     hexutil.MustDecode("0x"),

@@ -15,9 +15,9 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/dispatcher"
+	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/transactor"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/batcher/flags"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/inmem"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/encoder"
 )
 
@@ -52,12 +52,15 @@ func RunBatcher(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	// transactor
+	transactor := transactor.NewTransactor(logger)
 	// dispatcher
 	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
 		EthClientURL:      config.EthClientConfig.RPCURL,
 		PrivateKeyString:  config.EthClientConfig.PrivateKeyString,
 		StorageNodeConfig: config.StorageNodeConfig,
-	}, logger)
+	}, transactor, logger)
 	if err != nil {
 		return err
 	}
@@ -77,23 +80,19 @@ func RunBatcher(ctx *cli.Context) error {
 	// blob store
 	var queue disperser.BlobStore
 
-	if config.AwsClientConfig.UseMemDb {
-		queue = inmem.NewBlobStore()
-	} else {
-		bucketName := config.BlobstoreConfig.BucketName
-		s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
-		if err != nil {
-			return err
-		}
-		logger.Info("Initialized S3 client", "bucket", bucketName)
-
-		dynamoClient, err := dynamodb.NewClient(config.AwsClientConfig, logger)
-		if err != nil {
-			return err
-		}
-		blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
-		queue = blobstore.NewSharedStorage(bucketName, s3Client, blobMetadataStore, logger)
+	bucketName := config.BlobstoreConfig.BucketName
+	s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
+	if err != nil {
+		return err
 	}
+	logger.Info("Initialized S3 client", "bucket", bucketName)
+
+	dynamoClient, err := dynamodb.NewClient(config.AwsClientConfig, logger)
+	if err != nil {
+		return err
+	}
+	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
+	queue = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
 	metrics := batcher.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
@@ -107,7 +106,7 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, logger, metrics)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics)
 	if err != nil {
 		return err
 	}
