@@ -8,12 +8,14 @@ import (
 	"sync"
 	"time"
 
+	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/prometheus/client_golang/prometheus"
 	pb "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/disperser"
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	healthcheck "github.com/zero-gravity-labs/zerog-data-avail/common/healthcheck"
 	"github.com/zero-gravity-labs/zerog-data-avail/core"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/zero-gravity-labs/zerog-storage-client/kv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -38,6 +40,10 @@ type DispersalServer struct {
 
 	metrics *disperser.Metrics
 
+	metadataHashAsBlobKey bool
+	KVNode                *kv.Client
+	StreamId              eth_common.Hash
+
 	logger common.Logger
 }
 
@@ -51,15 +57,21 @@ func NewDispersalServer(
 	metrics *disperser.Metrics,
 	ratelimiter common.RateLimiter,
 	rateConfig RateConfig,
+	metadataHashAsBlobKey bool,
+	kvClient *kv.Client,
+	streamId eth_common.Hash,
 ) *DispersalServer {
 	return &DispersalServer{
-		config:      config,
-		blobStore:   store,
-		metrics:     metrics,
-		logger:      logger,
-		ratelimiter: ratelimiter,
-		rateConfig:  rateConfig,
-		mu:          &sync.Mutex{},
+		config:                config,
+		blobStore:             store,
+		metrics:               metrics,
+		logger:                logger,
+		ratelimiter:           ratelimiter,
+		rateConfig:            rateConfig,
+		mu:                    &sync.Mutex{},
+		metadataHashAsBlobKey: metadataHashAsBlobKey,
+		KVNode:                kvClient,
+		StreamId:              streamId,
 	}
 }
 
@@ -199,6 +211,21 @@ func (s *DispersalServer) checkRateLimitsAndAddRates(ctx context.Context, blob *
 
 }
 
+func (s *DispersalServer) getMetadataFromKv(key []byte) (*disperser.BlobMetadata, error) {
+	val, err := s.KVNode.GetValue(s.StreamId, key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get blob metadata from kv node: %v", err)
+	}
+	if len(val.Data) == 0 {
+		return nil, nil
+	}
+	metadata, err := new(disperser.BlobMetadata).Deserialize(val.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize blob metadata: %v", err)
+	}
+	return metadata, nil
+}
+
 func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusRequest) (*pb.BlobStatusReply, error) {
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(f float64) {
 		s.metrics.ObserveLatency("GetBlobStatus", f*1000) // make milliseconds
@@ -219,7 +246,17 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 	s.logger.Debug("metadataKey", "metadataKey", metadataKey.String())
 	metadata, err := s.blobStore.GetBlobMetadata(ctx, metadataKey)
 	if err != nil {
-		return nil, err
+		if !s.metadataHashAsBlobKey && s.KVNode != nil {
+			return nil, err
+		}
+		// check on kv
+		metadata, err = s.getMetadataFromKv(requestID)
+		if err != nil {
+			s.logger.Warn("get metadata from kv", err)
+		}
+		if metadata == nil {
+			return nil, fmt.Errorf("request not found")
+		}
 	}
 
 	isConfirmed, err := metadata.IsConfirmed()

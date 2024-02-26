@@ -289,38 +289,38 @@ func (h *BlobHeader) Encode() ([]byte, error) {
 }
 
 func (h *BatchHeader) Serialize() ([]byte, error) {
-	return encode(h)
+	return Encode(h)
 }
 
 func (h *BatchHeader) Deserialize(data []byte) (*BatchHeader, error) {
-	err := decode(data, h)
+	err := Decode(data, h)
 	return h, err
 }
 
 func (h *BlobHeader) Serialize() ([]byte, error) {
-	return encode(h)
+	return Encode(h)
 }
 
 func (h *BlobHeader) Deserialize(data []byte) (*BlobHeader, error) {
-	err := decode(data, h)
+	err := Decode(data, h)
 	return h, err
 }
 
 func (c *Chunk) Serialize() ([]byte, error) {
-	return encode(c)
+	return Encode(c)
 }
 
 func (c *Chunk) Deserialize(data []byte) (*Chunk, error) {
-	err := decode(data, c)
+	err := Decode(data, c)
 	return c, err
 }
 
 func (c Commitment) Serialize() ([]byte, error) {
-	return encode(c)
+	return Encode(c)
 }
 
 func (c *Commitment) Deserialize(data []byte) (*Commitment, error) {
-	err := decode(data, c)
+	err := Decode(data, c)
 	return c, err
 }
 
@@ -357,24 +357,24 @@ func (h *KVBlobInfoKey) FromBytes(data []byte) (*KVBlobInfoKey, error) {
 }
 
 func (h *KVBlobInfo) Serialize() ([]byte, error) {
-	return encode(h)
+	return Encode(h)
 }
 
 func (h *KVBlobInfo) Deserialize(data []byte) (*KVBlobInfo, error) {
-	err := decode(data, h)
+	err := Decode(data, h)
 	return h, err
 }
 
 func (h *KVBatchInfo) Serialize() ([]byte, error) {
-	return encode(h)
+	return Encode(h)
 }
 
 func (h *KVBatchInfo) Deserialize(data []byte) (*KVBatchInfo, error) {
-	err := decode(data, h)
+	err := Decode(data, h)
 	return h, err
 }
 
-func encode(obj any) ([]byte, error) {
+func Encode(obj any) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(obj)
@@ -384,7 +384,7 @@ func encode(obj any) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func decode(data []byte, obj any) error {
+func Decode(data []byte, obj any) error {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 	err := dec.Decode(obj)

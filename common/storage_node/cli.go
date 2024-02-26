@@ -27,25 +27,29 @@ func ClientFlags(envPrefix string, flagPrefix string) []cli.Flag {
 		cli.StringSliceFlag{
 			Name:     common.PrefixFlag(flagPrefix, StorageNodeURLsFlagName),
 			Usage:    "storage node urls",
-			Required: true,
+			Required: false,
+			Value:    nil,
 			EnvVar:   common.PrefixEnvVar(envPrefix, "STORAGE_NODE_URLS"),
 		},
 		cli.StringFlag{
 			Name:     common.PrefixFlag(flagPrefix, FlowContractAddressFlagName),
 			Usage:    "flow contract address",
-			Required: true,
+			Required: false,
+			Value:    "0x0000000000000000000000000000000000000000",
 			EnvVar:   common.PrefixEnvVar(envPrefix, "STORAGE_NODE_URLS"),
 		},
 		cli.StringFlag{
 			Name:     common.PrefixFlag(flagPrefix, KVNodeURLFlagName),
 			Usage:    "kv node url",
-			Required: true,
+			Required: false,
+			Value:    "",
 			EnvVar:   common.PrefixEnvVar(envPrefix, "KV_NODE_URL"),
 		},
 		cli.StringFlag{
 			Name:     common.PrefixFlag(flagPrefix, KVStreamIDFlagName),
 			Usage:    "kv stream id",
-			Required: true,
+			Required: false,
+			Value:    "0000000000000000000000000000000000000000000000000000000000000000",
 			EnvVar:   common.PrefixEnvVar(envPrefix, "KV_NODE_URL"),
 		},
 		cli.UintFlag{

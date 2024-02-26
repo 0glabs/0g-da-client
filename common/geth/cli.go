@@ -36,7 +36,8 @@ func EthClientFlags(envPrefix string) []cli.Flag {
 		cli.StringFlag{
 			Name:     privateKeyFlagName,
 			Usage:    "Ethereum private key for disperser",
-			Required: true,
+			Required: false,
+			Value:    "0000000000000000000000000000000000000000000000000000000000000000",
 			EnvVar:   common.PrefixEnvVar(envPrefix, "PRIVATE_KEY"),
 		},
 		cli.IntFlag{

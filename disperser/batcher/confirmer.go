@@ -17,6 +17,9 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher/transactor"
 	"github.com/zero-gravity-labs/zerog-storage-client/common/blockchain"
 	"github.com/zero-gravity-labs/zerog-storage-client/contract"
+	zg_core "github.com/zero-gravity-labs/zerog-storage-client/core"
+	"github.com/zero-gravity-labs/zerog-storage-client/kv"
+	"github.com/zero-gravity-labs/zerog-storage-client/node"
 	"github.com/zero-gravity-labs/zerog-storage-client/transfer"
 )
 
@@ -36,7 +39,11 @@ type Confirmer struct {
 
 	retryOption blockchain.RetryOption
 
-	transactor *transactor.Transactor
+	Nodes          []*node.Client
+	KVNode         *kv.Client
+	StreamId       eth_common.Hash
+	UploadTaskSize uint
+	transactor     *transactor.Transactor
 
 	logger  common.Logger
 	Metrics *Metrics
@@ -71,9 +78,13 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 			Rounds:   ethConfig.ReceiptPollingRounds,
 			Interval: ethConfig.ReceiptPollingInterval,
 		},
-		logger:     logger,
-		Metrics:    metrics,
-		transactor: transactor,
+		logger:         logger,
+		Metrics:        metrics,
+		Nodes:          node.MustNewClients(storageNodeConfig.StorageNodeURLs),
+		KVNode:         kv.NewClient(node.MustNewClient(storageNodeConfig.KVNodeURL), nil),
+		StreamId:       storageNodeConfig.KVStreamId,
+		UploadTaskSize: storageNodeConfig.UploadTaskSize,
+		transactor:     transactor,
 	}, nil
 }
 
@@ -177,8 +188,51 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, uint32, erro
 	return uint32(submission.SubmissionIndex.Uint64()), uint32(receipt.BlockNumber), nil
 }
 
-func (c *Confirmer) PersistConfirmedBlobs(metadatas []*disperser.BlobMetadata) {
-
+func (c *Confirmer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disperser.BlobMetadata) error {
+	uploader := transfer.NewUploader(c.Flow, c.Nodes)
+	batcher := c.KVNode.Batcher()
+	for _, metadata := range metadatas {
+		blobKey := metadata.GetBlobKey()
+		key := []byte(blobKey.String())
+		value, err := metadata.Serialize()
+		if err != nil {
+			return errors.WithMessage(err, "Failed to serialize blob metadata")
+		}
+		batcher.Set(c.StreamId, key, value)
+	}
+	streamData, err := batcher.Build()
+	if err != nil {
+		return errors.WithMessage(err, "Failed to build stream data")
+	}
+	rawKVData, err := streamData.Encode()
+	if err != nil {
+		return errors.WithMessage(err, "Failed to encode stream data")
+	}
+	kvData, err := zg_core.NewDataInMemory(rawKVData)
+	if err != nil {
+		return errors.WithMessage(err, "failed to build kv data")
+	}
+	// upload
+	txHash, _, err := c.transactor.BatchUpload(uploader, []zg_core.IterableData{kvData}, []transfer.UploadOption{
+		// kv options
+		{
+			Tags:     batcher.BuildTags(),
+			Force:    true,
+			Disperse: false,
+			TaskSize: c.UploadTaskSize,
+		}})
+	if err != nil {
+		return errors.WithMessage(err, "failed to upload file")
+	}
+	// wait for receipt
+	_, _, err = c.waitForReceipt(txHash)
+	if err != nil {
+		return errors.WithMessage(err, "failed to confirm metadata onchain")
+	}
+	for _, metadata := range metadatas {
+		c.Queue.RemoveBlob(ctx, metadata)
+	}
+	return nil
 }
 
 func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) error {
@@ -241,7 +295,10 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 	// remove blobs
 	if c.Queue.MetadataHashAsBlobKey() {
-		c.PersistConfirmedBlobs(confirmedMetadatas)
+		err := c.PersistConfirmedBlobs(ctx, confirmedMetadatas)
+		if err != nil {
+			c.logger.Error("failed to upload metadata on chain: %v", err)
+		}
 	}
 
 	batchSize := int64(0)

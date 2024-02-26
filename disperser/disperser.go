@@ -84,6 +84,15 @@ type BlobMetadata struct {
 	ConfirmationInfo *ConfirmationInfo `json:"blob_confirmation_info" dynamodbav:"-"`
 }
 
+func (m *BlobMetadata) Serialize() ([]byte, error) {
+	return core.Encode(m)
+}
+
+func (m *BlobMetadata) Deserialize(data []byte) (*BlobMetadata, error) {
+	err := core.Decode(data, m)
+	return m, err
+}
+
 func (m *BlobMetadata) GetBlobKey() BlobKey {
 	return BlobKey{
 		BlobHash:     m.BlobHash,

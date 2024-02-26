@@ -9,6 +9,8 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-storage-client/kv"
+	"github.com/zero-gravity-labs/zerog-storage-client/node"
 
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
@@ -94,7 +96,13 @@ func RunDisperserServer(ctx *cli.Context) error {
 
 	// TODO: create a separate metrics for batcher
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig)
+
+	var kvClient *kv.Client
+
+	if config.BlobstoreConfig.MetadataHashAsBlobKey {
+		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
+	}
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

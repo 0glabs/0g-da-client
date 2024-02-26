@@ -6,6 +6,7 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
 )
 
 const (
@@ -95,4 +96,5 @@ func init() {
 	Flags = append(Flags, logging.CLIFlags(envVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(envVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, aws.ClientFlags(envVarPrefix, FlagPrefix)...)
+	Flags = append(Flags, storage_node.ClientFlags(envVarPrefix, FlagPrefix)...)
 }
