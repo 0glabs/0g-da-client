@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -48,10 +49,12 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 				}, nil
 			}
 
-			// returning EndpointNotFoundError will allow the service to fallback to its default resolution
-			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+			return aws.Endpoint{
+				PartitionID:   "aws",
+				URL:           fmt.Sprintf("https://s3.%s.amazonaws.com", cfg.Region),
+				SigningRegion: cfg.Region,
+			}, nil
 		})
-
 		options := [](func(*config.LoadOptions) error){
 			config.WithRegion(cfg.Region),
 			config.WithEndpointResolverWithOptions(customResolver),
@@ -62,7 +65,6 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 			options = append(options, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AccessKey, cfg.SecretAccessKey, "")))
 		}
 		awsConfig, errCfg := config.LoadDefaultConfig(context.Background(), options...)
-
 		if errCfg != nil {
 			err = errCfg
 			return

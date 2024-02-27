@@ -57,8 +57,11 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 				}, nil
 			}
 
-			// returning EndpointNotFoundError will allow the service to fallback to its default resolution
-			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+			return aws.Endpoint{
+				PartitionID:   "aws",
+				URL:           fmt.Sprintf("https://dynamodb.%s.amazonaws.com", cfg.Region),
+				SigningRegion: cfg.Region,
+			}, nil
 		}
 		customResolver := aws.EndpointResolverWithOptionsFunc(createClient)
 
