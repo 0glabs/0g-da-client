@@ -243,19 +243,18 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		return nil, err
 	}
 
-	s.logger.Debug("metadataKey", "metadataKey", metadataKey.String())
 	metadata, err := s.blobStore.GetBlobMetadata(ctx, metadataKey)
 	if err != nil {
-		if !s.metadataHashAsBlobKey && s.KVNode != nil {
-			return nil, err
-		}
+		return nil, err
+	}
+	if metadata.GetBlobKey().String() != string(requestID) && s.metadataHashAsBlobKey {
 		// check on kv
-		metadata, err = s.getMetadataFromKv(requestID)
+		metadataInKV, err := s.getMetadataFromKv(requestID)
 		if err != nil {
 			s.logger.Warn("get metadata from kv", err)
 		}
-		if metadata == nil {
-			return nil, fmt.Errorf("request not found")
+		if metadataInKV != nil {
+			metadata = metadataInKV
 		}
 	}
 

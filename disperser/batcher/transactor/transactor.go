@@ -13,7 +13,7 @@ import (
 )
 
 type Transactor struct {
-	mu *sync.Mutex
+	mu sync.Mutex
 
 	logger common.Logger
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/geth"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
@@ -96,5 +97,6 @@ func init() {
 	Flags = append(Flags, logging.CLIFlags(envVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(envVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, aws.ClientFlags(envVarPrefix, FlagPrefix)...)
+	Flags = append(Flags, geth.EthClientFlags(envVarPrefix)...)
 	Flags = append(Flags, storage_node.ClientFlags(envVarPrefix, FlagPrefix)...)
 }

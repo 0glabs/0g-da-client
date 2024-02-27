@@ -229,9 +229,15 @@ func (c *Confirmer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 	if err != nil {
 		return errors.WithMessage(err, "failed to confirm metadata onchain")
 	}
+	c.logger.Info("[confirmer] removing confirmed blobs")
 	for _, metadata := range metadatas {
-		c.Queue.RemoveBlob(ctx, metadata)
+		c.logger.Info("[confirmer] removing blob", "blob key", metadata.GetBlobKey().String())
+		err := c.Queue.RemoveBlob(ctx, metadata)
+		if err != nil {
+			c.logger.Warn("[confirmer] failed to remove blob", "error", err)
+		}
 	}
+	c.logger.Info("[confirmer] confirmed blobs removed")
 	return nil
 }
 
@@ -295,10 +301,13 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 	// remove blobs
 	if c.Queue.MetadataHashAsBlobKey() {
+		stageTimer = time.Now()
+		c.logger.Info("[confirmer] Uploading confirmed metadata on chain")
 		err := c.PersistConfirmedBlobs(ctx, confirmedMetadatas)
 		if err != nil {
-			c.logger.Error("failed to upload metadata on chain: %v", err)
+			c.logger.Error("[confirmer] Failed to upload metadata on chain: %v", err)
 		}
+		c.logger.Info("[confirmer] Uploaded confirmed metadata on chain", "duration", time.Since(stageTimer))
 	}
 
 	batchSize := int64(0)
