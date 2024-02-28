@@ -9,6 +9,8 @@ import (
 	"time"
 
 	eth_common "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/openweb3/web3go/types"
 	"github.com/prometheus/client_golang/prometheus"
 	pb "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/disperser"
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
@@ -29,7 +31,7 @@ const maxBlobSize = 1024 * 3968 // 3968 KB
 
 type DispersalServer struct {
 	pb.UnimplementedDisperserServer
-	mu *sync.Mutex
+	mu *sync.RWMutex
 
 	config disperser.ServerConfig
 
@@ -43,6 +45,9 @@ type DispersalServer struct {
 	metadataHashAsBlobKey bool
 	KVNode                *kv.Client
 	StreamId              eth_common.Hash
+
+	rpcClient            *rpc.Client
+	latestFinalizedBlock uint32
 
 	logger common.Logger
 }
@@ -60,6 +65,7 @@ func NewDispersalServer(
 	metadataHashAsBlobKey bool,
 	kvClient *kv.Client,
 	streamId eth_common.Hash,
+	rpcClient *rpc.Client,
 ) *DispersalServer {
 	return &DispersalServer{
 		config:                config,
@@ -68,10 +74,11 @@ func NewDispersalServer(
 		logger:                logger,
 		ratelimiter:           ratelimiter,
 		rateConfig:            rateConfig,
-		mu:                    &sync.Mutex{},
+		mu:                    &sync.RWMutex{},
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
 		KVNode:                kvClient,
 		StreamId:              streamId,
+		rpcClient:             rpcClient,
 	}
 }
 
@@ -255,6 +262,16 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		}
 		if metadataInKV != nil {
 			metadata = metadataInKV
+			s.mu.RLock()
+			defer s.mu.RUnlock()
+			if metadata.ConfirmationInfo.ConfirmationBlockNumber <= s.latestFinalizedBlock {
+				metadata.BlobStatus = disperser.Finalized
+			}
+		} else {
+			// behavior align with aws dynamodb
+			metadata = &disperser.BlobMetadata{
+				BlobStatus: disperser.Processing,
+			}
 		}
 	}
 
@@ -364,9 +381,42 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	}, nil
 }
 
+func (s *DispersalServer) UpdateLatestFinalizedBlock(ctx context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	var header = types.Header{}
+	err := s.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
+	if err != nil {
+		return err
+	}
+	if uint32(header.Number.Uint64()) > s.latestFinalizedBlock {
+		s.latestFinalizedBlock = uint32(header.Number.Uint64())
+	}
+	return nil
+}
+
 func (s *DispersalServer) Start(ctx context.Context) error {
 	s.logger.Trace("Entering Start function...")
 	defer s.logger.Trace("Exiting Start function...")
+
+	// fetch latest finalized block number
+	if s.metadataHashAsBlobKey {
+		go func() {
+			for {
+				err := s.UpdateLatestFinalizedBlock(ctx)
+				if err != nil {
+					s.logger.Warn("fetch latest finalized block number failed", "error", err)
+				} else {
+					s.logger.Info("latest finalized block number updated", "number", s.latestFinalizedBlock)
+				}
+				time.Sleep(time.Second * 5)
+			}
+		}()
+	}
 
 	// Serve grpc requests
 	addr := fmt.Sprintf("%s:%s", disperser.Localhost, s.config.GrpcPort)

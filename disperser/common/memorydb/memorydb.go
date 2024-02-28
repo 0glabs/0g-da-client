@@ -156,7 +156,7 @@ func (q *SharedBlobStore) GetBlobsByMetadata(ctx context.Context, metadata []*di
 	defer q.mu.RUnlock()
 	blobs := make(map[disperser.BlobKey]*core.Blob)
 	for _, meta := range metadata {
-		if holder, ok := q.Blobs[meta.BlobHash]; ok {
+		if holder, ok := q.Blobs[meta.MetadataHash]; ok {
 			blobs[meta.GetBlobKey()] = &core.Blob{
 				RequestHeader: meta.RequestMetadata.BlobRequestHeader,
 				Data:          holder.Data,

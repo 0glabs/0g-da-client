@@ -78,11 +78,17 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
 	var kvClient *kv.Client
+	var rpcClient *rpc.Client
 
-	if config.BlobstoreConfig.MetadataHashAsBlobKey || config.BlobstoreConfig.InMemory {
+	if config.BlobstoreConfig.MetadataHashAsBlobKey {
 		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
+		var err error
+		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
+		if err != nil {
+			return err
+		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId, rpcClient)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
@@ -94,7 +100,7 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 	return server.Start(context.Background())
 }
 
-func RunBatcher(config Config, blobStore disperser.BlobStore, logger common.Logger) error {
+func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger) error {
 	// transactor
 	transactor := transactor.NewTransactor(logger)
 	// dispatcher
@@ -118,23 +124,6 @@ func RunBatcher(config Config, blobStore disperser.BlobStore, logger common.Logg
 	if err != nil {
 		return err
 	}
-
-	// blob store
-	var queue disperser.BlobStore
-
-	bucketName := config.BlobstoreConfig.BucketName
-	s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
-	if err != nil {
-		return err
-	}
-	logger.Info("Initialized S3 client", "bucket", bucketName)
-
-	dynamoClient, err := dynamodb.NewClient(config.AwsClientConfig, logger)
-	if err != nil {
-		return err
-	}
-	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
-	queue = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
 	metrics := batcher.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
@@ -201,11 +190,18 @@ func RunCombinedServer(ctx *cli.Context) error {
 		blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
 		blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 	} else {
+		config.BlobstoreConfig.MetadataHashAsBlobKey = true
 		blobStore = memorydb.NewBlobStore()
 	}
-	err = RunDisperserServer(config, blobStore, logger)
-	if err != nil {
-		return err
-	}
-	return RunBatcher(config, blobStore, logger)
+	errChan := make(chan error)
+	go func() {
+		err := RunDisperserServer(config, blobStore, logger)
+		errChan <- err
+	}()
+	go func() {
+		err := RunBatcher(config, blobStore, logger)
+		errChan <- err
+	}()
+	err = <-errChan
+	return err
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/zero-gravity-labs/zerog-storage-client/kv"
 	"github.com/zero-gravity-labs/zerog-storage-client/node"
 
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
@@ -98,11 +99,16 @@ func RunDisperserServer(ctx *cli.Context) error {
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
 	var kvClient *kv.Client
+	var rpcClient *rpc.Client
 
 	if config.BlobstoreConfig.MetadataHashAsBlobKey {
 		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
+		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
+		if err != nil {
+			return err
+		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId, rpcClient)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
