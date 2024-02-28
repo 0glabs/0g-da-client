@@ -244,10 +244,10 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 	}
 
 	metadata, err := s.blobStore.GetBlobMetadata(ctx, metadataKey)
-	if err != nil {
+	if err != nil && !s.metadataHashAsBlobKey {
 		return nil, err
 	}
-	if metadata.GetBlobKey().String() != string(requestID) && s.metadataHashAsBlobKey {
+	if (metadata == nil || metadata.GetBlobKey().String() != string(requestID)) && s.metadataHashAsBlobKey {
 		// check on kv
 		metadataInKV, err := s.getMetadataFromKv(requestID)
 		if err != nil {

@@ -12,7 +12,7 @@ import (
 
 const (
 	FlagPrefix   = "disperser-server"
-	envVarPrefix = "DISPERSER_SERVER"
+	EnvVarPrefix = "DISPERSER_SERVER"
 )
 
 var (
@@ -21,19 +21,19 @@ var (
 		Name:     common.PrefixFlag(FlagPrefix, "s3-bucket-name"),
 		Usage:    "Name of the bucket to store blobs",
 		Required: true,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "S3_BUCKET_NAME"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "S3_BUCKET_NAME"),
 	}
 	DynamoDBTableNameFlag = cli.StringFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "dynamodb-table-name"),
 		Usage:    "Name of the dynamodb table to store blob metadata",
 		Required: true,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "DYNAMODB_TABLE_NAME"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DYNAMODB_TABLE_NAME"),
 	}
 	GrpcPortFlag = cli.StringFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "grpc-port"),
 		Usage:    "Port at which disperser listens for grpc calls",
 		Required: true,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "GRPC_PORT"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "GRPC_PORT"),
 	}
 	/* Optional Flags*/
 	MetricsHTTPPort = cli.StringFlag{
@@ -41,47 +41,47 @@ var (
 		Usage:    "the http port which the metrics prometheus server is listening",
 		Required: false,
 		Value:    "9100",
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "METRICS_HTTP_PORT"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "METRICS_HTTP_PORT"),
 	}
 	EnableMetrics = cli.BoolFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "enable-metrics"),
 		Usage:    "start metrics server",
 		Required: false,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "ENABLE_METRICS"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENABLE_METRICS"),
 	}
 	EnableRatelimiter = cli.BoolFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "enable-ratelimiter"),
 		Usage:  "enable rate limiter",
-		EnvVar: common.PrefixEnvVar(envVarPrefix, "ENABLE_RATELIMITER"),
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "ENABLE_RATELIMITER"),
 	}
 	BucketTableName = cli.StringFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "rate-bucket-table-name"),
 		Usage:  "name of the dynamodb table to store rate limiter buckets. If not provided, a local store will be used",
 		Value:  "",
-		EnvVar: common.PrefixEnvVar(envVarPrefix, "RATE_BUCKET_TABLE_NAME"),
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "RATE_BUCKET_TABLE_NAME"),
 	}
 	BucketStoreSize = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "rate-bucket-store-size"),
 		Usage:    "size (max number of entries) of the local store to use for rate limiting buckets",
 		Value:    100_000,
-		EnvVar:   common.PrefixEnvVar(envVarPrefix, "RATE_BUCKET_STORE_SIZE"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "RATE_BUCKET_STORE_SIZE"),
 		Required: false,
 	}
 	MetadataHashAsBlobKey = cli.BoolFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "metadata-hash-as-blob-key"),
 		Usage:  "use metadata hash as blob key",
-		EnvVar: common.PrefixEnvVar(envVarPrefix, "METADATA_HASH_AS_BLOB_KEY"),
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "METADATA_HASH_AS_BLOB_KEY"),
 	}
 )
 
-var requiredFlags = []cli.Flag{
+var RequiredFlags = []cli.Flag{
 	S3BucketNameFlag,
 	DynamoDBTableNameFlag,
 	GrpcPortFlag,
 	BucketTableName,
 }
 
-var optionalFlags = []cli.Flag{
+var OptionalFlags = []cli.Flag{
 	MetricsHTTPPort,
 	EnableMetrics,
 	EnableRatelimiter,
@@ -93,10 +93,10 @@ var optionalFlags = []cli.Flag{
 var Flags []cli.Flag
 
 func init() {
-	Flags = append(requiredFlags, optionalFlags...)
-	Flags = append(Flags, logging.CLIFlags(envVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(envVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, aws.ClientFlags(envVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, geth.EthClientFlags(envVarPrefix)...)
-	Flags = append(Flags, storage_node.ClientFlags(envVarPrefix, FlagPrefix)...)
+	Flags = append(RequiredFlags, OptionalFlags...)
+	Flags = append(Flags, logging.CLIFlags(EnvVarPrefix, FlagPrefix)...)
+	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(EnvVarPrefix, FlagPrefix)...)
+	Flags = append(Flags, aws.ClientFlags(EnvVarPrefix, FlagPrefix)...)
+	Flags = append(Flags, geth.EthClientFlags(EnvVarPrefix)...)
+	Flags = append(Flags, storage_node.ClientFlags(EnvVarPrefix, FlagPrefix)...)
 }

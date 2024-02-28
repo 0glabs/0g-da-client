@@ -50,6 +50,7 @@ type Config struct {
 	BucketName            string
 	TableName             string
 	MetadataHashAsBlobKey bool
+	InMemory              bool
 }
 
 // This represents the s3 fetch result for a blob.
@@ -170,13 +171,6 @@ func (s *SharedBlobStore) MarkBlobConfirmed(ctx context.Context, existingMetadat
 		newMetadata.Expiry = uint64(ttlFromNow.Unix())
 	}
 	newMetadata.BlobStatus = disperser.Confirmed
-	newMetadata.ConfirmationInfo = confirmationInfo
-	return &newMetadata, s.blobMetadataStore.UpdateBlobMetadata(ctx, existingMetadata.GetBlobKey(), &newMetadata)
-}
-
-func (s *SharedBlobStore) MarkBlobInsufficientSignatures(ctx context.Context, existingMetadata *disperser.BlobMetadata, confirmationInfo *disperser.ConfirmationInfo) (*disperser.BlobMetadata, error) {
-	newMetadata := *existingMetadata
-	newMetadata.BlobStatus = disperser.InsufficientSignatures
 	newMetadata.ConfirmationInfo = confirmationInfo
 	return &newMetadata, s.blobMetadataStore.UpdateBlobMetadata(ctx, existingMetadata.GetBlobKey(), &newMetadata)
 }
