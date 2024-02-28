@@ -39,15 +39,18 @@ const (
 // The blobs stored in S3 are key'd by the blob key and the metadata stored in DynamoDB.
 // See blob_metadata_store.go for more details on BlobMetadataStore.
 type SharedBlobStore struct {
-	bucketName        string
-	s3Client          s3.Client
-	blobMetadataStore *BlobMetadataStore
-	logger            common.Logger
+	bucketName            string
+	s3Client              s3.Client
+	blobMetadataStore     *BlobMetadataStore
+	metadataHashAsBlobKey bool
+	logger                common.Logger
 }
 
 type Config struct {
-	BucketName string
-	TableName  string
+	BucketName            string
+	TableName             string
+	MetadataHashAsBlobKey bool
+	InMemory              bool
 }
 
 // This represents the s3 fetch result for a blob.
@@ -63,13 +66,26 @@ type blobResultOrError struct {
 
 var _ disperser.BlobStore = (*SharedBlobStore)(nil)
 
-func NewSharedStorage(bucketName string, s3Client s3.Client, blobMetadataStore *BlobMetadataStore, logger common.Logger) *SharedBlobStore {
+func NewSharedStorage(bucketName string, s3Client s3.Client, MetadataHashAsBlobKey bool, blobMetadataStore *BlobMetadataStore, logger common.Logger) *SharedBlobStore {
 	return &SharedBlobStore{
-		bucketName:        bucketName,
-		s3Client:          s3Client,
-		blobMetadataStore: blobMetadataStore,
-		logger:            logger,
+		bucketName:            bucketName,
+		s3Client:              s3Client,
+		blobMetadataStore:     blobMetadataStore,
+		metadataHashAsBlobKey: MetadataHashAsBlobKey,
+		logger:                logger,
 	}
+}
+
+func (s *SharedBlobStore) MetadataHashAsBlobKey() bool {
+	return s.metadataHashAsBlobKey
+}
+
+func (s *SharedBlobStore) RemoveBlob(ctx context.Context, metadata *disperser.BlobMetadata) error {
+	err := s.s3Client.DeleteObject(ctx, s.bucketName, metadata.MetadataHash)
+	if err != nil {
+		return err
+	}
+	return s.blobMetadataStore.RemoveBlobMetadata(ctx, metadata)
 }
 
 func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, requestedAt uint64) (disperser.BlobKey, error) {
@@ -87,7 +103,11 @@ func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 	metadataKey.BlobHash = blobHash
 	metadataKey.MetadataHash = metadataHash
 
-	err = s.s3Client.UploadObject(ctx, s.bucketName, blobObjectKey(blobHash), blob.Data)
+	if s.metadataHashAsBlobKey {
+		err = s.s3Client.UploadObject(ctx, s.bucketName, metadataHash, blob.Data)
+	} else {
+		err = s.s3Client.UploadObject(ctx, s.bucketName, blobObjectKey(blobHash), blob.Data)
+	}
 	if err != nil {
 		s.logger.Error("error uploading blob", "err", err)
 		return metadataKey, err
@@ -120,12 +140,22 @@ func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 }
 
 // GetBlobContent retrieves blob content by the blob key.
-func (s *SharedBlobStore) GetBlobContent(ctx context.Context, blobHash disperser.BlobHash) ([]byte, error) {
-	return s.s3Client.DownloadObject(ctx, s.bucketName, blobObjectKey(blobHash))
+func (s *SharedBlobStore) GetBlobContent(ctx context.Context, metadata *disperser.BlobMetadata) ([]byte, error) {
+	if s.metadataHashAsBlobKey {
+		return s.s3Client.DownloadObject(ctx, s.bucketName, metadata.MetadataHash)
+	} else {
+		return s.s3Client.DownloadObject(ctx, s.bucketName, blobObjectKey(metadata.BlobHash))
+	}
 }
 
 func (s *SharedBlobStore) getBlobContentParallel(ctx context.Context, blobKey disperser.BlobKey, blobRequestHeader core.BlobRequestHeader, resultChan chan<- blobResultOrError) {
-	blob, err := s.s3Client.DownloadObject(ctx, s.bucketName, blobObjectKey(blobKey.BlobHash))
+	var blob []byte
+	var err error
+	if s.metadataHashAsBlobKey {
+		blob, err = s.s3Client.DownloadObject(ctx, s.bucketName, blobKey.MetadataHash)
+	} else {
+		blob, err = s.s3Client.DownloadObject(ctx, s.bucketName, blobObjectKey(blobKey.BlobHash))
+	}
 	if err != nil {
 		resultChan <- blobResultOrError{err: err}
 		return
@@ -141,13 +171,6 @@ func (s *SharedBlobStore) MarkBlobConfirmed(ctx context.Context, existingMetadat
 		newMetadata.Expiry = uint64(ttlFromNow.Unix())
 	}
 	newMetadata.BlobStatus = disperser.Confirmed
-	newMetadata.ConfirmationInfo = confirmationInfo
-	return &newMetadata, s.blobMetadataStore.UpdateBlobMetadata(ctx, existingMetadata.GetBlobKey(), &newMetadata)
-}
-
-func (s *SharedBlobStore) MarkBlobInsufficientSignatures(ctx context.Context, existingMetadata *disperser.BlobMetadata, confirmationInfo *disperser.ConfirmationInfo) (*disperser.BlobMetadata, error) {
-	newMetadata := *existingMetadata
-	newMetadata.BlobStatus = disperser.InsufficientSignatures
 	newMetadata.ConfirmationInfo = confirmationInfo
 	return &newMetadata, s.blobMetadataStore.UpdateBlobMetadata(ctx, existingMetadata.GetBlobKey(), &newMetadata)
 }

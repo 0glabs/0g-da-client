@@ -17,7 +17,6 @@ type ClientConfig struct {
 	AccessKey       string
 	SecretAccessKey string
 	EndpointURL     string
-	UseMemDb        bool
 }
 
 func ClientFlags(envPrefix string, flagPrefix string) []cli.Flag {

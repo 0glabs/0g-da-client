@@ -3,8 +3,10 @@ package main
 import (
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/geth"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
+	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/apiserver/flags"
@@ -19,6 +21,8 @@ type Config struct {
 	MetricsConfig     disperser.MetricsConfig
 	RatelimiterConfig ratelimit.Config
 	RateConfig        apiserver.RateConfig
+	StorageNodeConfig storage_node.ClientConfig
+	EthClientConfig   geth.EthClientConfig
 	EnableRatelimiter bool
 	BucketTableName   string
 	BucketStoreSize   int
@@ -41,9 +45,11 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 		ServerConfig: disperser.ServerConfig{
 			GrpcPort: ctx.GlobalString(flags.GrpcPortFlag.Name),
 		},
+		EthClientConfig: geth.ReadEthClientConfig(ctx),
 		BlobstoreConfig: blobstore.Config{
-			BucketName: ctx.GlobalString(flags.S3BucketNameFlag.Name),
-			TableName:  ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			BucketName:            ctx.GlobalString(flags.S3BucketNameFlag.Name),
+			TableName:             ctx.GlobalString(flags.DynamoDBTableNameFlag.Name),
+			MetadataHashAsBlobKey: ctx.GlobalBool(flags.MetadataHashAsBlobKey.Name),
 		},
 		LoggerConfig: logging.ReadCLIConfig(ctx, flags.FlagPrefix),
 		MetricsConfig: disperser.MetricsConfig{
@@ -55,6 +61,7 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 		EnableRatelimiter: ctx.GlobalBool(flags.EnableRatelimiter.Name),
 		BucketTableName:   ctx.GlobalString(flags.BucketTableName.Name),
 		BucketStoreSize:   ctx.GlobalInt(flags.BucketStoreSize.Name),
+		StorageNodeConfig: storage_node.ReadClientConfig(ctx, flags.FlagPrefix),
 	}
 	return config, nil
 }

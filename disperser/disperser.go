@@ -84,6 +84,15 @@ type BlobMetadata struct {
 	ConfirmationInfo *ConfirmationInfo `json:"blob_confirmation_info" dynamodbav:"-"`
 }
 
+func (m *BlobMetadata) Serialize() ([]byte, error) {
+	return core.Encode(m)
+}
+
+func (m *BlobMetadata) Deserialize(data []byte) (*BlobMetadata, error) {
+	err := core.Decode(data, m)
+	return m, err
+}
+
 func (m *BlobMetadata) GetBlobKey() BlobKey {
 	return BlobKey{
 		BlobHash:     m.BlobHash,
@@ -126,16 +135,17 @@ type ConfirmationInfo struct {
 }
 
 type BlobStore interface {
+	// MetadataHashAsBlobKey if blob key is metadatahash, the blob and metadata will be removed once confirmed
+	MetadataHashAsBlobKey() bool
 	// StoreBlob adds a blob to the queue and returns a key that can be used to retrieve the blob later
 	StoreBlob(ctx context.Context, blob *core.Blob, requestedAt uint64) (BlobKey, error)
+	// RemoveBlob remove a blob and its metadata from s3 and dynamodb
+	RemoveBlob(ctx context.Context, metadata *BlobMetadata) error
 	// GetBlobContent retrieves a blob's content
-	GetBlobContent(ctx context.Context, blobHash BlobHash) ([]byte, error)
+	GetBlobContent(ctx context.Context, blobMetadata *BlobMetadata) ([]byte, error)
 	// MarkBlobConfirmed updates blob metadata to Confirmed status with confirmation info
 	// Returns the updated metadata and error
 	MarkBlobConfirmed(ctx context.Context, existingMetadata *BlobMetadata, confirmationInfo *ConfirmationInfo) (*BlobMetadata, error)
-	// MarkBlobInsufficientSignatures updates blob metadata to InsufficientSignatures status with confirmation info
-	// Returns the updated metadata and error
-	MarkBlobInsufficientSignatures(ctx context.Context, existingMetadata *BlobMetadata, confirmationInfo *ConfirmationInfo) (*BlobMetadata, error)
 	// MarkBlobFinalized marks a blob as finalized
 	MarkBlobFinalized(ctx context.Context, blobKey BlobKey) error
 	// MarkBlobProcessing marks a blob as processing

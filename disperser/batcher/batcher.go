@@ -120,7 +120,9 @@ func (b *Batcher) Start(ctx context.Context) error {
 	b.confirmer.EncodingStreamer = b.EncodingStreamer
 	b.confirmer.Start(ctx)
 	// finalizer
-	b.finalizer.Start(ctx)
+	if !b.Queue.MetadataHashAsBlobKey() {
+		b.finalizer.Start(ctx)
+	}
 
 	go func() {
 		ticker := time.NewTicker(b.PullInterval)

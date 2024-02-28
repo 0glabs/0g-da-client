@@ -9,7 +9,10 @@ import (
 	"github.com/zero-gravity-labs/zerog-data-avail/common"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
 	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
+	"github.com/zero-gravity-labs/zerog-storage-client/kv"
+	"github.com/zero-gravity-labs/zerog-storage-client/node"
 
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
 	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/s3"
@@ -71,7 +74,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 	bucketName := config.BlobstoreConfig.BucketName
 	logger.Info("Creating blob store", "bucket", bucketName)
 	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
-	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, blobMetadataStore, logger)
+	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
 	if config.EnableRatelimiter {
 		globalParams := config.RatelimiterConfig.GlobalRateParams
@@ -94,7 +97,18 @@ func RunDisperserServer(ctx *cli.Context) error {
 
 	// TODO: create a separate metrics for batcher
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig)
+
+	var kvClient *kv.Client
+	var rpcClient *rpc.Client
+
+	if config.BlobstoreConfig.MetadataHashAsBlobKey {
+		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
+		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
+		if err != nil {
+			return err
+		}
+	}
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId, rpcClient)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

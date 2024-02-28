@@ -21,7 +21,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
 	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0
-	github.com/zero-gravity-labs/zerog-storage-client v0.1.12
+	github.com/zero-gravity-labs/zerog-storage-client v0.1.13
 	go.uber.org/automaxprocs v1.5.2
 	google.golang.org/grpc v1.59.0
 )
@@ -138,7 +138,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect

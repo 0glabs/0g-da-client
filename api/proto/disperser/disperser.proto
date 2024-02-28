@@ -37,7 +37,7 @@ message DisperseBlobRequest {
 	repeated SecurityParams security_params = 2;
 	// The number of chunks that encoded blob split into.
 	// The number will be aligned to the next power of 2 and be bounded by blob size.
-	uint32 targetChunkNum = 3;
+	uint32 target_chunk_num = 3;
 }
 
 message DisperseBlobReply {
