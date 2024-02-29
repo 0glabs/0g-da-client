@@ -107,7 +107,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 		return nil, err
 	}
 
-	s.logger.Debug("received a new blob request", "origin", origin, "securityParams", securityParams)
+	s.logger.Debug("[apiserver] received a new blob request", "origin", origin, "securityParams", securityParams)
 
 	if err := blob.RequestHeader.Validate(); err != nil {
 		s.logger.Warn("invalid header", "err", err)
@@ -138,7 +138,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 
 	s.metrics.HandleSuccessfulRequest(blobSize, "DisperseBlob")
 
-	s.logger.Info("received a new blob: ", "key", metadataKey.String())
+	s.logger.Info("[apiserver] received a new blob: ", "key", metadataKey.String())
 	return &pb.DisperseBlobReply{
 		Result:    pb.BlobStatus_PROCESSING,
 		RequestId: []byte(metadataKey.String()),
@@ -164,7 +164,7 @@ func (s *DispersalServer) checkRateLimitsAndAddRates(ctx context.Context, blob *
 		encodedLength := core.GetEncodedBlobLength(length, uint8(blob.RequestHeader.SecurityParams[param.QuorumID].QuorumThreshold), uint8(blob.RequestHeader.SecurityParams[param.QuorumID].AdversaryThreshold))
 		encodedSize := core.GetBlobSize(encodedLength)
 
-		s.logger.Debug("checking rate limits", "origin", origin, "quorum", param.QuorumID, "encodedSize", encodedSize, "blobSize", blobSize)
+		s.logger.Debug("[apiserver] checking rate limits", "origin", origin, "quorum", param.QuorumID, "encodedSize", encodedSize, "blobSize", blobSize)
 
 		// Check System Ratelimit
 		systemQuorumKey := fmt.Sprintf("%s:%d", systemAccountKey, param.QuorumID)
@@ -244,7 +244,7 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		return nil, fmt.Errorf("invalid request: request_id must not be empty")
 	}
 
-	s.logger.Info("received a new blob status request", "requestID", string(requestID))
+	s.logger.Info("[apiserver] received a new blob status request", "requestID", string(requestID))
 	metadataKey, err := disperser.ParseBlobKey(string(requestID))
 	if err != nil {
 		return nil, err
@@ -280,7 +280,7 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		return nil, err
 	}
 
-	s.logger.Debug("isConfirmed", "metadata", metadata, "isConfirmed", isConfirmed)
+	s.logger.Debug("[apiserver] isConfirmed", "metadata", metadata, "isConfirmed", isConfirmed)
 	if isConfirmed {
 		confirmationInfo := metadata.ConfirmationInfo
 		commit, err := confirmationInfo.BlobCommitment.Commitment.Serialize()
@@ -349,7 +349,7 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	}))
 	defer timer.ObserveDuration()
 
-	s.logger.Info("received a new blob retrieval request", "batchHeaderHash", req.BatchHeaderHash, "blobIndex", req.BlobIndex)
+	s.logger.Info("[apiserver] received a new blob retrieval request", "batchHeaderHash", req.BatchHeaderHash, "blobIndex", req.BlobIndex)
 
 	batchHeaderHash := req.GetBatchHeaderHash()
 	// Convert to [32]byte
@@ -409,9 +409,9 @@ func (s *DispersalServer) Start(ctx context.Context) error {
 			for {
 				err := s.UpdateLatestFinalizedBlock(ctx)
 				if err != nil {
-					s.logger.Warn("fetch latest finalized block number failed", "error", err)
+					s.logger.Warn("[apiserver] fetch latest finalized block number failed", "error", err)
 				} else {
-					s.logger.Info("latest finalized block number updated", "number", s.latestFinalizedBlock)
+					s.logger.Info("[apiserver] latest finalized block number updated", "number", s.latestFinalizedBlock)
 				}
 				time.Sleep(time.Second * 5)
 			}
@@ -433,7 +433,7 @@ func (s *DispersalServer) Start(ctx context.Context) error {
 	// Register Server for Health Checks
 	healthcheck.RegisterHealthServer(gs)
 
-	s.logger.Info("port", s.config.GrpcPort, "address", listener.Addr().String(), "GRPC Listening")
+	s.logger.Info("[apiserver] port", s.config.GrpcPort, "address", listener.Addr().String(), "GRPC Listening")
 	if err := gs.Serve(listener); err != nil {
 		return fmt.Errorf("could not start GRPC server")
 	}

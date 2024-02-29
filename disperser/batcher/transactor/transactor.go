@@ -49,14 +49,14 @@ func (t *Transactor) BatchUpload(uploader *transfer.Uploader, datas []zg_core.It
 		data := datas[i]
 		opt := opts[i]
 
-		t.logger.Info("Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
+		t.logger.Info("[transactor] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
 
 		// Calculate file merkle root.
 		tree, err := zg_core.MerkleTree(data)
 		if err != nil {
 			return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to create data merkle tree")
 		}
-		t.logger.Info("Data merkle root calculated", "root", tree.Root())
+		t.logger.Info("[transactor] Data merkle root calculated", "root", tree.Root())
 		trees[i] = tree
 		dataRoots[i] = trees[i].Root()
 
@@ -76,7 +76,7 @@ func (t *Transactor) BatchUpload(uploader *transfer.Uploader, datas []zg_core.It
 		}
 	}
 
-	t.logger.Info("batch upload took", "duration", time.Since(stageTimer))
+	t.logger.Info("[transactor] batch upload took", "duration", time.Since(stageTimer))
 
 	return txHash, dataRoots, nil
 }

@@ -14,6 +14,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.5.1
+	github.com/openweb3/web3go v0.2.1-0.20221026093812-d63d83edcfec
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/stretchr/testify v1.8.4
@@ -92,7 +93,6 @@ require (
 	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/openweb3/go-rpc-provider v0.2.7 // indirect
 	github.com/openweb3/go-sdk-common v0.0.0-20220720074746-a7134e1d372c // indirect
-	github.com/openweb3/web3go v0.2.1-0.20221026093812-d63d83edcfec // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect

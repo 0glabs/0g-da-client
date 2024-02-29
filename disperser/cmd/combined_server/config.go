@@ -61,6 +61,7 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			TableName:             ctx.GlobalString(server_flags.DynamoDBTableNameFlag.Name),
 			MetadataHashAsBlobKey: ctx.GlobalBool(server_flags.MetadataHashAsBlobKey.Name),
 			InMemory:              ctx.GlobalBool(flags.UseMemoryDB.Name),
+			MemoryDBSize:          uint64(ctx.GlobalUint(flags.MemoryDBSizeLimit.Name)) * 1024 * 1024,
 		},
 		LoggerConfig: logging.ReadCLIConfig(ctx, flags.FlagPrefix),
 		MetricsConfig: disperser.MetricsConfig{

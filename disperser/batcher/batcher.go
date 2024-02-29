@@ -1,14 +1,11 @@
 package batcher
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gammazero/workerpool"
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
@@ -136,9 +133,9 @@ func (b *Batcher) Start(ctx context.Context) error {
 				if ts, err := b.HandleSingleBatch(ctx); err != nil {
 					b.EncodingStreamer.RemoveBatchingStatus(ts)
 					if errors.Is(err, errNoEncodedResults) {
-						b.logger.Debug("no encoded results to make a batch with")
+						b.logger.Debug("[batcher] no encoded results to make a batch with")
 					} else {
-						b.logger.Error("failed to process a batch", "err", err)
+						b.logger.Error("[batcher] failed to process a batch", "err", err)
 					}
 				}
 			case <-batchTrigger.Notify:
@@ -146,9 +143,9 @@ func (b *Batcher) Start(ctx context.Context) error {
 				if ts, err := b.HandleSingleBatch(ctx); err != nil {
 					b.EncodingStreamer.RemoveBatchingStatus(ts)
 					if errors.Is(err, errNoEncodedResults) {
-						b.logger.Debug("no encoded results to make a batch with(Notified)")
+						b.logger.Debug("[batcher] no encoded results to make a batch with(Notified)")
 					} else {
-						b.logger.Error("failed to process a batch(Notified)", "err", err)
+						b.logger.Error("[batcher] failed to process a batch(Notified)", "err", err)
 					}
 				}
 				ticker.Reset(b.PullInterval)
@@ -172,7 +169,7 @@ func (b *Batcher) handleFailure(ctx context.Context, blobMetadatas []*disperser.
 	for _, metadata := range blobMetadatas {
 		err := b.Queue.HandleBlobFailure(ctx, metadata, b.MaxNumRetriesPerBlob)
 		if err != nil {
-			b.logger.Error("HandleSingleBatch: error handling blob failure", "err", err)
+			b.logger.Error("[batcher] HandleSingleBatch: error handling blob failure", "err", err)
 			// Append the error
 			result = multierror.Append(result, err)
 		}
@@ -245,40 +242,4 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 		ts:         ts,
 	}
 	return ts, nil
-}
-
-func (b *Batcher) parseBatchIDFromReceipt(ctx context.Context, txReceipt *types.Receipt) (uint32, error) {
-	if len(txReceipt.Logs) == 0 {
-		return 0, fmt.Errorf("failed to get transaction receipt with logs")
-	}
-	for _, log := range txReceipt.Logs {
-		if len(log.Topics) == 0 {
-			b.logger.Debug("transaction receipt has no topics")
-			continue
-		}
-		b.logger.Debug("[getBatchIDFromReceipt] ", "sigHash", log.Topics[0].Hex())
-
-		if log.Topics[0] == common.BatchConfirmedEventSigHash {
-			smAbi, err := abi.JSON(bytes.NewReader(common.ServiceManagerAbi))
-			if err != nil {
-				return 0, err
-			}
-			eventAbi, err := smAbi.EventByID(common.BatchConfirmedEventSigHash)
-			if err != nil {
-				return 0, err
-			}
-			unpackedData, err := eventAbi.Inputs.Unpack(log.Data)
-			if err != nil {
-				return 0, err
-			}
-
-			// There should be exactly two inputs in the data field, batchId and fee.
-			// ref: https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L20
-			if len(unpackedData) != 2 {
-				return 0, fmt.Errorf("BatchConfirmed log should contain exactly 2 inputs. Found %d", len(unpackedData))
-			}
-			return unpackedData[0].(uint32), nil
-		}
-	}
-	return 0, fmt.Errorf("failed to find BatchConfirmed log from the transaction")
 }
