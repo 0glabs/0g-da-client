@@ -51,6 +51,7 @@ type Config struct {
 	TableName             string
 	MetadataHashAsBlobKey bool
 	InMemory              bool
+	MemoryDBSize          uint64
 }
 
 // This represents the s3 fetch result for a blob.
@@ -97,7 +98,7 @@ func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 	blobHash := getBlobHash(blob)
 	metadataHash, err := getMetadataHash(requestedAt, blob.RequestHeader.SecurityParams)
 	if err != nil {
-		s.logger.Error("error creating metadata key", "err", err)
+		s.logger.Error("[sharedstorage] error creating metadata key", "err", err)
 		return metadataKey, err
 	}
 	metadataKey.BlobHash = blobHash
@@ -109,7 +110,7 @@ func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 		err = s.s3Client.UploadObject(ctx, s.bucketName, blobObjectKey(blobHash), blob.Data)
 	}
 	if err != nil {
-		s.logger.Error("error uploading blob", "err", err)
+		s.logger.Error("[sharedstorage] error uploading blob", "err", err)
 		return metadataKey, err
 	}
 
@@ -132,7 +133,7 @@ func (s *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 	}
 	err = s.blobMetadataStore.QueueNewBlobMetadata(ctx, &metadata)
 	if err != nil {
-		s.logger.Error("error uploading blob metadata", "err", err)
+		s.logger.Error("[sharedstorage] error uploading blob metadata", "err", err)
 		return metadataKey, err
 	}
 

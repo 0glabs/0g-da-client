@@ -148,7 +148,7 @@ func (c *Confirmer) handleFailure(ctx context.Context, blobMetadatas []*disperse
 	for _, metadata := range blobMetadatas {
 		err := c.Queue.HandleBlobFailure(ctx, metadata, c.MaxNumRetriesPerBlob)
 		if err != nil {
-			c.logger.Error("HandleSingleBatch: error handling blob failure", "err", err)
+			c.logger.Error("[confirmer] HandleSingleBatch: error handling blob failure", "err", err)
 			// Append the error
 			result = multierror.Append(result, err)
 		}
@@ -282,7 +282,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 			confirmedMetadatas = append(confirmedMetadatas, confirmedMetadata)
 		}
 		if updateConfirmationInfoErr != nil {
-			c.logger.Error("HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)
+			c.logger.Error("[confirmer] HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)
 			blobsToRetry = append(blobsToRetry, batch.BlobMetadata[blobIndex])
 		}
 		requestTime := time.Unix(0, int64(metadata.RequestMetadata.RequestedAt))

@@ -32,9 +32,17 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENABLE_METRICS"),
 	}
 	UseMemoryDB = cli.BoolFlag{
-		Name:   common.PrefixFlag(FlagPrefix, "use-memory-db"),
-		Usage:  "use memory db",
-		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "USE_MEMORY_DB"),
+		Name:     common.PrefixFlag(FlagPrefix, "use-memory-db"),
+		Usage:    "use memory db",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "USE_MEMORY_DB"),
+	}
+	MemoryDBSizeLimit = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "memory-db-size-limit"),
+		Usage:    "the maximum memory db size in MiB",
+		Required: false,
+		Value:    2048, // 2G
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "MEMORY_DB_SIZE_LIMIT"),
 	}
 )
 
@@ -44,6 +52,7 @@ var OptionalFlags = []cli.Flag{
 	MetricsHTTPPort,
 	EnableMetrics,
 	UseMemoryDB,
+	MemoryDBSizeLimit,
 }
 
 // Flags contains the list of configuration options available to the binary.

@@ -191,7 +191,7 @@ func RunCombinedServer(ctx *cli.Context) error {
 		blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 	} else {
 		config.BlobstoreConfig.MetadataHashAsBlobKey = true
-		blobStore = memorydb.NewBlobStore()
+		blobStore = memorydb.NewBlobStore(config.BlobstoreConfig.MemoryDBSize, logger)
 	}
 	errChan := make(chan error)
 	go func() {

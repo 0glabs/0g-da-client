@@ -122,7 +122,7 @@ func (e *EncodingStreamer) Start(ctx context.Context) error {
 						// ignore canceled errors because canceled encoding requests are normal
 						continue
 					}
-					e.logger.Error("error processing encoded blobs", "err", err)
+					e.logger.Error("[encodingstreamer] error processing encoded blobs", "err", err)
 				}
 			}
 		}
@@ -140,7 +140,7 @@ func (e *EncodingStreamer) Start(ctx context.Context) error {
 			case <-ticker.C:
 				err := e.RequestEncoding(ctx, encoderChan)
 				if err != nil {
-					e.logger.Warn("error requesting encoding", "err", err)
+					e.logger.Warn("[encodingstreamer] error requesting encoding", "err", err)
 				}
 			}
 		}
@@ -167,7 +167,7 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	}
 	metadatas = metadatas[:n]
 	if len(metadatas) == 0 {
-		e.logger.Info("no new metadatas to encode")
+		e.logger.Info("[encodingstreamer] no new metadatas to encode")
 		return nil
 	}
 
@@ -180,7 +180,7 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	}
 	if numMetadatastoProcess <= 0 {
 		// encoding queue is full
-		e.logger.Warn("[RequestEncoding] worker pool queue is full. skipping this round of encoding requests", "waitingQueueSize", waitingQueueSize, "encodingQueueLimit", e.EncodingQueueLimit)
+		e.logger.Warn("[encodingstreamer] worker pool queue is full. skipping this round of encoding requests", "waitingQueueSize", waitingQueueSize, "encodingQueueLimit", e.EncodingQueueLimit)
 		return nil
 	}
 	// only process subset of blobs so it doesn't exceed the EncodingQueueLimit
@@ -194,9 +194,9 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	if err != nil {
 		return fmt.Errorf("error getting blobs from blob store: %w", err)
 	}
-	e.logger.Trace("[RequestEncoding] retrieved blobs to encode", "numBlobs", len(blobs), "duration", time.Since(stageTimer))
+	e.logger.Trace("[encodingstreamer] retrieved blobs to encode", "numBlobs", len(blobs), "duration", time.Since(stageTimer))
 
-	e.logger.Trace("[RequestEncoding] encoding blobs...", "numBlobs", len(blobs))
+	e.logger.Trace("[encodingstreamer] encoding blobs...", "numBlobs", len(blobs))
 
 	for i := range metadatas {
 		metadata := metadatas[i]
@@ -225,17 +225,17 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 
 	params, err := core.GetEncodingParams(chunkLength, chunkNum)
 	if err != nil {
-		e.logger.Error("[RequestEncodingForBlob] error getting encoding params", "err", err)
+		e.logger.Error("[encodingstreamer] error getting encoding params", "err", err)
 		return
 	}
 
 	err = core.ValidateEncodingParams(params, int(blobLength), e.SRSOrder)
 	if err != nil {
-		e.logger.Error("[RequestEncodingForBlob] invalid encoding params", "err", err)
+		e.logger.Error("[encodingstreamer] invalid encoding params", "err", err)
 		// Cancel the blob
 		err := e.blobStore.MarkBlobFailed(ctx, blobKey)
 		if err != nil {
-			e.logger.Error("[RequestEncodingForBlob] error marking blob failed", "err", err)
+			e.logger.Error("[encodingstreamer] error marking blob failed", "err", err)
 		}
 		return
 	}
@@ -288,7 +288,7 @@ func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result Encod
 		e.EncodedSizeNotifier.mu.Lock()
 
 		if e.EncodedSizeNotifier.active {
-			e.logger.Info("encoded size threshold reached", "size", encodedSize)
+			e.logger.Info("[encodingstreamer] encoded size threshold reached", "size", encodedSize)
 			e.EncodedSizeNotifier.Notify <- struct{}{}
 			// make sure this doesn't keep triggering before encoded blob store is reset
 			e.EncodedSizeNotifier.active = false

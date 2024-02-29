@@ -57,7 +57,7 @@ func (f *finalizer) Start(ctx context.Context) {
 				return
 			case <-ticker.C:
 				if err := f.FinalizeBlobs(ctx); err != nil {
-					f.logger.Error("failed to finalize blobs", "err", err)
+					f.logger.Error("[finalizer] failed to finalize blobs", "err", err)
 				}
 			}
 		}
@@ -78,13 +78,13 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 		return fmt.Errorf("FinalizeBlobs: error getting blob headers: %w", err)
 	}
 
-	f.logger.Info("FinalizeBlobs: finalizing blobs", "numBlobs", len(metadatas), "finalizedBlockNumber", finalizedHeader.Number)
+	f.logger.Info("[finalizer] FinalizeBlobs: finalizing blobs", "numBlobs", len(metadatas), "finalizedBlockNumber", finalizedHeader.Number)
 
 	for _, m := range metadatas {
 		blobKey := m.GetBlobKey()
 		confirmationMetadata, err := f.blobStore.GetBlobMetadata(ctx, blobKey)
 		if err != nil {
-			f.logger.Error("FinalizeBlobs: error getting confirmed metadata", "blobKey", blobKey.String(), "err", err)
+			f.logger.Error("[finalizer] FinalizeBlobs: error getting confirmed metadata", "blobKey", blobKey.String(), "err", err)
 			continue
 		}
 
@@ -99,12 +99,12 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 			// The confirmed block is finalized, but the transaction is not found. It means the transaction should be considered forked/invalid and the blob should be considered as failed.
 			err := f.blobStore.HandleBlobFailure(ctx, m, f.maxNumRetriesPerBlob)
 			if err != nil {
-				f.logger.Error("FinalizeBlobs: error marking blob as failed", "blobKey", blobKey.String(), "err", err)
+				f.logger.Error("[finalizer] FinalizeBlobs: error marking blob as failed", "blobKey", blobKey.String(), "err", err)
 			}
 			continue
 		}
 		if err != nil {
-			f.logger.Error("FinalizeBlobs: error getting transaction block number", "err", err)
+			f.logger.Error("[finalizer] FinalizeBlobs: error getting transaction block number", "err", err)
 			continue
 		}
 
@@ -116,11 +116,11 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 		confirmationMetadata.ConfirmationInfo.ConfirmationBlockNumber = uint32(confirmationBlockNumber)
 		err = f.blobStore.MarkBlobFinalized(ctx, blobKey)
 		if err != nil {
-			f.logger.Error("FinalizeBlobs: error marking blob as finalized", "blobKey", blobKey.String(), "err", err)
+			f.logger.Error("[finalizer] FinalizeBlobs: error marking blob as finalized", "blobKey", blobKey.String(), "err", err)
 			continue
 		}
 	}
-	f.logger.Info("FinalizeBlobs: successfully processed all finalized blobs")
+	f.logger.Info("[finalizer] FinalizeBlobs: successfully processed all finalized blobs")
 	return nil
 }
 
@@ -142,7 +142,7 @@ func (f *finalizer) getTransactionBlockNumber(ctx context.Context, hash gcommon.
 		}
 
 		retrySec := math.Pow(2, float64(i))
-		f.logger.Error("Finalizer: error getting transaction", "err", err, "retrySec", retrySec, "hash", hash.Hex())
+		f.logger.Error("[finalizer] Finalizer: error getting transaction", "err", err, "retrySec", retrySec, "hash", hash.Hex())
 		time.Sleep(time.Duration(retrySec) * baseDelay)
 	}
 
@@ -167,7 +167,7 @@ func (f *finalizer) getLatestFinalizedBlock(ctx context.Context) (*types.Header,
 		}
 
 		retrySec := math.Pow(2, float64(i))
-		f.logger.Error("Finalizer: error getting latest finalized block", "err", err, "retrySec", retrySec)
+		f.logger.Error("[finalizer] Finalizer: error getting latest finalized block", "err", err, "retrySec", retrySec)
 		time.Sleep(time.Duration(retrySec) * baseDelay)
 	}
 
