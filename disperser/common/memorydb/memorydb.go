@@ -178,7 +178,7 @@ func (q *SharedBlobStore) MarkBlobConfirmed(ctx context.Context, existingMetadat
 		q.size -= sizeOf(existing)
 	}
 	q.size += sizeOf(&newMetadata)
-	q.logger.Info("[memdb] bblob confirmed", "mem db used", q.size, "limit", q.sizeLimit)
+	q.logger.Info("[memdb] blob confirmed", "mem db used", q.size, "limit", q.sizeLimit)
 	// don't throw error here
 	q.Metadata[blobKey] = &newMetadata
 	return &newMetadata, nil

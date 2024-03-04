@@ -14,6 +14,7 @@ const (
 	CoeffSize             = 32                          // 32B
 	ProofSize             = 64                          // 64B
 	DefaultTargetChunkNum = 32
+	MaxChunkLen           = SegmentSize / 2 / 32
 )
 
 // Commitments
@@ -73,6 +74,10 @@ func SplitToChunks(blobLength uint, targetChunkNum uint) (uint, uint) {
 		chunkNum = min(uint(encoder.NextPowerOf2(uint64(targetChunkNum))), expectedLength)
 	}
 	chunkLength := (expectedLength-1)/chunkNum + 1
+	if chunkLength > MaxChunkLen {
+		chunkLength = MaxChunkLen
+		chunkNum = expectedLength / chunkLength
+	}
 	return chunkLength, chunkNum
 }
 
