@@ -6,8 +6,8 @@ import (
 
 	// "fmt"
 
-	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	kzg "github.com/0glabs/0g-data-avail/pkg/kzg"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 // V is ordered as (v_0, .., v_6), so it creates a

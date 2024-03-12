@@ -32,7 +32,7 @@ package kzg
 import (
 	"log"
 
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 // Compute KZG proof for polynomial in coefficient form at positions x * w^y where w is

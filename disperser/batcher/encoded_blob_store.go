@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-data-avail/disperser"
 )
 
 type requestID string

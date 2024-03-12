@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/0glabs/0g-data-avail/common"
 	"github.com/ethereum/go-ethereum/log"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 type Logger struct {

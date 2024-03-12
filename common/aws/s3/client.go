@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/0glabs/0g-data-avail/common"
+	commonaws "github.com/0glabs/0g-data-avail/common/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 )
 
 var (

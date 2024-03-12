@@ -9,16 +9,16 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/0glabs/0g-data-avail/core"
 )
 
 const (
-	churnerImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/churner:local"
-	disImage       = "ghcr.io/zero-gravity-labs/zerog-storage-client/disperser:local"
-	encoderImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/encoder:local"
-	batcherImage   = "ghcr.io/zero-gravity-labs/zerog-storage-client/batcher:local"
-	nodeImage      = "ghcr.io/zero-gravity-labs/zerog-storage-client/node:local"
-	retrieverImage = "ghcr.io/zero-gravity-labs/zerog-storage-client/retriever:local"
+	churnerImage   = "ghcr.io/0glabs/0g-storage-client/churner:local"
+	disImage       = "ghcr.io/0glabs/0g-storage-client/disperser:local"
+	encoderImage   = "ghcr.io/0glabs/0g-storage-client/encoder:local"
+	batcherImage   = "ghcr.io/0glabs/0g-storage-client/batcher:local"
+	nodeImage      = "ghcr.io/0glabs/0g-storage-client/node:local"
+	retrieverImage = "ghcr.io/0glabs/0g-storage-client/retriever:local"
 )
 
 func (env *Config) getKeyString(name string) string {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/0glabs/0g-data-avail/common"
 	lru "github.com/hashicorp/golang-lru/v2"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 type localParamStore[T any] struct {

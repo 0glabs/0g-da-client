@@ -1,3 +1,3 @@
 #!/bin/bash
 
-pip3 install -r ../zerog_storage_kv/tests/requirements.txt
+pip3 install -r ../0g_storage_kv/tests/requirements.txt

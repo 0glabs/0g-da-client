@@ -7,9 +7,9 @@ import (
 	"os"
 	"text/template"
 
-	dis "github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/apiserver/flags"
-	bat "github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/batcher/flags"
-	enc "github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/encoder/flags"
+	dis "github.com/0glabs/0g-data-avail/disperser/cmd/apiserver/flags"
+	bat "github.com/0glabs/0g-data-avail/disperser/cmd/batcher/flags"
+	enc "github.com/0glabs/0g-data-avail/disperser/cmd/encoder/flags"
 
 	"github.com/urfave/cli"
 )

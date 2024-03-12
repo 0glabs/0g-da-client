@@ -5,14 +5,14 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	pb "github.com/0glabs/0g-data-avail/api/grpc/retriever"
+	"github.com/0glabs/0g-data-avail/clients"
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-storage-client/kv"
+	"github.com/0glabs/0g-storage-client/node"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
-	pb "github.com/zero-gravity-labs/zerog-data-avail/api/grpc/retriever"
-	"github.com/zero-gravity-labs/zerog-data-avail/clients"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	"github.com/zero-gravity-labs/zerog-storage-client/kv"
-	"github.com/zero-gravity-labs/zerog-storage-client/node"
 )
 
 type Server struct {

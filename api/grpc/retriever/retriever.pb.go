@@ -26,7 +26,7 @@ type BlobRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/zero-gravity-labs/zerog-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// This identifies the batch that this blob belongs to.
 	BatchHeaderHash []byte `protobuf:"bytes,1,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
 	// Which blob in the batch this is requesting for (note: a batch is logically an

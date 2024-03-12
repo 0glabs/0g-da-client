@@ -3,16 +3,16 @@ package clients
 import (
 	"context"
 
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/common/storage_node"
+	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
+	"github.com/0glabs/0g-storage-client/kv"
+	"github.com/0glabs/0g-storage-client/node"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/wealdtech/go-merkletree"
 	"github.com/wealdtech/go-merkletree/keccak256"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
-	"github.com/zero-gravity-labs/zerog-storage-client/kv"
-	"github.com/zero-gravity-labs/zerog-storage-client/node"
 )
 
 type RetrievalClient interface {

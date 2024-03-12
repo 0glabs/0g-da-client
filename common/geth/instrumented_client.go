@@ -6,13 +6,13 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
 	rpccalls "github.com/Layr-Labs/eigensdk-go/metrics/collectors/rpc_calls"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 // InstrumentedEthClient is a wrapper around our EthClient that instruments all underlying json-rpc calls.

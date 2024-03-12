@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 var (

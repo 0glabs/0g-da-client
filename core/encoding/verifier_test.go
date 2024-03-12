@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/0glabs/0g-data-avail/core"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
 	// "github.com/pkg/profile"
 )
 

@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
+	commonaws "github.com/0glabs/0g-data-avail/common/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
 )
 
 const (

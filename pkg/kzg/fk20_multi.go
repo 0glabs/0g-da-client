@@ -32,7 +32,7 @@ package kzg
 import (
 	"fmt"
 
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 // FK20 Method to compute all proofs

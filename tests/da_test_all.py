@@ -2,7 +2,7 @@
 import os
 import sys
 
-sys.path.append("../zerog_storage_kv/zerog-storage-rust/tests")
+sys.path.append("../0g_storage_kv/0g-storage-node/tests")
 
 from utility.run_all import run_all
 

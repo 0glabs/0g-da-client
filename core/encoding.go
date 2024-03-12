@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	"github.com/0glabs/0g-data-avail/pkg/encoding/encoder"
+	"github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 const (

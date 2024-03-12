@@ -1,10 +1,12 @@
-module github.com/zero-gravity-labs/zerog-data-avail
+module github.com/0glabs/0g-data-avail
 
 go 1.21
 
 toolchain go1.21.1
 
 require (
+	github.com/0glabs/0g-data-avail/api v0.0.0
+	github.com/0glabs/0g-storage-client v0.1.14
 	github.com/Layr-Labs/eigensdk-go v0.0.8
 	github.com/aws/aws-sdk-go-v2 v1.21.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.43
@@ -21,8 +23,7 @@ require (
 	github.com/urfave/cli v1.22.14
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
-	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0
-	github.com/zero-gravity-labs/zerog-storage-client v0.1.13
+	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0-20240304091756-a470f1aff6ee
 	go.uber.org/automaxprocs v1.5.2
 	google.golang.org/grpc v1.59.0
 )
@@ -170,4 +171,4 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/zero-gravity-labs/zerog-data-avail/api => ./api
+replace github.com/0glabs/0g-data-avail/api => ./api

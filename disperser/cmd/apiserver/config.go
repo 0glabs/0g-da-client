@@ -1,16 +1,16 @@
 package main
 
 import (
+	"github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-data-avail/common/geth"
+	"github.com/0glabs/0g-data-avail/common/logging"
+	"github.com/0glabs/0g-data-avail/common/ratelimit"
+	"github.com/0glabs/0g-data-avail/common/storage_node"
+	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-data-avail/disperser/apiserver"
+	"github.com/0glabs/0g-data-avail/disperser/cmd/apiserver/flags"
+	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/geth"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/apiserver"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/apiserver/flags"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 )
 
 type Config struct {

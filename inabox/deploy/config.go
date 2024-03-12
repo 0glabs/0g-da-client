@@ -443,7 +443,7 @@ func (env *Config) getKey(name string) (key, address string) {
 // current experiment.
 func (env *Config) GenerateAllVariables() {
 	// hardcode graphurl for now
-	graphUrl := "http://localhost:8000/subgraphs/name/zero-gravity-labs/zerog-storage-client-operator-state"
+	graphUrl := "http://localhost:8000/subgraphs/name/0glabs/0g-storage-client-operator-state"
 
 	// Create envs directory
 	createDirectory(env.Path + "/envs")

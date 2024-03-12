@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math"
 
-	rb "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/utils/reverseBits"
+	rb "github.com/0glabs/0g-data-avail/pkg/encoding/utils/reverseBits"
 
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 func ToFrArray(data []byte) []bls.Fr {

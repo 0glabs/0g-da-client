@@ -3,9 +3,9 @@ package encoding
 import (
 	"runtime"
 
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/pkg/encoding/kzgEncoder"
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 const (

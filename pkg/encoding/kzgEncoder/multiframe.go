@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
-	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	rs "github.com/0glabs/0g-data-avail/pkg/encoding/encoder"
+	kzg "github.com/0glabs/0g-data-avail/pkg/kzg"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 // Sample is the basic unit for a verification

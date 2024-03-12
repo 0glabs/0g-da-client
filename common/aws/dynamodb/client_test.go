@@ -6,16 +6,16 @@ import (
 	"os"
 	"testing"
 
+	commonaws "github.com/0glabs/0g-data-avail/common/aws"
+	commondynamodb "github.com/0glabs/0g-data-avail/common/aws/dynamodb"
+	test_utils "github.com/0glabs/0g-data-avail/common/aws/dynamodb/utils"
+	"github.com/0glabs/0g-data-avail/common/logging"
+	"github.com/0glabs/0g-data-avail/inabox/deploy"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
-	commonaws "github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	commondynamodb "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
-	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
-	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (

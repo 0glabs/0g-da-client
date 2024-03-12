@@ -7,10 +7,10 @@ import (
 	"math"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 
 	gcommon "github.com/ethereum/go-ethereum/common"
 )

@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	cmock "github.com/zero-gravity-labs/zerog-data-avail/common/mock"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
-	pb "github.com/zero-gravity-labs/zerog-data-avail/disperser/api/grpc/encoder"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	cmock "github.com/0glabs/0g-data-avail/common/mock"
+	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-data-avail/core/encoding"
+	pb "github.com/0glabs/0g-data-avail/disperser/api/grpc/encoder"
+	"github.com/0glabs/0g-data-avail/pkg/encoding/kzgEncoder"
+	"github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 var (

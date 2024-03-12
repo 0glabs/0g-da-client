@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/common/mock"
+	"github.com/0glabs/0g-data-avail/common/ratelimit"
+	"github.com/0glabs/0g-data-avail/common/store"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/mock"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/ratelimit"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
 )
 
 func makeTestRatelimiter() (common.RateLimiter, error) {

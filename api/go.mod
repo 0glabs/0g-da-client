@@ -1,4 +1,4 @@
-module github.com/zero-gravity-labs/zerog-data-avail/api
+module github.com/0glabs/0g-data-avail/api
 
 go 1.21
 
