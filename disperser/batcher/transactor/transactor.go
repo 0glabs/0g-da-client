@@ -4,12 +4,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
+	zg_core "github.com/0glabs/0g-storage-client/core"
+	"github.com/0glabs/0g-storage-client/core/merkle"
+	"github.com/0glabs/0g-storage-client/transfer"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	zg_core "github.com/zero-gravity-labs/zerog-storage-client/core"
-	"github.com/zero-gravity-labs/zerog-storage-client/core/merkle"
-	"github.com/zero-gravity-labs/zerog-storage-client/transfer"
 )
 
 type Transactor struct {

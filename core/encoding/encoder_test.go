@@ -6,10 +6,10 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-data-avail/core/encoding"
+	"github.com/0glabs/0g-data-avail/pkg/encoding/kzgEncoder"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/kzgEncoder"
 )
 
 var (
@@ -82,7 +82,7 @@ func TestEncoder(t *testing.T) {
 //
 // goos: darwin
 // goarch: arm64
-// pkg: github.com/zero-gravity-labs/zerog-data-avail/core/encoding
+// pkg: github.com/0glabs/0g-data-avail/core/encoding
 // BenchmarkEncode-12    	       1	2421900583 ns/op
 func BenchmarkEncode(b *testing.B) {
 	params := core.EncodingParams{

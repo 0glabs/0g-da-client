@@ -4,7 +4,7 @@ import shutil
 import stat
 import argparse
 
-sys.path.append("../../zerog_storage_kv/tests")
+sys.path.append("../../0g_storage_kv/tests")
 
 from test_framework.test_framework import TestFramework
 from test_framework.blockchain_node import BlockChainNodeType
@@ -45,7 +45,7 @@ class DATestFramework(TestFramework):
             tmp_dir, "zgs_node" + binary_ext
         )
         self.__default_zgs_cli_binary__ = os.path.join(
-            tmp_dir, "zerog-storage-client" + binary_ext
+            tmp_dir, "0g-storage-client" + binary_ext
         )
         self.__default_zgs_kv_binary__ = os.path.join(
             tmp_dir, "zgs_kv" + binary_ext
@@ -143,7 +143,7 @@ class DATestFramework(TestFramework):
             self.build_da_node(self.da_server_binary, os.path.join(da_disperser_cmd, "apiserver"))
 
     def build_zgs_node(self, zgs_node_path, zgs_cli_path):
-        zgs_root_path = os.path.join(__file_path__, "..", "..", "zerog_storage_kv", "zerog-storage-rust")
+        zgs_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv", "0g-storage-node")
         target_path = os.path.join(zgs_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)
@@ -154,7 +154,7 @@ class DATestFramework(TestFramework):
 
         path = os.path.join(target_path, "release", "zgs_node" + binary_ext)
         shutil.copyfile(path, zgs_node_path)
-        path = os.path.join(target_path, "zerog-storage-client" + binary_ext)
+        path = os.path.join(target_path, "0g-storage-client" + binary_ext)
         shutil.copyfile(path, zgs_cli_path)
 
         if not is_windows_platform():
@@ -166,7 +166,7 @@ class DATestFramework(TestFramework):
         os.chdir(origin_path)
 
     def build_zgs_kv(self, kv_path):
-        kv_root_path = os.path.join(__file_path__, "..", "..", "zerog_storage_kv")
+        kv_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv")
         target_path = os.path.join(kv_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)

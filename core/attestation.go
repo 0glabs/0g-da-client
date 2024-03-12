@@ -4,12 +4,12 @@ import (
 	"crypto/rand"
 	"math/big"
 
+	bn254utils "github.com/0glabs/0g-data-avail/core/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
-	bn254utils "github.com/zero-gravity-labs/zerog-data-avail/core/bn254"
 )
 
 type G1Point struct {

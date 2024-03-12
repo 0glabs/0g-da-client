@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
-	"github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/utils"
-	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	rs "github.com/0glabs/0g-data-avail/pkg/encoding/encoder"
+	"github.com/0glabs/0g-data-avail/pkg/encoding/utils"
+	kzg "github.com/0glabs/0g-data-avail/pkg/kzg"
 
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 	_ "go.uber.org/automaxprocs"
 )
 

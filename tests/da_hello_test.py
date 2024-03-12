@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-sys.path.append("../zerog_storage_kv/tests")
+sys.path.append("../0g_storage_kv/tests")
 import time
 
 from da_test_framework.da_test_framework import DATestFramework

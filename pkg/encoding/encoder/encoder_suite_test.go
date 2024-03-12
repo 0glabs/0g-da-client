@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	rs "github.com/zero-gravity-labs/zerog-data-avail/pkg/encoding/encoder"
+	rs "github.com/0glabs/0g-data-avail/pkg/encoding/encoder"
 )
 
 const (

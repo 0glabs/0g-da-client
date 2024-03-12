@@ -1,11 +1,11 @@
 package retriever
 
 import (
+	"github.com/0glabs/0g-data-avail/common/logging"
+	"github.com/0glabs/0g-data-avail/common/storage_node"
+	"github.com/0glabs/0g-data-avail/core/encoding"
+	"github.com/0glabs/0g-data-avail/retriever/flags"
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
-	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
-	"github.com/zero-gravity-labs/zerog-data-avail/retriever/flags"
 )
 
 type Config struct {

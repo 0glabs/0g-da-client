@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/encoder"
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/core/encoding"
+	"github.com/0glabs/0g-data-avail/disperser/encoder"
 )
 
 type EncoderGRPCServer struct {

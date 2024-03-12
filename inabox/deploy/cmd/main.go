@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/0glabs/0g-data-avail/inabox/deploy"
 	"github.com/urfave/cli/v2"
-	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (

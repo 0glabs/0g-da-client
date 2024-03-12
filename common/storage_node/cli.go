@@ -1,9 +1,9 @@
 package storage_node
 
 import (
+	"github.com/0glabs/0g-data-avail/common"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 var (

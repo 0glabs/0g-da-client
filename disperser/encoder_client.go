@@ -3,7 +3,7 @@ package disperser
 import (
 	"context"
 
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
+	"github.com/0glabs/0g-data-avail/core"
 )
 
 type EncoderClient interface {

@@ -10,13 +10,13 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-data-avail/common/store"
+	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 
-	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
+	test_utils "github.com/0glabs/0g-data-avail/common/aws/dynamodb/utils"
 )
 
 func StartDockertestWithLocalstackContainer(localStackPort string) (*dockertest.Pool, *dockertest.Resource, error) {
@@ -46,6 +46,7 @@ func StartDockertestWithLocalstackContainer(localStackPort string) (*dockertest.
 		Env: []string{
 			fmt.Sprintf("GATEWAY_LISTEN=0.0.0.0:%s", localStackPort),
 			fmt.Sprintf("LOCALSTACK_HOST=localhost.localstack.cloud:%s", localStackPort),
+			fmt.Sprintf("DEBUG=1"),
 		},
 	}, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself

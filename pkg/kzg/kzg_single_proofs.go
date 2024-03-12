@@ -30,7 +30,7 @@
 package kzg
 
 import (
-	bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+	bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 )
 
 // KZG commitment to polynomial in evaluation form, i.e. eval = FFT(coeffs).

@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
+	commondynamodb "github.com/0glabs/0g-data-avail/common/aws/dynamodb"
+	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	commondynamodb "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser"
 )
 
 const (

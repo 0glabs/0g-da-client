@@ -1,15 +1,15 @@
 package main
 
 import (
+	"github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-data-avail/common/geth"
+	"github.com/0glabs/0g-data-avail/common/logging"
+	"github.com/0glabs/0g-data-avail/common/storage_node"
+	"github.com/0glabs/0g-data-avail/core/encoding"
+	"github.com/0glabs/0g-data-avail/disperser/batcher"
+	"github.com/0glabs/0g-data-avail/disperser/cmd/batcher/flags"
+	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/geth"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/storage_node"
-	"github.com/zero-gravity-labs/zerog-data-avail/core/encoding"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/batcher"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/cmd/batcher/flags"
-	"github.com/zero-gravity-labs/zerog-data-avail/disperser/common/blobstore"
 )
 
 type Config struct {

@@ -3,7 +3,7 @@ package encoder
 import (
 	"math"
 
-	kzg "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg"
+	kzg "github.com/0glabs/0g-data-avail/pkg/kzg"
 )
 
 type Encoder struct {

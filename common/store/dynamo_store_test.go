@@ -7,15 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
+	test_utils "github.com/0glabs/0g-data-avail/common/aws/dynamodb/utils"
+	cmock "github.com/0glabs/0g-data-avail/common/mock"
+	"github.com/0glabs/0g-data-avail/common/store"
+	"github.com/0glabs/0g-data-avail/inabox/deploy"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb"
-	test_utils "github.com/zero-gravity-labs/zerog-data-avail/common/aws/dynamodb/utils"
-	cmock "github.com/zero-gravity-labs/zerog-data-avail/common/mock"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/store"
-	"github.com/zero-gravity-labs/zerog-data-avail/inabox/deploy"
 )
 
 var (

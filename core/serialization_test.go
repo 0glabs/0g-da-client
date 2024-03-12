@@ -5,13 +5,13 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/0glabs/0g-data-avail/core"
+	kzgbn254 "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/stretchr/testify/assert"
-	"github.com/zero-gravity-labs/zerog-data-avail/core"
-	kzgbn254 "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
 )
 
 const (

@@ -24,7 +24,7 @@
 
 package kzg
 
-import bls "github.com/zero-gravity-labs/zerog-data-avail/pkg/kzg/bn254"
+import bls "github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
 
 // warning: the values in `a` are modified in-place to become the outputs.
 // Make a deep copy first if you need to use them later.

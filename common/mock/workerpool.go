@@ -3,8 +3,8 @@ package mock
 import (
 	"context"
 
+	"github.com/0glabs/0g-data-avail/common"
 	"github.com/stretchr/testify/mock"
-	"github.com/zero-gravity-labs/zerog-data-avail/common"
 )
 
 type MockWorkerpool struct {
