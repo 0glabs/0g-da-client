@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	"github.com/zero-gravity-labs/zerog-data-avail/cli/flags"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/aws"
-	"github.com/zero-gravity-labs/zerog-data-avail/common/logging"
+	"github.com/0glabs/0g-data-avail/cli/flags"
+	"github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-data-avail/common/logging"
 )
 
 type Config struct {

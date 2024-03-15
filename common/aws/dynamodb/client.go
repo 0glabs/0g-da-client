@@ -56,12 +56,7 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 					SigningRegion: cfg.Region,
 				}, nil
 			}
-
-			return aws.Endpoint{
-				PartitionID:   "aws",
-				URL:           fmt.Sprintf("https://dynamodb.%s.amazonaws.com", cfg.Region),
-				SigningRegion: cfg.Region,
-			}, nil
+			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 		}
 		customResolver := aws.EndpointResolverWithOptionsFunc(createClient)
 

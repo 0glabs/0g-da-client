@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -40,7 +39,6 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 	logger.Info("url", cfg.EndpointURL)
 	once.Do(func() {
 		customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-
 			if cfg.EndpointURL != "" {
 				return aws.Endpoint{
 					PartitionID:   "aws",
@@ -48,12 +46,7 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 					SigningRegion: cfg.Region,
 				}, nil
 			}
-
-			return aws.Endpoint{
-				PartitionID:   "aws",
-				URL:           fmt.Sprintf("https://s3.%s.amazonaws.com", cfg.Region),
-				SigningRegion: cfg.Region,
-			}, nil
+			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 		})
 		options := [](func(*config.LoadOptions) error){
 			config.WithRegion(cfg.Region),

@@ -40,7 +40,7 @@ const (
 // See blob_metadata_store.go for more details on BlobMetadataStore.
 type SharedBlobStore struct {
 	bucketName            string
-	s3Client              s3.Client
+	s3Client              *s3.Client
 	blobMetadataStore     *BlobMetadataStore
 	metadataHashAsBlobKey bool
 	logger                common.Logger
@@ -67,7 +67,7 @@ type blobResultOrError struct {
 
 var _ disperser.BlobStore = (*SharedBlobStore)(nil)
 
-func NewSharedStorage(bucketName string, s3Client s3.Client, MetadataHashAsBlobKey bool, blobMetadataStore *BlobMetadataStore, logger common.Logger) *SharedBlobStore {
+func NewSharedStorage(bucketName string, s3Client *s3.Client, MetadataHashAsBlobKey bool, blobMetadataStore *BlobMetadataStore, logger common.Logger) *SharedBlobStore {
 	return &SharedBlobStore{
 		bucketName:            bucketName,
 		s3Client:              s3Client,
