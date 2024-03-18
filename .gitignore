@@ -9,3 +9,6 @@ run/
 **/bin/*
 coverage.*
 *log
+
+*__pycache__*
+*tmp*
