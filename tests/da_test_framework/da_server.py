@@ -22,16 +22,16 @@ class DAServer(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "da_server")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
+        rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_SERVER,
             0,
             data_dir,
-            None,
+            rpc_url,
             binary,
             local_conf,
             log,
-            None,
+            10,
         )
         self.args = [binary, "--disperser-server.grpc-port", "51001",
                      "--disperser-server.s3-bucket-name", "test-zgda-blobstore",
@@ -51,3 +51,12 @@ class DAServer(TestNode):
     def stop(self):
         self.log.info("Stop DA server")
         super().stop(kill=True, wait=False)
+        
+    def disperse_blob(self, request):
+        return self.rpc.disperse_blob(request)
+
+    def retrieve_blob(self, request):
+        return self.rpc.retrieve_blob(request)
+
+    def get_blob_status(self, request_id):
+        return self.rpc.get_blob_status({'request_id': request_id})
