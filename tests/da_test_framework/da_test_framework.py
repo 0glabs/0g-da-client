@@ -4,7 +4,7 @@ import shutil
 import stat
 import argparse
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../../0g-storage-kv/tests")
 
 from test_framework.test_framework import TestFramework
 from test_framework.blockchain_node import BlockChainNodeType
@@ -143,7 +143,7 @@ class DATestFramework(TestFramework):
             self.build_da_node(self.da_server_binary, os.path.join(da_disperser_cmd, "apiserver"))
 
     def build_zgs_node(self, zgs_node_path, zgs_cli_path):
-        zgs_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv", "0g-storage-node")
+        zgs_root_path = os.path.join(__file_path__, "..", "..", "0g-storage-kv", "0g-storage-node")
         target_path = os.path.join(zgs_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)
@@ -166,7 +166,7 @@ class DATestFramework(TestFramework):
         os.chdir(origin_path)
 
     def build_zgs_kv(self, kv_path):
-        kv_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv")
+        kv_root_path = os.path.join(__file_path__, "..", "..", "0g-storage-kv")
         target_path = os.path.join(kv_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)

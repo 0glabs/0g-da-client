@@ -5,11 +5,10 @@ sys.path.append("../0g_storage_kv/tests")
 import time
 
 from da_test_framework.da_test_framework import DATestFramework
-from utility.kv import to_stream_id, MAX_STREAM_ID
 from utility.utils import assert_equal
 
 
-class DAHelloTest(DATestFramework):
+class DAPutGetTest(DATestFramework):
     def setup_params(self):
         self.num_blockchain_nodes = 1
         self.num_nodes = 2
@@ -40,6 +39,5 @@ class DAHelloTest(DATestFramework):
         }
 
 
-
 if __name__ == "__main__":
-    DAHelloTest().main()
+    DAPutGetTest().main()

@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../../0g-storage-kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from da_test_framework.da_node_type import DANodeType
@@ -19,15 +19,17 @@ class DAServer(TestNode):
             log,
     ):
         local_conf = dict(log_config_file="log_config")
-
+        print(updated_config)
+        print(local_conf)
         local_conf.update(updated_config)
+
         data_dir = os.path.join(root_dir, "da_server")
-        rpc_url = "http://" + local_conf["rpc_listen_address"]
+        # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_SERVER,
             0,
             data_dir,
-            rpc_url,
+            None,
             binary,
             local_conf,
             log,
