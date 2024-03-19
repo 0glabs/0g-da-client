@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g-storage-kv/tests")
+sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from da_test_framework.da_node_type import DANodeType
@@ -22,16 +22,16 @@ class DAEncoder(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "da_encoder")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
+        rpc_url = "http://0.0.0.0:34000"
         super().__init__(
             DANodeType.DA_ENCODER,
-            0,
+            11,
             data_dir,
-            None,
+            rpc_url,
             binary,
             local_conf,
             log,
-            None,
+            10,
         )
         self.args = [binary, "--disperser-encoder.grpc-port", "34000",
                      "--disperser-encoder.metrics-http-port", "9109",
@@ -48,7 +48,7 @@ class DAEncoder(TestNode):
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(1)
+        self._wait_for_rpc_connection(lambda rpc: True)
 
     def stop(self):
         self.log.info("Stop DA encoder")

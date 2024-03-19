@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../0g_storage_kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from da_test_framework.da_node_type import DANodeType
@@ -23,7 +23,7 @@ class LocalStack(TestNode):
         # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_LOCAL_STACK,
-            0,
+            10,
             data_dir,
             None,
             binary,

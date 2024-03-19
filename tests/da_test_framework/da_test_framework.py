@@ -4,7 +4,7 @@ import shutil
 import stat
 import argparse
 
-sys.path.append("../../0g-storage-kv/tests")
+sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.test_framework import TestFramework
 from test_framework.blockchain_node import BlockChainNodeType

@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g-storage-kv/tests")
+sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from utility.utils import blockchain_rpc_port
@@ -32,7 +32,7 @@ class DABatcher(TestNode):
         # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_BATCHER,
-            0,
+            12,
             data_dir,
             None,
             binary,
