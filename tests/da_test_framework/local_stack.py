@@ -31,7 +31,7 @@ class LocalStack(TestNode):
             log,
             None,
         )
-        self.args = [binary, "--localstack-port", "4566", "localstack"]
+        self.args = [binary, "--localstack-port", "4566", "--deploy-resources=true", "localstack"]
 
     def start(self):
         self.log.info("Start localstack")

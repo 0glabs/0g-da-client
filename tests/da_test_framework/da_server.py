@@ -67,7 +67,6 @@ class DAServer(TestNode):
         
     def disperse_blob(self, data):
         message = pb2.DisperseBlobRequest(data=data, security_params=[pb2.SecurityParams(quorum_id=0, adversary_threshold=25, quorum_threshold=50)], target_chunk_num=16)
-        self.log.info(f'disperse blob {message}')
         return self.stub.DisperseBlob(message)
 
     def retrieve_blob(self, info):

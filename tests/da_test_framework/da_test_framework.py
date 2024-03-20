@@ -198,7 +198,6 @@ class DATestFramework(TestFramework):
         self.setup_da_node(LocalStack, self.localstack_binary)
         self.setup_da_node(DAEncoder, self.da_encoder_binary)
         
-        self.log.info(f'kv node {self.kv_nodes[0].config}')
         updated_config = {}
         updated_config['kv_rpc_endpoint'] = self.kv_nodes[0].config['rpc_listen_address']
         updated_config['stream_id'] = stream_id
@@ -210,8 +209,8 @@ class DATestFramework(TestFramework):
 
     def setup_da_node(self, clazz, binary, updated_config={}):
         srv = clazz(self.root_dir, binary, updated_config, self.log)
-        
+        self.da_services.append(srv)
         srv.setup_config()
         srv.start()
         srv.wait_for_rpc_connection()
-        self.da_services.append(srv)
+

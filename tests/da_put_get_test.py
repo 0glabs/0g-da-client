@@ -17,22 +17,20 @@ class DAPutGetTest(DATestFramework):
         self.num_nodes = 1
 
     def run_test(self):
-
-        self.log.info(len(self.da_services))
         client = self.da_services[-1]
         
-        data = randbytes(1024)
+        data = randbytes(507904)
         disperse_response = client.disperse_blob(data)
+        
         self.log.info(disperse_response)
         request_id = disperse_response.request_id
-        
         reply = client.get_blob_status(request_id)
         count = 0
-        while reply.status != BlobStatus.CONFIRMED and count <= 10:
-            time.sleep(2)
+        while reply.status != BlobStatus.CONFIRMED and count <= 5:
             reply = client.get_blob_status(request_id)
             self.log.info(f'blob status {reply.status}')
             count += 1
+            time.sleep(10)
         
         info = reply.info
         self.log.info(f'reply info {info}')
@@ -43,4 +41,6 @@ class DAPutGetTest(DATestFramework):
 
 
 if __name__ == "__main__":
-    DAPutGetTest().main()
+    DAPutGetTest(
+        blockchain_node_configs=dict([(0, dict(mode="dev", dev_block_interval_ms=50))])
+    ).main()
