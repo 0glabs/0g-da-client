@@ -20,16 +20,16 @@ class LocalStack(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "localstack")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
+        rpc_url = "http://0.0.0.0:4566"
         super().__init__(
             DANodeType.DA_LOCAL_STACK,
             10,
             data_dir,
-            None,
+            rpc_url,
             binary,
             local_conf,
             log,
-            None,
+            10,
         )
         self.args = [binary, "--localstack-port", "4566", "--deploy-resources", "true", "localstack"]
 
@@ -38,7 +38,7 @@ class LocalStack(TestNode):
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(1)
+        self._wait_for_rpc_connection(lambda rpc: True)
 
     def stop(self):
         self.log.info("Stop localstack")

@@ -16,8 +16,10 @@ class DAPutGetTest(DATestFramework):
     def run_test(self):
         # setup kv node, watch stream with id [0,100)
         request = self.create_disperse_request()
+        self.log.info(len(self.da_services))
         client = self.da_services[-1]
         reply = client.disperse_blob(request)
+        self.log.info(reply)
         request_id = reply.RequestId
         while reply.status != 2:
             time.sleep(10)
@@ -32,20 +34,20 @@ class DAPutGetTest(DATestFramework):
             'QuorumId':             0,
         }
         reply = client.retrieve_blob(retrieve_request)
-        assert_equal(reply.data[:len(request.data)], request.data)
+        assert_equal(reply.data[:len(request.Data)], request.Data)
         
     def create_disperse_request(self):
         data = [random.randint(0, 255) for _ in range(1000)]
         return {
-            'data': data,
-            'security_params': [
+            'Data': data,
+            'SecurityParams': [
                 {
-                    'quorum_id': 0,
-                    'adversary_threshold': 25,
-                    'quorum_threshold': 50,
+                    'QuorumId': 0,
+                    'AdversaryThreshold': 25,
+                    'QuorumThreshold': 50,
                 }
             ],
-            'target_chunk_num': 32,
+            'TargetChunkNum': 32,
         }
 
 
