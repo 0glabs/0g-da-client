@@ -1,12 +1,17 @@
 import os
 import sys
 import time
+import grpc
+os.environ["GRPC_VERBOSITY"] = "DEBUG"
+import disperser_pb2 as pb2
+import disperser_pb2_grpc as pb2_grpc
+from da_test_framework.da_node_type import DANodeType
 
 sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.blockchain_node import TestNode, FailedToStartError
-from da_test_framework.da_node_type import DANodeType
 from utility.simple_rpc_proxy import SimpleRpcProxy
+
 
 __file_path__ = os.path.dirname(os.path.realpath(__file__))
 
@@ -25,16 +30,16 @@ class DAServer(TestNode):
         local_conf.update(updated_config)
 
         data_dir = os.path.join(root_dir, "da_server")
-        rpc_url = "http://0.0.0.0:51001"
+        self.grpc_url = "0.0.0.0:51001"
         super().__init__(
             DANodeType.DA_SERVER,
             13,
             data_dir,
-            rpc_url,
+            None,
             binary,
             local_conf,
             log,
-            10,
+            None,
         )
         self.args = [binary, "--disperser-server.grpc-port", "51001",
                      "--disperser-server.s3-bucket-name", "test-zgda-blobstore",
@@ -45,8 +50,14 @@ class DAServer(TestNode):
                      "--disperser-server.aws.endpoint-url", "http://0.0.0.0:4566"]
     
     def wait_for_rpc_connection(self):
-        self._wait_for_rpc_connection(lambda rpc: True)
-
+        poll = self.process.poll()
+        if poll is None:
+            time.sleep(3)
+        self.log.info(f'{self.grpc_url}')
+        self.channel = grpc.insecure_channel(self.grpc_url)
+        # bind the client and the server
+        self.stub = pb2_grpc.DisperserStub(self.channel)
+       
     def start(self):
         self.log.info("Start DA server")
         super().start()
@@ -55,11 +66,17 @@ class DAServer(TestNode):
         self.log.info("Stop DA server")
         super().stop(kill=True, wait=False)
         
-    def disperse_blob(self, request):
-        return self.rpc.DisperseBlob(request)
+    def disperse_blob(self, data):
+        message = pb2.DisperseBlobRequest(data=data, security_params=[pb2.SecurityParams(quorum_id=0, adversary_threshold=25, quorum_threshold=50)], target_chunk_num=16)
+        self.log.info(f'disperse blob {message}')
+        return self.stub.DisperseBlob(message)
 
-    def retrieve_blob(self, request):
-        return self.rpc.RetrieveBlob(request)
+    def retrieve_blob(self, info):
+        message = pb2.RetrieveBlobRequest(batch_header_hash=info.BlobVerificationProof.BatchMetadata.BatchHeaderHash, blob_index=info.BlobVerificationProof.BlobIndex)
+        self.log.info(f'retrieve blob {message}')
+        return self.stub.RetrieveBlob(message)
 
     def get_blob_status(self, request_id):
-        return self.rpc.GetBlobStatus({'request_id': request_id})
+        message = pb2.BlobStatusRequest(request_id=request_id)
+        self.log.info(f'get blob status {message}')
+        return self.stub.GetBlobStatus(message)
