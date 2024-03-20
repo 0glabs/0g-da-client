@@ -23,14 +23,19 @@ class DAPutGetTest(DATestFramework):
         
         data = randbytes(1024)
         self.log.info(f'data {data}')
-        reply = client.disperse_blob(data)
-        self.log.info(reply)
-        request_id = reply.RequestId
-        while reply.status != BlobStatus.CONFIRMED:
-            time.sleep(10)
-            reply = client.get_blob_status(request_id)
+        disperse_response = client.disperse_blob(data)
+        self.log.info(disperse_response)
+        request_id = disperse_response.request_id
         
-        info = reply.Info
+        reply = client.get_blob_status(request_id)
+        count = 0
+        while reply.status != BlobStatus.CONFIRMED and count <= 10:
+            time.sleep(3)
+            reply = client.get_blob_status(request_id)
+            self.log.info(f'blob status {reply.status}')
+            count += 1
+        
+        info = reply.info
         self.log.info(f'reply info {info}')
         # retrieve the blob
         reply = client.retrieve_blob(info)

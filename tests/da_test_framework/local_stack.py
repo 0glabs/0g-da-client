@@ -31,14 +31,17 @@ class LocalStack(TestNode):
             log,
             None,
         )
-        self.args = [binary, "--localstack-port", "4566", "--deploy-resources", "true", "localstack"]
+        self.args = [binary, "--localstack-port", "4566", "localstack"]
 
     def start(self):
         self.log.info("Start localstack")
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(3)
+        while self.process.poll() is None:
+            self.log.info('building docker')
+            time.sleep(10)
+        self.log.info('docker is running')
 
     def stop(self):
         self.log.info("Stop localstack")

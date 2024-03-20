@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import grpc
-os.environ["GRPC_VERBOSITY"] = "DEBUG"
 import disperser_pb2 as pb2
 import disperser_pb2_grpc as pb2_grpc
 from da_test_framework.da_node_type import DANodeType
@@ -72,7 +71,7 @@ class DAServer(TestNode):
         return self.stub.DisperseBlob(message)
 
     def retrieve_blob(self, info):
-        message = pb2.RetrieveBlobRequest(batch_header_hash=info.BlobVerificationProof.BatchMetadata.BatchHeaderHash, blob_index=info.BlobVerificationProof.BlobIndex)
+        message = pb2.RetrieveBlobRequest(batch_header_hash=info.blob_verification_proof.batch_metadata.batch_header_hash, blob_index=info.blob_verification_proof.blob_index)
         self.log.info(f'retrieve blob {message}')
         return self.stub.RetrieveBlob(message)
 

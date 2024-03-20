@@ -116,7 +116,7 @@ class DATestFramework(TestFramework):
         self.stream_ids = [to_stream_id(i) for i in range(MAX_STREAM_ID)]
         self.stream_ids.reverse()
         super().setup_kv_node(0, self.stream_ids)
-        self.setup_da_nodes()
+        self.setup_da_nodes(self.stream_ids[0])
 
     def stop_nodes(self):
         while self.da_services:
@@ -193,20 +193,25 @@ class DATestFramework(TestFramework):
             st = os.stat(binary_path)
             os.chmod(binary_path, st.st_mode | stat.S_IEXEC)
 
-    def setup_da_nodes(self):
+    def setup_da_nodes(self, stream_id):
         self.log.info("Start deploy DA services")
         self.setup_da_node(LocalStack, self.localstack_binary)
         self.setup_da_node(DAEncoder, self.da_encoder_binary)
-        self.setup_da_node(DABatcher, self.da_batcher_binary)
+        
+        self.log.info(f'kv node {self.kv_nodes[0].config}')
+        updated_config = {}
+        updated_config['kv_rpc_endpoint'] = self.kv_nodes[0].config['rpc_listen_address']
+        updated_config['stream_id'] = stream_id
+        updated_config['node_rpc_endpoint'] = self.nodes[0].config['rpc_listen_address']
+        updated_config['log_contract_address'] = self.contract.address()
+        self.setup_da_node(DABatcher, self.da_batcher_binary, updated_config)
         self.setup_da_node(DAServer, self.da_server_binary)
         self.log.info("All DA service started")
 
     def setup_da_node(self, clazz, binary, updated_config={}):
-        if clazz == DABatcher:
-            srv = clazz(self.root_dir, binary, updated_config, self.contract.address(), self.log)
-        else:
-            srv = clazz(self.root_dir, binary, updated_config, self.log)
-        self.da_services.append(srv)
+        srv = clazz(self.root_dir, binary, updated_config, self.log)
+        
         srv.setup_config()
         srv.start()
         srv.wait_for_rpc_connection()
+        self.da_services.append(srv)

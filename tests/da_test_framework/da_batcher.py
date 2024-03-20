@@ -18,12 +18,10 @@ class DABatcher(TestNode):
             root_dir,
             binary,
             updated_config,
-            log_contract_address,
             log,
     ):
         local_conf = {
             "log_config_file": "log_config",
-            "log_contract_address": log_contract_address,
             "blockchain_rpc_endpoint": f"http://127.0.0.1:{blockchain_rpc_port(0)}",
         }
 
@@ -40,6 +38,7 @@ class DABatcher(TestNode):
             log,
             None,
         )
+        self.log.info(f'local conf for batcher {local_conf}')
         self.args = [binary, "--batcher.pull-interval", "10s",
                      "--chain.rpc", local_conf['blockchain_rpc_endpoint'],
                      "--chain.private-key", GENESIS_PRIV_KEY,
@@ -56,11 +55,9 @@ class DABatcher(TestNode):
                      "--encoding-timeout", "10s",
                      "--chain-read-timeout", "12s",
                      "--chain-write-timeout", "13s",
-                     "--batcher.storage.node-url", "http://0.0.0.0:5678",
-                     "--batcher.storage.node-url", "http://0.0.0.0:6789",
-                     "--batcher.storage.kv-url", "http://0.0.0.0:7890",
-                     "--batcher.storage.kv-stream-id",
-                     "000000000000000000000000000000000000000000000000000000000000f2bd",
+                     "--batcher.storage.node-url", f'http://{local_conf["node_rpc_endpoint"]}',
+                     "--batcher.storage.kv-url", f'http://{local_conf["kv_rpc_endpoint"]}',
+                     "--batcher.storage.kv-stream-id", local_conf['stream_id'],
                      "--batcher.storage.flow-contract", local_conf['log_contract_address']]
 
     def start(self):

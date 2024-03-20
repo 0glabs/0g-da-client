@@ -44,9 +44,9 @@ func main() {
 				Value: "",
 				Usage: "path to the config file",
 			},
-			&cli.StringFlag{
+			&cli.BoolFlag{
 				Name:  deployResourcesFlagName,
-				Value: "",
+				Value: true,
 				Usage: "whether to deploy localstack resources",
 			},
 		},
