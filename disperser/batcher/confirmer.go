@@ -139,7 +139,7 @@ func (c *Confirmer) getPendingBatch() *BatchInfo {
 	}
 	info := c.pendingBatches[0]
 	c.pendingBatches = c.pendingBatches[1:]
-	c.logger.Info(`[confirmer] retreived one pending batch`, "queue size", len(c.pendingBatches))
+	c.logger.Info(`[confirmer] retrieved one pending batch`, "queue size", len(c.pendingBatches))
 	return info
 }
 

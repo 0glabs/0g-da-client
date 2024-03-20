@@ -65,7 +65,7 @@ class DABatcher(TestNode):
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(3)
+        time.sleep(15)
 
     def stop(self):
         self.log.info("Stop DA batcher")
