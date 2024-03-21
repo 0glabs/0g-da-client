@@ -114,7 +114,7 @@ func DeployResources(pool *dockertest.Pool, localStackPort, metadataTableName, b
 	}
 
 	cfg := aws.ClientConfig{
-		Region:          "us-east-2",
+		Region:          "us-east-1",
 		AccessKey:       "localstack",
 		SecretAccessKey: "localstack",
 		EndpointURL:     fmt.Sprintf("http://0.0.0.0:%s", localStackPort),
