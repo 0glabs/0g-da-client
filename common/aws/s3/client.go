@@ -15,11 +15,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 var (
 	once              sync.Once
-	ref               *client
+	ref               *Client
 	ErrObjectNotFound = errors.New("object not found")
 )
 
@@ -28,15 +29,14 @@ type Object struct {
 	Size int64
 }
 
-type client struct {
+type Client struct {
 	s3Client *s3.Client
 	logger   common.Logger
 }
 
-var _ Client = (*client)(nil)
-
-func NewClient(ctx context.Context, cfg commonaws.ClientConfig, logger common.Logger) (*client, error) {
+func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error) {
 	var err error
+	logger.Info("url", cfg.EndpointURL)
 	once.Do(func() {
 		customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 			if cfg.EndpointURL != "" {
@@ -46,11 +46,8 @@ func NewClient(ctx context.Context, cfg commonaws.ClientConfig, logger common.Lo
 					SigningRegion: cfg.Region,
 				}, nil
 			}
-
-			// returning EndpointNotFoundError will allow the service to fallback to its default resolution
 			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 		})
-
 		options := [](func(*config.LoadOptions) error){
 			config.WithRegion(cfg.Region),
 			config.WithEndpointResolverWithOptions(customResolver),
@@ -61,7 +58,6 @@ func NewClient(ctx context.Context, cfg commonaws.ClientConfig, logger common.Lo
 			options = append(options, config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AccessKey, cfg.SecretAccessKey, "")))
 		}
 		awsConfig, errCfg := config.LoadDefaultConfig(context.Background(), options...)
-
 		if errCfg != nil {
 			err = errCfg
 			return
@@ -69,12 +65,12 @@ func NewClient(ctx context.Context, cfg commonaws.ClientConfig, logger common.Lo
 		s3Client := s3.NewFromConfig(awsConfig, func(o *s3.Options) {
 			o.UsePathStyle = true
 		})
-		ref = &client{s3Client: s3Client, logger: logger}
+		ref = &Client{s3Client: s3Client, logger: logger}
 	})
 	return ref, err
 }
 
-func (s *client) DownloadObject(ctx context.Context, bucket string, key string) ([]byte, error) {
+func (s *Client) DownloadObject(ctx context.Context, bucket string, key string) ([]byte, error) {
 	var partMiBs int64 = 10
 	downloader := manager.NewDownloader(s.s3Client, func(d *manager.Downloader) {
 		d.PartSize = partMiBs * 1024 * 1024 // 10MB per part
@@ -97,7 +93,7 @@ func (s *client) DownloadObject(ctx context.Context, bucket string, key string) 
 	return buffer.Bytes(), nil
 }
 
-func (s *client) keyExists(ctx context.Context, bucket string, key string) (bool, error) {
+func (s *Client) keyExists(ctx context.Context, bucket string, key string) (bool, error) {
 	_, err := s.s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -112,7 +108,7 @@ func (s *client) keyExists(ctx context.Context, bucket string, key string) (bool
 	return true, nil
 }
 
-func (s *client) UploadObject(ctx context.Context, bucket string, key string, data []byte) error {
+func (s *Client) UploadObject(ctx context.Context, bucket string, key string, data []byte) error {
 	var partMiBs int64 = 10
 	uploaded, _ := s.keyExists(ctx, bucket, key)
 	if uploaded {
@@ -136,7 +132,7 @@ func (s *client) UploadObject(ctx context.Context, bucket string, key string, da
 	return nil
 }
 
-func (s *client) DeleteObject(ctx context.Context, bucket string, key string) error {
+func (s *Client) DeleteObject(ctx context.Context, bucket string, key string) error {
 	_, err := s.s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -148,7 +144,7 @@ func (s *client) DeleteObject(ctx context.Context, bucket string, key string) er
 	return err
 }
 
-func (s *client) ListObjects(ctx context.Context, bucket string, prefix string) ([]Object, error) {
+func (s *Client) ListObjects(ctx context.Context, bucket string, prefix string) ([]Object, error) {
 	output, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucket),
 		Prefix: aws.String(prefix),
@@ -165,4 +161,57 @@ func (s *client) ListObjects(ctx context.Context, bucket string, prefix string) 
 		})
 	}
 	return objects, nil
+}
+
+func (s *Client) CreateBucket(ctx context.Context, name, region string) error {
+	_, err := s.s3Client.CreateBucket(ctx, &s3.CreateBucketInput{
+		Bucket: aws.String(name),
+		CreateBucketConfiguration: &types.CreateBucketConfiguration{
+			LocationConstraint: types.BucketLocationConstraint(region),
+		},
+	})
+
+	return err
+}
+
+func (s *Client) ClearBucket(ctx context.Context, name string) error {
+	result, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket: aws.String(name),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	contents := result.Contents
+
+	if len(contents) != 0 {
+		var objectIds []types.ObjectIdentifier
+		for _, key := range contents {
+			objectIds = append(objectIds, types.ObjectIdentifier{Key: aws.String(*key.Key)})
+		}
+
+		_, err = s.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+			Bucket: aws.String(name),
+			Delete: &types.Delete{Objects: objectIds},
+		})
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
+func (s *Client) DeleteBucket(ctx context.Context, name string) error {
+	err := s.ClearBucket(ctx, name)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+		Bucket: aws.String(name),
+	})
+
+	return err
 }

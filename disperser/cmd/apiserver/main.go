@@ -61,7 +61,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 	var blobStore disperser.BlobStore
 	var ratelimiter common.RateLimiter
 
-	s3Client, err := s3.NewClient(context.Background(), config.AwsClientConfig, logger)
+	s3Client, err := s3.NewClient(config.AwsClientConfig, logger)
 	if err != nil {
 		return err
 	}

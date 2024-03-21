@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sync"
+	"time"
 
 	"github.com/0glabs/0g-data-avail/common"
 	commonaws "github.com/0glabs/0g-data-avail/common/aws"
@@ -19,6 +20,8 @@ import (
 const (
 	// dynamoBatchLimit is the maximum number of items that can be written in a single batch
 	dynamoBatchLimit = 25
+	// waiterDuration is the duration to wait for a table to be created
+	waiterDuration = 1 * time.Minute
 )
 
 type batchOperation uint
@@ -53,8 +56,6 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 					SigningRegion: cfg.Region,
 				}, nil
 			}
-
-			// returning EndpointNotFoundError will allow the service to fallback to its default resolution
 			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 		}
 		customResolver := aws.EndpointResolverWithOptionsFunc(createClient)
@@ -80,12 +81,40 @@ func NewClient(cfg commonaws.ClientConfig, logger common.Logger) (*Client, error
 	return clientRef, err
 }
 
+func (c *Client) CreateTable(ctx context.Context, cfg commonaws.ClientConfig, name string, input *dynamodb.CreateTableInput) (*types.TableDescription, error) {
+
+	table, err := c.dynamoClient.CreateTable(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	waiter := dynamodb.NewTableExistsWaiter(c.dynamoClient)
+	err = waiter.Wait(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String(name),
+	}, waiterDuration)
+	if err != nil {
+		return nil, err
+	}
+
+	return table.TableDescription, nil
+}
+
 func (c *Client) DeleteTable(ctx context.Context, tableName string) error {
 	_, err := c.dynamoClient.DeleteTable(ctx, &dynamodb.DeleteTableInput{
 		TableName: aws.String(tableName)})
 	if err != nil {
 		return err
 	}
+
+	waiter := dynamodb.NewTableNotExistsWaiter(c.dynamoClient)
+	err = waiter.Wait(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String(tableName),
+	}, waiterDuration)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
