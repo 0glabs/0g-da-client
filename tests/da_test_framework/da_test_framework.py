@@ -127,6 +127,7 @@ class DATestFramework(TestFramework):
     def build_binary(self):
         if not os.path.exists(self.blockchain_binary):
             build_conflux(self.blockchain_binary)
+
         if not os.path.exists(self.zgs_binary) or not os.path.exists(self.cli_binary):
             self.build_zgs_node(self.zgs_binary, self.cli_binary)
         if not os.path.exists(self.kv_binary):

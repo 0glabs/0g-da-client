@@ -6,7 +6,7 @@ import stat
 import subprocess
 import sys
 
-sys.path.append("../0g-storage-kv/0g-storage-node/tests")
+sys.path.append("../0g-storage-kv/tests")
 from concurrent.futures import ProcessPoolExecutor
 
 from utility.utils import is_windows_platform
