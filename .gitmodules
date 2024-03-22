@@ -13,6 +13,6 @@
 [submodule "contracts/lib/eigenlayer-middleware"]
 	path = contracts/lib/eigenlayer-middleware
 	url = https://github.com/Layr-Labs/eigenlayer-middleware
-[submodule "0g_storage_kv"]
-	path = 0g_storage_kv
-	url = git@github.com:0glabs/0g-storage-kv.git
+[submodule "0g-storage-kv"]
+	path = 0g-storage-kv
+	url = https://github.com/0glabs/0g-storage-kv.git

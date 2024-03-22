@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from utility.utils import blockchain_rpc_port
@@ -18,21 +18,18 @@ class DABatcher(TestNode):
             root_dir,
             binary,
             updated_config,
-            log_contract_address,
             log,
     ):
         local_conf = {
             "log_config_file": "log_config",
-            "log_contract_address": log_contract_address,
             "blockchain_rpc_endpoint": f"http://127.0.0.1:{blockchain_rpc_port(0)}",
         }
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "da_batcher")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_BATCHER,
-            0,
+            12,
             data_dir,
             None,
             binary,
@@ -56,11 +53,9 @@ class DABatcher(TestNode):
                      "--encoding-timeout", "10s",
                      "--chain-read-timeout", "12s",
                      "--chain-write-timeout", "13s",
-                     "--batcher.storage.node-url", "http://0.0.0.0:5678",
-                     "--batcher.storage.node-url", "http://0.0.0.0:6789",
-                     "--batcher.storage.kv-url", "http://0.0.0.0:7890",
-                     "--batcher.storage.kv-stream-id",
-                     "000000000000000000000000000000000000000000000000000000000000f2bd",
+                     "--batcher.storage.node-url", f'http://{local_conf["node_rpc_endpoint"]}',
+                     "--batcher.storage.kv-url", f'http://{local_conf["kv_rpc_endpoint"]}',
+                     "--batcher.storage.kv-stream-id", local_conf['stream_id'],
                      "--batcher.storage.flow-contract", local_conf['log_contract_address']]
 
     def start(self):
@@ -68,7 +63,7 @@ class DABatcher(TestNode):
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(1)
+        time.sleep(15)
 
     def stop(self):
         self.log.info("Stop DA batcher")

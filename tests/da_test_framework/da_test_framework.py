@@ -4,7 +4,7 @@ import shutil
 import stat
 import argparse
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../0g-storage-kv/tests")
 
 from test_framework.test_framework import TestFramework
 from test_framework.blockchain_node import BlockChainNodeType
@@ -114,7 +114,7 @@ class DATestFramework(TestFramework):
         self.stream_ids = [to_stream_id(i) for i in range(MAX_STREAM_ID)]
         self.stream_ids.reverse()
         super().setup_kv_node(0, self.stream_ids)
-        self.setup_da_nodes()
+        self.setup_da_nodes(self.stream_ids[0])
 
     def stop_nodes(self):
         while self.da_services:
@@ -125,6 +125,7 @@ class DATestFramework(TestFramework):
     def build_binary(self):
         if not os.path.exists(self.blockchain_binary):
             build_conflux(self.blockchain_binary)
+
         if not os.path.exists(self.zgs_binary) or not os.path.exists(self.cli_binary):
             self.build_zgs_node(self.zgs_binary, self.cli_binary)
         if not os.path.exists(self.kv_binary):
@@ -143,7 +144,7 @@ class DATestFramework(TestFramework):
             self.build_da_node(self.da_server_binary, os.path.join(da_disperser_cmd, "apiserver"))
 
     def build_zgs_node(self, zgs_node_path, zgs_cli_path):
-        zgs_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv", "0g-storage-node")
+        zgs_root_path = os.path.join(__file_path__, "..", "..", "0g-storage-kv", "0g-storage-node")
         target_path = os.path.join(zgs_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)
@@ -166,7 +167,7 @@ class DATestFramework(TestFramework):
         os.chdir(origin_path)
 
     def build_zgs_kv(self, kv_path):
-        kv_root_path = os.path.join(__file_path__, "..", "..", "0g_storage_kv")
+        kv_root_path = os.path.join(__file_path__, "..", "..", "0g-storage-kv")
         target_path = os.path.join(kv_root_path, "target")
         if os.path.exists(target_path):
             shutil.rmtree(target_path)
@@ -191,20 +192,24 @@ class DATestFramework(TestFramework):
             st = os.stat(binary_path)
             os.chmod(binary_path, st.st_mode | stat.S_IEXEC)
 
-    def setup_da_nodes(self):
+    def setup_da_nodes(self, stream_id):
         self.log.info("Start deploy DA services")
         self.setup_da_node(LocalStack, self.localstack_binary)
         self.setup_da_node(DAEncoder, self.da_encoder_binary)
-        self.setup_da_node(DABatcher, self.da_batcher_binary)
+        
+        updated_config = {}
+        updated_config['kv_rpc_endpoint'] = self.kv_nodes[0].config['rpc_listen_address']
+        updated_config['stream_id'] = stream_id
+        updated_config['node_rpc_endpoint'] = self.nodes[0].config['rpc_listen_address']
+        updated_config['log_contract_address'] = self.contract.address()
+        self.setup_da_node(DABatcher, self.da_batcher_binary, updated_config)
         self.setup_da_node(DAServer, self.da_server_binary)
         self.log.info("All DA service started")
 
     def setup_da_node(self, clazz, binary, updated_config={}):
-        if clazz == DABatcher:
-            srv = clazz(self.root_dir, binary, updated_config, self.contract.address(), self.log)
-        else:
-            srv = clazz(self.root_dir, binary, updated_config, self.log)
+        srv = clazz(self.root_dir, binary, updated_config, self.log)
         self.da_services.append(srv)
         srv.setup_config()
         srv.start()
         srv.wait_for_rpc_connection()
+

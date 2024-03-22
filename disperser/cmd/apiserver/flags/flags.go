@@ -3,10 +3,8 @@ package flags
 import (
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/geth"
 	"github.com/0glabs/0g-data-avail/common/logging"
 	"github.com/0glabs/0g-data-avail/common/ratelimit"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/urfave/cli"
 )
 
@@ -97,6 +95,4 @@ func init() {
 	Flags = append(Flags, logging.CLIFlags(EnvVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, ratelimit.RatelimiterCLIFlags(EnvVarPrefix, FlagPrefix)...)
 	Flags = append(Flags, aws.ClientFlags(EnvVarPrefix, FlagPrefix)...)
-	Flags = append(Flags, geth.EthClientFlags(EnvVarPrefix)...)
-	Flags = append(Flags, storage_node.ClientFlags(EnvVarPrefix, FlagPrefix)...)
 }

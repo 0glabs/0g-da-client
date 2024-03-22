@@ -1,0 +1,11 @@
+jsonrpcclient
+pyyaml
+pysha3
+coincurve
+eth-utils==1.10.0
+py-ecc==5.2.0
+web3
+eth_tester
+rtoml==0.10.0
+grpcio
+grpcio-tools

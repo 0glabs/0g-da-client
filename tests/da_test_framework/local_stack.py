@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-sys.path.append("../../0g_storage_kv/tests")
+sys.path.append("../0g_storage_kv/tests")
 
 from test_framework.blockchain_node import TestNode
 from da_test_framework.da_node_type import DANodeType
@@ -20,10 +20,9 @@ class LocalStack(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "localstack")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_LOCAL_STACK,
-            0,
+            10,
             data_dir,
             None,
             binary,
@@ -31,14 +30,17 @@ class LocalStack(TestNode):
             log,
             None,
         )
-        self.args = [binary, "--localstack-port", "4566", "--deploy-resources", "true", "localstack"]
+        self.args = [binary, "--localstack-port", "4566", "--deploy-resources=true", "localstack"]
 
     def start(self):
         self.log.info("Start localstack")
         super().start()
 
     def wait_for_rpc_connection(self):
-        time.sleep(1)
+        while self.process.poll() is None:
+            self.log.info('building docker')
+            time.sleep(10)
+        self.log.info('docker is running')
 
     def stop(self):
         self.log.info("Stop localstack")
