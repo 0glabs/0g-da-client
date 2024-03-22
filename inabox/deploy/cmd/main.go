@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -83,7 +82,6 @@ func getRunner(command string) func(ctx *cli.Context) error {
 
 	return func(ctx *cli.Context) error {
 
-		var config *deploy.Config
 		if command != localstackCmdName {
 			rootPath, err := filepath.Abs(ctx.String(rootPathFlagName))
 			if err != nil {
@@ -96,36 +94,16 @@ func getRunner(command string) func(ctx *cli.Context) error {
 					return err
 				}
 			}
-			config = deploy.NewTestConfig(testname, rootPath)
 		}
 
 		switch command {
-		case chainCmdName:
-			return chainInfra(ctx, config)
 		case localstackCmdName:
 			return localstack(ctx)
-		case expCmdName:
-			config.DeployExperiment()
-		case allCmdName:
-			return all(ctx, config)
 		}
 
 		return nil
 
 	}
-
-}
-
-func chainInfra(ctx *cli.Context, config *deploy.Config) error {
-
-	config.StartAnvil()
-
-	if deployer, ok := config.GetDeployer(config.ZGDA.Deployer); ok && deployer.DeploySubgraphs {
-		fmt.Println("Starting graph node")
-		config.StartGraphNode()
-	}
-
-	return nil
 
 }
 
@@ -142,22 +120,4 @@ func localstack(ctx *cli.Context) error {
 	}
 
 	return nil
-}
-
-func all(ctx *cli.Context, config *deploy.Config) error {
-
-	err := chainInfra(ctx, config)
-	if err != nil {
-		return err
-	}
-
-	err = localstack(ctx)
-	if err != nil {
-		return err
-	}
-
-	config.DeployExperiment()
-
-	return nil
-
 }

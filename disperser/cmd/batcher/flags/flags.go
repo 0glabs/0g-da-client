@@ -104,12 +104,6 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_REQUEST_QUEUE_SIZE"),
 		Value:    500,
 	}
-	SRSOrderFlag = cli.IntFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "srs-order"),
-		Usage:    "Size of the encoding request queue",
-		Required: true,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SRS_ORDER"),
-	}
 	MaxNumRetriesPerBlobFlag = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-per-blob"),
 		Usage:    "Maximum number of retries to process a blob before marking the blob as FAILED",
@@ -148,7 +142,6 @@ var RequiredFlags = []cli.Flag{
 	EncoderSocket,
 	EnableMetrics,
 	BatchSizeLimitFlag,
-	SRSOrderFlag,
 }
 
 var OptionalFlags = []cli.Flag{

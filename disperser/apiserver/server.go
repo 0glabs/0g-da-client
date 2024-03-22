@@ -2,7 +2,6 @@ package apiserver
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -26,8 +25,6 @@ var errSystemRateLimit = fmt.Errorf("request ratelimited: system limit")
 var errAccountRateLimit = fmt.Errorf("request ratelimited: account limit")
 
 const systemAccountKey = "system"
-
-const maxBlobSize = 1024 * 3968 // 3968 KB
 
 type DispersalServer struct {
 	pb.UnimplementedDisperserServer
@@ -92,8 +89,8 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 
 	blobSize := len(req.GetData())
 	// The blob size in bytes must be in range [1, maxBlobSize].
-	if blobSize > maxBlobSize {
-		return nil, fmt.Errorf("blob size cannot exceed %v KiB", maxBlobSize/1024)
+	if blobSize > core.MaxBlobSize {
+		return nil, fmt.Errorf("blob size cannot exceed %v KiB", core.MaxBlobSize/1024)
 	}
 	if blobSize == 0 {
 		return nil, fmt.Errorf("blob size must be greater than 0")
@@ -109,26 +106,6 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 
 	s.logger.Debug("[apiserver] received a new blob request", "origin", origin, "securityParams", securityParams)
 
-	if err := blob.RequestHeader.Validate(); err != nil {
-		s.logger.Warn("invalid header", "err", err)
-		s.metrics.HandleFailedRequest(blobSize, "DisperseBlob")
-		return nil, err
-	}
-
-	if s.ratelimiter != nil {
-		err := s.checkRateLimitsAndAddRates(ctx, blob, origin)
-		if err != nil {
-			if errors.Is(err, errSystemRateLimit) {
-				s.metrics.HandleSystemRateLimitedRequest(blobSize, "DisperseBlob")
-			} else if errors.Is(err, errAccountRateLimit) {
-				s.metrics.HandleAccountRateLimitedRequest(blobSize, "DisperseBlob")
-			} else {
-				s.metrics.HandleFailedRequest(blobSize, "DisperseBlob")
-			}
-			return nil, err
-		}
-	}
-
 	requestedAt := uint64(time.Now().UnixNano())
 	metadataKey, err := s.blobStore.StoreBlob(ctx, blob, requestedAt)
 	if err != nil {
@@ -143,79 +120,6 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 		Result:    pb.BlobStatus_PROCESSING,
 		RequestId: []byte(metadataKey.String()),
 	}, nil
-}
-
-func (s *DispersalServer) checkRateLimitsAndAddRates(ctx context.Context, blob *core.Blob, origin string) error {
-
-	// TODO(robert): Remove these locks once we have resolved ratelimiting approach
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	for _, param := range blob.RequestHeader.SecurityParams {
-
-		rates, ok := s.rateConfig.QuorumRateInfos[param.QuorumID]
-		if !ok {
-			return fmt.Errorf("no configured rate exists for quorum %d", param.QuorumID)
-		}
-
-		// Get the encoded blob size from the blob header. Calculation is done in a way that nodes can replicate
-		blobSize := len(blob.Data)
-		length := core.GetBlobLength(uint(blobSize))
-		encodedLength := core.GetEncodedBlobLength(length, uint8(blob.RequestHeader.SecurityParams[param.QuorumID].QuorumThreshold), uint8(blob.RequestHeader.SecurityParams[param.QuorumID].AdversaryThreshold))
-		encodedSize := core.GetBlobSize(encodedLength)
-
-		s.logger.Debug("[apiserver] checking rate limits", "origin", origin, "quorum", param.QuorumID, "encodedSize", encodedSize, "blobSize", blobSize)
-
-		// Check System Ratelimit
-		systemQuorumKey := fmt.Sprintf("%s:%d", systemAccountKey, param.QuorumID)
-		allowed, err := s.ratelimiter.AllowRequest(ctx, systemQuorumKey, encodedSize, rates.TotalUnauthThroughput)
-		if err != nil {
-			return fmt.Errorf("ratelimiter error: %v", err)
-		}
-		if !allowed {
-			s.logger.Warn("system byte ratelimit exceeded", "systemQuorumKey", systemQuorumKey, "rate", rates.TotalUnauthThroughput)
-			return errSystemRateLimit
-		}
-
-		systemQuorumKey = fmt.Sprintf("%s:%d-blobrate", systemAccountKey, param.QuorumID)
-		allowed, err = s.ratelimiter.AllowRequest(ctx, systemQuorumKey, blobRateMultiplier, rates.TotalUnauthBlobRate)
-		if err != nil {
-			return fmt.Errorf("ratelimiter error: %v", err)
-		}
-		if !allowed {
-			s.logger.Warn("system blob ratelimit exceeded", "systemQuorumKey", systemQuorumKey, "rate", float32(rates.TotalUnauthBlobRate)/blobRateMultiplier)
-			return errSystemRateLimit
-		}
-
-		// Check Account Ratelimit
-
-		blob.RequestHeader.AccountID = "ip:" + origin
-
-		userQuorumKey := fmt.Sprintf("%s:%d", blob.RequestHeader.AccountID, param.QuorumID)
-		allowed, err = s.ratelimiter.AllowRequest(ctx, userQuorumKey, encodedSize, rates.PerUserUnauthThroughput)
-		if err != nil {
-			return fmt.Errorf("ratelimiter error: %v", err)
-		}
-		if !allowed {
-			s.logger.Warn("account byte ratelimit exceeded", "userQuorumKey", userQuorumKey, "rate", rates.PerUserUnauthThroughput)
-			return errAccountRateLimit
-		}
-
-		userQuorumKey = fmt.Sprintf("%s:%d-blobrate", blob.RequestHeader.AccountID, param.QuorumID)
-		allowed, err = s.ratelimiter.AllowRequest(ctx, userQuorumKey, blobRateMultiplier, rates.PerUserUnauthBlobRate)
-		if err != nil {
-			return fmt.Errorf("ratelimiter error: %v", err)
-		}
-		if !allowed {
-			s.logger.Warn("account blob ratelimit exceeded", "userQuorumKey", userQuorumKey, "rate", float32(rates.PerUserUnauthBlobRate)/blobRateMultiplier)
-			return errAccountRateLimit
-		}
-
-		// Update the quorum rate
-		blob.RequestHeader.SecurityParams[param.QuorumID].QuorumRate = rates.PerUserUnauthThroughput
-	}
-	return nil
-
 }
 
 func (s *DispersalServer) getMetadataFromKv(key []byte) (*disperser.BlobMetadata, error) {
@@ -283,12 +187,9 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 	s.logger.Debug("[apiserver] isConfirmed", "metadata", metadata, "isConfirmed", isConfirmed)
 	if isConfirmed {
 		confirmationInfo := metadata.ConfirmationInfo
-		commit, err := confirmationInfo.BlobCommitment.Commitment.Serialize()
-		if err != nil {
-			return nil, err
-		}
 
-		dataLength := uint32(confirmationInfo.BlobCommitment.Length)
+		commitmentRoot := confirmationInfo.CommitmentRoot
+		dataLength := uint32(confirmationInfo.Length)
 		quorumInfos := confirmationInfo.BlobQuorumInfos
 		blobQuorumParams := make([]*pb.BlobQuorumParam, len(quorumInfos))
 		quorumNumbers := make([]byte, len(quorumInfos))
@@ -310,7 +211,7 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 			Status: getResponseStatus(metadata.BlobStatus),
 			Info: &pb.BlobInfo{
 				BlobHeader: &pb.BlobHeader{
-					Commitment:       commit,
+					CommitmentRoot:   commitmentRoot,
 					DataLength:       dataLength,
 					BlobQuorumParams: blobQuorumParams,
 				},
@@ -474,7 +375,7 @@ func getBlobFromRequest(req *pb.DisperseBlobRequest) *core.Blob {
 	blob := &core.Blob{
 		RequestHeader: core.BlobRequestHeader{
 			SecurityParams: params,
-			TargetChunkNum: req.GetTargetChunkNum(),
+			TargetRowNum:   req.GetTargetRowNum(),
 		},
 		Data: data,
 	}

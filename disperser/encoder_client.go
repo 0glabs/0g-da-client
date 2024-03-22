@@ -7,5 +7,5 @@ import (
 )
 
 type EncoderClient interface {
-	EncodeBlob(ctx context.Context, data []byte, encodingParams core.EncodingParams) (*core.BlobCommitments, []*core.Chunk, error)
+	EncodeBlob(ctx context.Context, data []byte, dims core.MatrixDimsions) (*core.ExtendedMatrix, error)
 }

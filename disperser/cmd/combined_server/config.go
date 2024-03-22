@@ -6,7 +6,6 @@ import (
 	"github.com/0glabs/0g-data-avail/common/logging"
 	"github.com/0glabs/0g-data-avail/common/ratelimit"
 	"github.com/0glabs/0g-data-avail/common/storage_node"
-	"github.com/0glabs/0g-data-avail/core/encoding"
 	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/0glabs/0g-data-avail/disperser/apiserver"
 	"github.com/0glabs/0g-data-avail/disperser/batcher"
@@ -34,7 +33,6 @@ type Config struct {
 	// batcher
 	BatcherConfig batcher.Config
 	TimeoutConfig batcher.TimeoutConfig
-	EncoderConfig encoding.EncoderConfig
 }
 
 func NewConfig(ctx *cli.Context) (Config, error) {
@@ -82,7 +80,6 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			NumConnections:           ctx.GlobalInt(batcher_flags.NumConnectionsFlag.Name),
 			EncodingRequestQueueSize: ctx.GlobalInt(batcher_flags.EncodingRequestQueueSizeFlag.Name),
 			BatchSizeMBLimit:         ctx.GlobalUint(batcher_flags.BatchSizeLimitFlag.Name),
-			SRSOrder:                 ctx.GlobalInt(batcher_flags.SRSOrderFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(batcher_flags.MaxNumRetriesPerBlobFlag.Name),
 			ConfirmerNum:             ctx.GlobalUint(batcher_flags.ConfirmerNumFlag.Name),
 		},
@@ -91,7 +88,6 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			ChainReadTimeout:  ctx.GlobalDuration(batcher_flags.ChainReadTimeoutFlag.Name),
 			ChainWriteTimeout: ctx.GlobalDuration(batcher_flags.ChainWriteTimeoutFlag.Name),
 		},
-		EncoderConfig: encoding.ReadCLIConfig(ctx),
 	}
 	return config, nil
 }

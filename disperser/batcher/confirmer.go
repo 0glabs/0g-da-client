@@ -264,10 +264,11 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 		confirmationInfo := &disperser.ConfirmationInfo{
 			BatchHeaderHash:         batchInfo.headerHash,
 			BlobIndex:               uint32(blobIndex),
-			ReferenceBlockNumber:    uint32(batch.BatchHeader.ReferenceBlockNumber),
+			ReferenceBlockNumber:    0,
 			BatchRoot:               batch.BatchHeader.BatchRoot[:],
 			BlobInclusionProof:      serializeProof(proofs[blobIndex]),
-			BlobCommitment:          &batch.BlobHeaders[blobIndex].BlobCommitments,
+			CommitmentRoot:          batch.BlobHeaders[blobIndex].CommitmentRoot,
+			Length:                  uint32(batch.BlobHeaders[blobIndex].Length),
 			BatchID:                 uint32(batchID),
 			ConfirmationTxnHash:     batch.TxHash,
 			ConfirmationBlockNumber: blockNumber,

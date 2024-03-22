@@ -28,10 +28,7 @@ type encodedBlobStore struct {
 type EncodingResult struct {
 	BlobMetadata         *disperser.BlobMetadata
 	ReferenceBlockNumber uint
-	// BlobQuorumInfo       *core.BlobQuorumInfo
-	Commitment *core.BlobCommitments
-	Chunks     []*core.Chunk
-	// Assignments          map[core.OperatorID]core.Assignment
+	ExtendedMatrix       *core.ExtendedMatrix
 }
 
 // EncodingResultOrStatus is a wrapper for EncodingResult that also contains an error
@@ -182,10 +179,5 @@ func getRequestID(key disperser.BlobKey) requestID {
 }
 
 func getChunksSize(result *EncodingResult) uint64 {
-	var size uint64
-
-	for _, chunk := range result.Chunks {
-		size += uint64(len(chunk.Coeffs) * 32) // 256 bytes per symbol
-	}
-	return size + 64 // + 256 * 2 bytes for proof
+	return uint64(result.ExtendedMatrix.GetRows() * (result.ExtendedMatrix.GetCols()*core.CoeffSize + core.CommitmentSize))
 }

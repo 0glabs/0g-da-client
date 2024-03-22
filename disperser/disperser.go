@@ -125,7 +125,8 @@ type ConfirmationInfo struct {
 	ReferenceBlockNumber    uint32                               `json:"reference_block_number"`
 	BatchRoot               []byte                               `json:"batch_root"`
 	BlobInclusionProof      []byte                               `json:"blob_inclusion_proof"`
-	BlobCommitment          *core.BlobCommitments                `json:"blob_commitment"`
+	CommitmentRoot          []byte                               `json:"commitment_root"`
+	Length                  uint32                               `json:"length"`
 	BatchID                 uint32                               `json:"batch_id"`
 	ConfirmationTxnHash     gcommon.Hash                         `json:"confirmation_txn_hash"`
 	ConfirmationBlockNumber uint32                               `json:"confirmation_block_number"`
@@ -169,7 +170,7 @@ type BlobStore interface {
 }
 
 type Dispatcher interface {
-	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobs []*core.EncodedBlob, proofs []*merkletree.Proof) (eth_common.Hash, error)
+	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.ExtendedMatrix, blobHeaders []*core.BlobHeader, proofs []*merkletree.Proof) (eth_common.Hash, error)
 }
 
 // GenerateReverseIndexKey returns the key used to store the blob key in the reverse index
