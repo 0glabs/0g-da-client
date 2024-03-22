@@ -49,10 +49,8 @@ class DAServer(TestNode):
                      "--disperser-server.aws.endpoint-url", "http://0.0.0.0:4566"]
     
     def wait_for_rpc_connection(self):
-        poll = self.process.poll()
-        if poll is None:
-            time.sleep(3)
-        self.log.info(f'{self.grpc_url}')
+        # TODO: health check of service availability
+        time.sleep(3)
         self.channel = grpc.insecure_channel(self.grpc_url)
         # bind the client and the server
         self.stub = pb2_grpc.DisperserStub(self.channel)
