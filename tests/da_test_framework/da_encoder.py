@@ -22,7 +22,6 @@ class DAEncoder(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "da_encoder")
-        # rpc_url = "http://0.0.0.0:34000"
         super().__init__(
             DANodeType.DA_ENCODER,
             11,

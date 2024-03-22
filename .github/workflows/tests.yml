@@ -1,0 +1,45 @@
+name: functional-test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Setup Rust (cache & toolchain)
+      uses: ./.github/actions/setup-rust
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Build Protobuf
+      run: |
+        cp api/proto/disperser/disperser.proto tests/
+        cd tests && python -m grpc_tools.protoc --proto_path=. ./disperser.proto --python_out=. --grpc_python_out=.
+
+    - name: Run tests
+      run: |
+        cd tests
+        python da_test_all.py

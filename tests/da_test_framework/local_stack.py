@@ -20,7 +20,6 @@ class LocalStack(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "localstack")
-        # rpc_url = "http://0.0.0.0:4566"
         super().__init__(
             DANodeType.DA_LOCAL_STACK,
             10,

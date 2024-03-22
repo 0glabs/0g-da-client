@@ -98,8 +98,6 @@ class DATestFramework(TestFramework):
         self.da_encoder_binary = self.options.da_encoder
         self.da_batcher_binary = self.options.da_batcher
         self.da_server_binary = self.options.da_server
-        
-        self.log.info(f'addresses {self.localstack_binary}, {self.da_encoder_binary}, {self.da_batcher_binary}, {self.da_server_binary}')
 
         self.build_binary()
 

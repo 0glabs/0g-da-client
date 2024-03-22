@@ -27,7 +27,6 @@ class DABatcher(TestNode):
 
         local_conf.update(updated_config)
         data_dir = os.path.join(root_dir, "da_batcher")
-        # rpc_url = "http://" + local_conf["rpc_listen_address"]
         super().__init__(
             DANodeType.DA_BATCHER,
             12,
@@ -38,7 +37,6 @@ class DABatcher(TestNode):
             log,
             None,
         )
-        self.log.info(f'local conf for batcher {local_conf}')
         self.args = [binary, "--batcher.pull-interval", "10s",
                      "--chain.rpc", local_conf['blockchain_rpc_endpoint'],
                      "--chain.private-key", GENESIS_PRIV_KEY,
