@@ -90,12 +90,7 @@ Generating variables
 Test environment has succesfully deployed!
 ```
 
-<<<<<<< HEAD
 Copy generated states to states directory in this repo [here](https://github.com/0glabs/0g-data-avail-devops/tree/master/charts/anvil-chain/states)
-=======
-Copy generated states to states directory in this repo [here](https://github.com/zero-gravity-labs/zerog-data-avail-devops/tree/master/charts/anvil-chain/states)
-
->>>>>>> 771bcdd (GITBOOK-43: No subject)
 ```
 1. Copy the generated state: opr-state.json and build docker image. Instructions here https://github.com/0glabs/0g-data-avail-devops/blob/master/charts/anvil-chain/README.md
 ```

@@ -23,7 +23,6 @@ require (
 	github.com/urfave/cli v1.22.14
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/wealdtech/go-merkletree v1.0.1-0.20230205101955-ec7a95ea11ca
-	github.com/zero-gravity-labs/zerog-data-avail/api v0.0.0-20240304091756-a470f1aff6ee
 	go.uber.org/automaxprocs v1.5.2
 	google.golang.org/grpc v1.59.0
 )
