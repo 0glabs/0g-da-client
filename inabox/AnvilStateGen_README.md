@@ -1,9 +1,10 @@
-# Anvil State Generation steps for `N` Operators
+# Anvil State Generation steps for N Operators
 
 ## Generate Anvil State for 4 Operators for Anvil Chain to run on Kubernetes:
 1. Update InitialSupply in the contract to 100000 ether enough for 200 operators
 [Click here to view the highlighted code on GitHub](https://github.com/0glabs/0g-data-avail/blob/7a16b44b8b06e770e15d372108df2fd220720697/contracts/script/SetUpZGDA.s.sol#L58C38-L58C38)
 
+1. Update InitialSupply in the contract to 100000 ether enough for 200 operators.
 
 ```solidity
 // Define the initial supply as 100000 ether
@@ -11,6 +12,7 @@ uint256 initialSupply = 100000 ether;
 ```
 
 2. Update InABox testconfig-anvil.yaml with below for 20 Operators for Anvil Chain to run on Kubernetes:
+
 ```yaml
 environment:
   name: "staging"
@@ -67,11 +69,13 @@ services:
 ```
 
 3. Run Anvil with below command in another terminal:
+
 ```
 anvil --port 8545 --dump-state opr-state.json
 ```
 
 Output:
+
 ```
 forge script script/SetUpZGDA.s.sol:SetupZGDA --rpc-url http://127.0.0.1:8545 \
     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
@@ -92,7 +96,8 @@ Copy generated states to states directory in this repo [here](https://github.com
 ```
 
 ## Generate Anvil State for 200 Operators for Anvil Chain to run on Kubernetes:
-1. Use Secrets from dir: `inabox/secrets/keys_for_200_operators.zip` 
+
+1. Use Secrets from dir: `inabox/secrets/keys_for_200_operators.zip`
 2. Update testconfig-anvil.yaml to below
 
 ```yaml
@@ -149,4 +154,3 @@ services:
       ENCODER_ADDRESS: encoder.encoder.svc.cluster.local:34000
       USE_GRAPH: false
 ```
-
