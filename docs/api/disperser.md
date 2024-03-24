@@ -2,24 +2,24 @@
 
 ## Table of Contents
 
-* [Service](disperser.md#service)
-  * [Disperser](disperser.md#disperser)
-* [Data Structure](disperser.md#data-structure)
-  * [BatchHeader](disperser.md#batchheader)
-  * [BatchMetadata](disperser.md#batchmetadata)
-  * [BlobHeader](disperser.md#blobheader)
-  * [BlobInfo](disperser.md#blobinfo)
-  * [BlobQuorumParam](disperser.md#blobquorumparam)
-  * [BlobStatusReply](disperser.md#blobstatusreply)
-  * [BlobStatusRequest](disperser.md#blobstatusrequest)
-  * [BlobVerificationProof](disperser.md#blobverificationproof)
-  * [DisperseBlobReply](disperser.md#disperseblobreply)
-  * [DisperseBlobRequest](disperser.md#disperseblobrequest)
-  * [RetrieveBlobRequest](disperser.md#retrieveblobrequest)
-  * [RetrieveBlobReply](disperser.md#retrieveblobreply)
-  * [SecurityParams](disperser.md#securityparams)
-  * [BlobStatus](disperser.md#blobstatus)
-* [Scalar Value Types](disperser.md#scalar-value-types)
+- [Service](disperser.md#service)
+  - [Disperser](disperser.md#disperser)
+- [Data Structure](disperser.md#data-structure)
+  - [BatchHeader](disperser.md#batchheader)
+  - [BatchMetadata](disperser.md#batchmetadata)
+  - [BlobHeader](disperser.md#blobheader)
+  - [BlobInfo](disperser.md#blobinfo)
+  - [BlobQuorumParam](disperser.md#blobquorumparam)
+  - [BlobStatusReply](disperser.md#blobstatusreply)
+  - [BlobStatusRequest](disperser.md#blobstatusrequest)
+  - [BlobVerificationProof](disperser.md#blobverificationproof)
+  - [DisperseBlobReply](disperser.md#disperseblobreply)
+  - [DisperseBlobRequest](disperser.md#disperseblobrequest)
+  - [RetrieveBlobRequest](disperser.md#retrieveblobrequest)
+  - [RetrieveBlobReply](disperser.md#retrieveblobreply)
+  - [SecurityParams](disperser.md#securityparams)
+  - [BlobStatus](disperser.md#blobstatus)
+- [Scalar Value Types](disperser.md#scalar-value-types)
 
 [Top](disperser.md#top)
 
@@ -39,22 +39,7 @@ Disperser defines the public APIs for dispersing blobs.
 
 ### BatchMetadata
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| batch_header | [BatchHeader](#disperser-BatchHeader) |  |  |
-| signatory_record_hash | [bytes](#bytes) |  | The hash of all public keys of the operators that did not sign the batch. |
-| fee | [bytes](#bytes) |  | The gas fee of confirming this batch. It&#39;s the bytes representation of a big.Int value. |
-| confirmation_block_number | [uint32](#uint32) |  | The Ethereum block number at which the batch is confirmed onchain. |
-| batch_header_hash | [bytes](#bytes) |  | This is the hash of the ReducedBatchHeader defined onchain, see: https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43 The is the message that the operators will sign their signatures on. |
-
-
-
-
-
-
-<a name="disperser-BlobHeader"></a>
+<table><thead><tr><th>Field</th><th>Type</th><th width="84">Label</th><th>Description</th></tr></thead><tbody><tr><td>batch_header</td><td><a href="disperser.md#batchheader">BatchHeader</a></td><td></td><td></td></tr><tr><td>signatory_record_hash</td><td>bytes</td><td></td><td>The hash of all public keys of the operators that did not sign the batch.</td></tr><tr><td>fee</td><td>bytes</td><td></td><td>The gas fee of confirming this batch. It's the bytes representation of a big.Int value.</td></tr><tr><td>confirmation_block_number</td><td>uint32</td><td></td><td>The Ethereum block number at which the batch is confirmed onchain.</td></tr><tr><td>batch_header_hash</td><td>bytes</td><td></td><td>This is the hash of the ReducedBatchHeader defined onchain, see: https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43 The is the message that the operators will sign their signatures on.</td></tr></tbody></table>
 
 ### BlobHeader
 
@@ -62,32 +47,17 @@ Disperser defines the public APIs for dispersing blobs.
 
 ### BlobInfo
 
-BlobInfo contains information needed to confirm the blob against the ZGDA contracts
+BlobInfo contains information needed to confirm the blob against the 0G DA contracts
 
 <table><thead><tr><th>Field</th><th>Type</th><th width="132">Label</th><th>Description</th></tr></thead><tbody><tr><td>blob_header</td><td><a href="disperser.md#blobheader">BlobHeader</a></td><td></td><td></td></tr><tr><td>blob_verification_proof</td><td><a href="disperser.md#blobverificationproof">BlobVerificationProof</a></td><td></td><td></td></tr></tbody></table>
 
 ### BlobQuorumParam
 
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| quorum_number | [uint32](#uint32) |  | The ID of the quorum. |
-| adversary_threshold_percentage | [uint32](#uint32) |  | Same as SecurityParams.adversary_threshold. |
-| quorum_threshold_percentage | [uint32](#uint32) |  | Same as SecurityParams.quorum_threshold. |
-| quantization_param | [uint32](#uint32) |  | This determines the nominal number of chunks for the blob, which is nominal_num_chunks = quantization_param * num_operators. A chunk is the smallest unit that&#39;s distributed to DA Nodes, corresponding to a set of evaluations of the polynomial (representing the blob) and a KZG multiproof. See more details in data model of ZGDA: https://github.com/0glabs/0g-data-avail/blob/master/docs/spec/data-model.md |
-| encoded_length | [uint64](#uint64) |  | The length of the blob after encoding (in number of symbols). |
-
-
-
-
-
-
-<a name="disperser-BlobStatusReply"></a>
+<table><thead><tr><th width="214">Field</th><th width="95">Type</th><th width="95">Label</th><th>Description</th></tr></thead><tbody><tr><td>quorum_number</td><td>uint32</td><td></td><td>The ID of the quorum.</td></tr><tr><td>adversary_threshold_percentage</td><td>uint32</td><td></td><td>Same as SecurityParams.adversary_threshold.</td></tr><tr><td>quorum_threshold_percentage</td><td>uint32</td><td></td><td>Same as SecurityParams.quorum_threshold.</td></tr><tr><td>quantization_param</td><td>uint32</td><td></td><td>This determines the nominal number of chunks for the blob, which is <code>nominal_num_chunks = quantization_param * num_operators</code>. A chunk is the smallest unit that's distributed to DA Nodes, corresponding to a set of evaluations of the polynomial (representing the blob) and a KZG multiproof.</td></tr><tr><td>encoded_length</td><td>uint64</td><td></td><td>The length of the blob after encoding (in number of symbols).</td></tr></tbody></table>
 
 ### BlobStatusReply
 
-<table><thead><tr><th width="171">Field</th><th width="157">Type</th><th width="138">Label</th><th>Description</th></tr></thead><tbody><tr><td>status</td><td><a href="disperser.md#blobstatus">BlobStatus</a></td><td></td><td>The status of the blob.</td></tr><tr><td>info</td><td><a href="disperser.md#blobinfo">BlobInfo</a></td><td></td><td>The blob info needed for clients to confirm the blob against the ZGDA contracts.</td></tr></tbody></table>
+<table><thead><tr><th width="171">Field</th><th width="157">Type</th><th width="138">Label</th><th>Description</th></tr></thead><tbody><tr><td>status</td><td><a href="disperser.md#blobstatus">BlobStatus</a></td><td></td><td>The status of the blob.</td></tr><tr><td>info</td><td><a href="disperser.md#blobinfo">BlobInfo</a></td><td></td><td>The blob info needed for clients to confirm the blob against the 0G DA contracts.</td></tr></tbody></table>
 
 ### BlobStatusRequest
 
@@ -111,10 +81,10 @@ BlobStatusRequest is used to query the status of a blob.
 
 RetrieveBlobRequest contains parameters to retrieve the blob.
 
-| Field               | Type   | Label | Description |
-| ------------------- | ------ | ----- | ----------- |
-| batch\_header\_hash | bytes  |       |             |
-| blob\_index         | uint32 |       |             |
+| Field             | Type   | Label | Description |
+| ----------------- | ------ | ----- | ----------- |
+| batch_header_hash | bytes  |       |             |
+| blob_index        | uint32 |       |             |
 
 ### RetrieveBlobReply
 
@@ -128,26 +98,7 @@ RetrieveBlobReply contains the retrieved blob data
 
 SecurityParams contains the security parameters for a given quorum.
 
-<table><thead><tr><th width="218">Field</th><th width="106">Type</th><th width="109">Label</th><th>Description</th></tr></thead><tbody><tr><td>quorum_id</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>The ID of the quorum. The quorum must be already registered on EigenLayer. The ID must be in range [0, 255].</td></tr><tr><td>adversary_threshold</td><td><a href="disperser.md#uint32">uint32</a></td><td></td><td>The max percentage of stake within the quorum that can be held by or delegated to adversarial operators.</td></tr></tbody></table>
-
-Clients use this to customize the trust assumption (safety).
-
-Requires: 1 <= adversary\_threshold < 100 | | quorum\_threshold | [uint32](disperser.md#uint32) | | The min percentage of stake that must attest in order to consider the dispersal is successful.
-
-Clients use this to customize liveness requirement. The higher this number, the more operators may need to be up for attesting the blob, so the chance the dispersal request to fail may be higher (liveness for dispersal).
-
-Requires: 1 <= quorum\_threshld <= 100 quorum\_threshld > adversary\_threshold.
-
-Note: The adversary_threshold and quorum_threshold will directly influence the cost of encoding for the blob to be dispersed, roughly by a factor of 100 / (quorum_threshold - adversary_threshold). See the spec for more details: https://github.com/0glabs/0g-data-avail/blob/master/docs/spec/protocol-modules/storage/overview.md |
-
-
-
-
-
- 
-
-
-<a name="disperser-BlobStatus"></a>
+<table><thead><tr><th width="218">Field</th><th width="106">Type</th><th width="109">Label</th><th>Description</th></tr></thead><tbody><tr><td>quorum_id</td><td>uint32</td><td></td><td>The ID of the quorum. The quorum must be already registered on EigenLayer. The ID must be in range [0, 255].</td></tr><tr><td>adversary_threshold</td><td>uint32</td><td></td><td>The max percentage of stake within the quorum that can be held by or delegated to adversarial operators.</td></tr></tbody></table>
 
 ### BlobStatus
 

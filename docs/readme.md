@@ -1,4 +1,4 @@
-# 0G DA
+# 0G DA Spec
 
 ## Organization
 

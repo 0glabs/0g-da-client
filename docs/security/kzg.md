@@ -60,4 +60,4 @@ As a simple illustrative example, suppose that `AssignmentCoordinator` provides 
 
 Supplied with these parameters, `Encoder.GetEncodingParams` will upgrade $$\mathsf{ChunkLength}$$ to the next highest power of $$\mathsf{2}$$, i.e., $$\mathsf{ChunkLength = 4}$$, and leave $$\mathsf{NumChunks}$$ unchanged. The following figure illustrates how the indices will be assigned across the chunks in this scenario.
 
-![Worked example of chunk indices for ChunkLength=4, NumChunks=4](../assets/encoding-groups.png)
+<figure><img src="../../../.gitbook/assets/zg-da-encoding-groups.png" alt=""><figcaption><p>Worked example of chunk indices for ChunkLength=4, NumChunks=4</p></figcaption></figure>
