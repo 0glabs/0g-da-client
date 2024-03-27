@@ -84,7 +84,6 @@ func DumpEncodedBlobs(extendedMatrix []*core.ExtendedMatrix) ([]byte, error) {
 			offset := location.SegmentIndexes[j]*core.SegmentSize + location.Offsets[j]
 			coeffs := extendedMatrix[i].GetRowInBytes(j)
 			commitment := extendedMatrix[i].Commitments[j][:]
-			fmt.Printf("offset: %v, len(coeffs): %v, len(commitment): %v\n", offset, len(coeffs), len(commitment))
 			copy(res[offset:], coeffs)
 			copy(res[offset+uint(len(coeffs)):], commitment)
 		}
