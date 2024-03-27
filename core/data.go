@@ -85,10 +85,8 @@ func (m *ExtendedMatrix) GetCols() int {
 
 func (m *ExtendedMatrix) GetRowInBytes(idx int) []byte {
 	result := make([]byte, 0)
-	for _, row := range m.Rows {
-		for _, chunk := range row {
-			result = append(result, chunk[:]...)
-		}
+	for _, chunk := range m.Rows[idx] {
+		result = append(result, chunk[:]...)
 	}
 	return result
 }

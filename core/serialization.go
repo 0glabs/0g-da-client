@@ -101,7 +101,7 @@ func (h *BlobHeader) SetCommitmentRoot(commitments []Commitment) error {
 		return err
 	}
 
-	copy(h.CommitmentRoot[:], tree.Root())
+	h.CommitmentRoot = tree.Root()
 	return nil
 }
 
