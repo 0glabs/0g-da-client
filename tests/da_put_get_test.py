@@ -17,27 +17,28 @@ class DAPutGetTest(DATestFramework):
         self.num_nodes = 1
 
     def run_test(self):
-        client = self.da_services[-1]
+        disperser = self.da_services[-2]
         
         data = randbytes(507904)
-        disperse_response = client.disperse_blob(data)
+        disperse_response = disperser.disperse_blob(data)
         
         self.log.info(disperse_response)
         request_id = disperse_response.request_id
-        reply = client.get_blob_status(request_id)
+        reply = disperser.get_blob_status(request_id)
         count = 0
         while reply.status != BlobStatus.CONFIRMED and count <= 5:
-            reply = client.get_blob_status(request_id)
-            self.log.info(f'blob status {reply.status}')
+            reply = disperser.get_blob_status(request_id)
             count += 1
             time.sleep(10)
         
         info = reply.info
-        self.log.info(f'reply info {info}')
         # retrieve the blob
-        reply = client.retrieve_blob(info)
-        self.log.info(f'reply data {reply.data}')
+        reply = disperser.retrieve_blob(info)
         assert_equal(reply.data[:len(data)], data)
+        
+        retriever = self.da_services[-1]
+        retriever_response = retriever.retrieve_blob(info)
+        assert_equal(retriever_response.data[:len(data)], data)
 
 
 if __name__ == "__main__":
