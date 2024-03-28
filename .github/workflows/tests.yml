@@ -37,7 +37,9 @@ jobs:
     - name: Build Protobuf
       run: |
         cp api/proto/disperser/disperser.proto tests/
-        cd tests && python -m grpc_tools.protoc --proto_path=. ./disperser.proto --python_out=. --grpc_python_out=.
+        cp api/proto/retriever/retriever.proto tests/
+        cd tests && python -m grpc_tools.protoc --proto_path=. ./disperser.proto --python_out=. --grpc_python_out=. && python -m grpc_tools.protoc --proto_path=. ./retriever.proto --python_out=. --grpc_python_out=.
+
 
     - name: Run tests
       run: |

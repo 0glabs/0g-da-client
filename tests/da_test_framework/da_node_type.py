@@ -7,3 +7,4 @@ class DANodeType(Enum):
     DA_ENCODER = 4
     DA_BATCHER = 5
     DA_SERVER = 6
+    DA_RETRIEVER = 7

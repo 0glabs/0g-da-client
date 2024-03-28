@@ -15,6 +15,7 @@ from da_test_framework.local_stack import LocalStack
 from da_test_framework.da_encoder import DAEncoder
 from da_test_framework.da_batcher import DABatcher
 from da_test_framework.da_server import DAServer
+from da_test_framework.da_retriever import DARetriever
 
 __file_path__ = os.path.dirname(os.path.realpath(__file__))
 binary_ext = ".exe" if is_windows_platform() else ""
@@ -62,6 +63,9 @@ class DATestFramework(TestFramework):
         self.__default_da_server_binary__ = os.path.join(
             tmp_dir, "da_server" + binary_ext
         )
+        self.__default_da_retriever_binary__ = os.path.join(
+            tmp_dir, "da_retriever" + binary_ext
+        )
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         super().add_arguments(parser)
@@ -92,12 +96,20 @@ class DATestFramework(TestFramework):
             default=self.__default_da_server_binary__,
             type=str,
         )
+        
+        parser.add_argument(
+            "--da-retriever-binary",
+            dest="da_retriever",
+            default=self.__default_da_retriever_binary__,
+            type=str,
+        )
 
     def setup_nodes(self):
         self.localstack_binary = self.options.localstack
         self.da_encoder_binary = self.options.da_encoder
         self.da_batcher_binary = self.options.da_batcher
         self.da_server_binary = self.options.da_server
+        self.da_retriever_binary = self.options.da_retriever
 
         self.build_binary()
 
@@ -109,6 +121,7 @@ class DATestFramework(TestFramework):
         assert os.path.exists(self.da_encoder_binary), f"da encoder binary not found: {self.da_encoder_binary}"
         assert os.path.exists(self.da_batcher_binary), f"da batcher binary not found: {self.da_batcher_binary}"
         assert os.path.exists(self.da_server_binary), f"da server binary not found: {self.da_server_binary}"
+        assert os.path.exists(self.da_retriever_binary), f"da retriever binary not found: {self.da_retriever_binary}"
 
         super().setup_nodes()
         self.stream_ids = [to_stream_id(i) for i in range(MAX_STREAM_ID)]
@@ -142,6 +155,10 @@ class DATestFramework(TestFramework):
             self.build_da_node(self.da_batcher_binary, os.path.join(da_disperser_cmd, "batcher"))
         if not os.path.exists(self.da_server_binary):
             self.build_da_node(self.da_server_binary, os.path.join(da_disperser_cmd, "apiserver"))
+            
+        da_retriever_cmd = os.path.join(da_root, "retriever", "cmd")
+        if not os.path.exists(self.da_retriever_binary):
+            self.build_da_node(self.da_retriever_binary, da_retriever_cmd)
 
     def build_zgs_node(self, zgs_node_path, zgs_cli_path):
         zgs_root_path = os.path.join(__file_path__, "..", "..", "0g-storage-kv", "0g-storage-node")
@@ -204,6 +221,8 @@ class DATestFramework(TestFramework):
         updated_config['log_contract_address'] = self.contract.address()
         self.setup_da_node(DABatcher, self.da_batcher_binary, updated_config)
         self.setup_da_node(DAServer, self.da_server_binary)
+        
+        self.setup_da_node(DARetriever, self.da_retriever_binary, updated_config)
         self.log.info("All DA service started")
 
     def setup_da_node(self, clazz, binary, updated_config={}):
