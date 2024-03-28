@@ -67,7 +67,14 @@ class DARetriever(TestNode):
 
     def stop(self):
         self.log.info("Stop DA retriever")
-        super().stop(kill=True, wait=False)
+        try:
+            super().stop(kill=True, wait=False)
+        except AssertionError as e:
+            err = repr(e)
+            if "no RPC connection" in err:
+                self.log.debug(f"Stop DA retriever: no RPC connection")
+            else:
+                raise e
 
     def retrieve_blob(self, info):
         message = pb2.BlobRequest(batch_header_hash=info.blob_verification_proof.batch_metadata.batch_header_hash, blob_index=info.blob_verification_proof.blob_index)
