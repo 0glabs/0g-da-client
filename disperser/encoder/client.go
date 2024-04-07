@@ -48,6 +48,7 @@ func ExtendedMatrixFromReply(reply *pb.EncodeBlobReply, blobLength uint) (*core.
 		var commitment core.Commitment
 		copy(commitment[:], reply.Commitment[commitmentsIndex:commitmentsIndex+core.CommitmentSize])
 		commitments = append(commitments, commitment)
+		commitmentsIndex += core.CommitmentSize
 	}
 	return &core.ExtendedMatrix{
 		Length:      blobLength,
