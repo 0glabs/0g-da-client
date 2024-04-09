@@ -8,8 +8,7 @@ from da_test_framework.da_node_type import DANodeType
 
 sys.path.append("../0g-storage-kv/tests")
 
-from test_framework.blockchain_node import TestNode, FailedToStartError
-from utility.simple_rpc_proxy import SimpleRpcProxy
+from test_framework.blockchain_node import TestNode
 
 
 __file_path__ = os.path.dirname(os.path.realpath(__file__))
@@ -24,8 +23,6 @@ class DAServer(TestNode):
             log,
     ):
         local_conf = dict(log_config_file="log_config")
-        print(updated_config)
-        print(local_conf)
         local_conf.update(updated_config)
 
         data_dir = os.path.join(root_dir, "da_server")
@@ -40,13 +37,16 @@ class DAServer(TestNode):
             log,
             None,
         )
-        self.args = [binary, "--disperser-server.grpc-port", "51001",
-                     "--disperser-server.s3-bucket-name", "test-zgda-blobstore",
-                     "--disperser-server.dynamodb-table-name", "test-BlobMetadata",
-                     "--disperser-server.aws.region", "us-east-1",
-                     "--disperser-server.aws.access-key-id", "localstack",
-                     "--disperser-server.aws.secret-access-key", "localstack",
-                     "--disperser-server.aws.endpoint-url", "http://0.0.0.0:4566"]
+        self.args = [
+            binary,
+            "--disperser-server.grpc-port", "51001",
+            "--disperser-server.s3-bucket-name", "test-zgda-blobstore",
+            "--disperser-server.dynamodb-table-name", "test-BlobMetadata",
+            "--disperser-server.aws.region", "us-east-1",
+            "--disperser-server.aws.access-key-id", "localstack",
+            "--disperser-server.aws.secret-access-key", "localstack",
+            "--disperser-server.aws.endpoint-url", "http://0.0.0.0:4566"
+        ]
     
     def wait_for_rpc_connection(self):
         # TODO: health check of service availability
@@ -69,10 +69,8 @@ class DAServer(TestNode):
 
     def retrieve_blob(self, info):
         message = pb2.RetrieveBlobRequest(batch_header_hash=info.blob_verification_proof.batch_metadata.batch_header_hash, blob_index=info.blob_verification_proof.blob_index)
-        self.log.info(f'retrieve blob {message}')
         return self.stub.RetrieveBlob(message)
 
     def get_blob_status(self, request_id):
         message = pb2.BlobStatusRequest(request_id=request_id)
-        self.log.info(f'get blob status {message}')
         return self.stub.GetBlobStatus(message)
