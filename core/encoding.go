@@ -1,116 +1,65 @@
 package core
 
 import (
-	"fmt"
-
-	"github.com/0glabs/0g-data-avail/pkg/encoding/encoder"
-	"github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
+	"math"
 )
 
 const (
-	EntrySize             = 256 //256B
-	EntryPerSegment       = 1024
-	SegmentSize           = EntrySize * EntryPerSegment // 256KB
-	CoeffSize             = 32                          // 32B
-	ProofSize             = 64                          // 64B
-	DefaultTargetChunkNum = 32
-	MaxChunkLen           = SegmentSize / 2 / 32
+	EntrySize       = 256 //256B
+	EntryPerSegment = 1024
+	SegmentSize     = EntrySize * EntryPerSegment // 256KB
+	ScalarSize      = 31
+	CoeffSize       = 32
+	CommitmentSize  = 48
+	MaxCols         = 1024
+	MaxRows         = 2048
+	MaxBlobSize     = MaxCols * MaxRows * ScalarSize
 )
 
-// Commitments
-
-// Commitment is a polynomial commitment (e.g. a kzg commitment)
-type Commitment struct {
-	*bn254.G1Point
+type MatrixDimsions struct {
+	Rows uint `json:"rows"`
+	Cols uint `json:"cols"`
 }
 
-// The proof used to open a commitment. In the case of Kzg, this is also a kzg commitment, and is different from a Commitment only semantically.
-type Proof = bn254.G1Point
-
-// Symbol is a symbol in the field used for polynomial commitments
-type Symbol = bn254.Fr
-
-// Encoding
-
-// EncodingParams contains the encoding parameters that the encoder must satisfy.
-type EncodingParams struct {
-	ChunkLength uint // ChunkSize is the length of the chunk in symbols
-	NumChunks   uint
-}
-
-// Encoder is responsible for encoding, decoding, and chunk verification
+// Encoder is responsible for encoding
 type Encoder interface {
-	// Encode takes in a blob and returns the commitments and encoded chunks. The encoding will satisfy the property that
-	// for any number M such that M*params.ChunkLength > BlobCommitments.Length, then any set of M chunks will be sufficient to
-	// reconstruct the blob.
-	Encode(data []byte, params EncodingParams) (BlobCommitments, []*Chunk, error)
+	// Encode takes in a blob and returns the commitments and encoded matrix
+	Encode(data []byte, dims MatrixDimsions) (*ExtendedMatrix, error)
+}
 
-	// VerifyChunks takes in the chunks, indices, commitments, and encoding parameters and returns an error if the chunks are invalid.
-	VerifyChunks(chunks []*Chunk, indices []ChunkNumber, commitments BlobCommitments, params EncodingParams) error
-
-	// VerifyBatch takes in the encoding parameters, samples and the number of blobs and returns an error if a chunk in any sample is invalid.
-	UniversalVerifySubBatch(params EncodingParams, samples []Sample, numBlobs int) error
-
-	// VerifyBlobLength takes in the commitments and returns an error if the blob length is invalid.
-	VerifyBlobLength(commitments BlobCommitments) error
-
-	// Decode takes in the chunks, indices, and encoding parameters and returns the decoded blob
-	Decode(chunks []*Chunk, indices []ChunkNumber, params EncodingParams, inputSize uint64) ([]byte, error)
+func NextPowerOf2(d uint64) uint64 {
+	nextPower := math.Ceil(math.Log2(float64(d)))
+	return uint64(math.Pow(2.0, nextPower))
 }
 
 // GetBlobLength converts from blob size in bytes to blob size in symbols
 func GetBlobLength(blobSize uint) uint {
-	symSize := uint(bn254.BYTES_PER_COEFFICIENT)
-	return (blobSize + symSize - 1) / symSize
+	return (blobSize + ScalarSize - 1) / ScalarSize
 }
 
-// SplitToChunks calculate chunk length and chunk nums for encoded blob, try to split it into DefaultTargetChunkNum chunks if targetChunkNum is zero
-func SplitToChunks(blobLength uint, targetChunkNum uint) (uint, uint) {
-	expectedLength := uint(encoder.NextPowerOf2(uint64(blobLength * 2)))
-	var chunkNum uint
-	if targetChunkNum == 0 {
-		chunkNum = min(DefaultTargetChunkNum, expectedLength)
+// SplitToMatrix calculate row and column length for encoded blob, try to split it into rows x cols matrix
+func SplitToMatrix(blobLength uint, targetRowNum uint) (uint, uint) {
+	expectedLength := uint(NextPowerOf2(uint64(blobLength * 2)))
+	var rows, cols uint
+	if targetRowNum == 0 {
+		// split into maximum rows
+		rows = min(expectedLength, MaxRows)
+		cols = expectedLength / rows
 	} else {
-		chunkNum = min(uint(encoder.NextPowerOf2(uint64(targetChunkNum))), expectedLength)
+		// try to split into target rows
+		targetRowNum = min(MaxRows, uint(NextPowerOf2(uint64(targetRowNum))))
+		rows = min(expectedLength, targetRowNum)
+		cols = expectedLength / rows
+		if cols > MaxCols {
+			// split into maximum rows
+			rows = min(expectedLength, MaxRows)
+			cols = expectedLength / rows
+		}
 	}
-	chunkLength := (expectedLength-1)/chunkNum + 1
-	if chunkLength > MaxChunkLen {
-		chunkLength = MaxChunkLen
-		chunkNum = expectedLength / chunkLength
-	}
-	return chunkLength, chunkNum
+	return rows, cols
 }
 
 // GetBlobSize converts from blob length in symbols to blob size in bytes. This is not an exact conversion.
 func GetBlobSize(blobLength uint) uint {
-	return blobLength * bn254.BYTES_PER_COEFFICIENT
-}
-
-// GetBlobLength converts from blob size in bytes to blob size in symbols
-func GetEncodedBlobLength(blobLength uint, quorumThreshold, advThreshold uint8) uint {
-	return roundUpDivide(blobLength*100, uint(quorumThreshold)-uint(advThreshold))
-}
-
-// GetEncodingParams takes in the minimum chunk length and the minimum number of chunks and returns the encoding parameters.
-// Both the ChunkLength and NumChunks must be powers of 2, and the ChunkLength returned here should be used in constructing the BlobHeader.
-func GetEncodingParams(minChunkLength, minNumChunks uint) (EncodingParams, error) {
-	return EncodingParams{
-		ChunkLength: uint(encoder.NextPowerOf2(uint64(minChunkLength))),
-		NumChunks:   uint(encoder.NextPowerOf2(uint64(minNumChunks))),
-	}, nil
-}
-
-// ValidateEncodingParams takes in the encoding parameters and returns an error if they are invalid.
-func ValidateEncodingParams(params EncodingParams, blobLength, SRSOrder int) error {
-
-	if int(params.ChunkLength*params.NumChunks) >= SRSOrder {
-		return fmt.Errorf("the supplied encoding parameters are not valid with respect to the SRS. ChunkLength: %d, NumChunks: %d, SRSOrder: %d", params.ChunkLength, params.NumChunks, SRSOrder)
-	}
-
-	if int(params.ChunkLength*params.NumChunks) < blobLength {
-		return fmt.Errorf("the supplied encoding parameters are not sufficient for the size of the data input")
-	}
-
-	return nil
-
+	return blobLength * ScalarSize
 }

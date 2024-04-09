@@ -24,48 +24,57 @@ func NewEncoderClient(addr string, timeout time.Duration) (disperser.EncoderClie
 	}, nil
 }
 
-func (c client) EncodeBlob(ctx context.Context, data []byte, encodingParams core.EncodingParams) (*core.BlobCommitments, []*core.Chunk, error) {
+func ExtendedMatrixFromReply(reply *pb.EncodeBlobReply, blobLength uint) (*core.ExtendedMatrix, error) {
+	if len(reply.Chunks) != int(core.CoeffSize*reply.Cols*reply.Rows) {
+		return nil, fmt.Errorf("encoded matrix data length mismatch with rows x cols")
+	}
+	if len(reply.Commitment) != int(core.CommitmentSize*reply.Rows) {
+		return nil, fmt.Errorf("commitment length mismatch with rows")
+	}
+	chunksIndex := 0
+	commitmentsIndex := 0
+	commitments := make([]core.Commitment, 0)
+	rows := make([]core.EncodedRow, 0)
+	for i := 0; i < int(reply.Rows); i++ {
+		row := make([]core.Coeff, 0)
+		for j := 0; j < int(reply.Cols); j++ {
+			var coeff core.Coeff
+			copy(coeff[:], reply.Chunks[chunksIndex:chunksIndex+core.CoeffSize])
+			row = append(row, coeff)
+			chunksIndex += core.CoeffSize
+		}
+		rows = append(rows, row)
+
+		var commitment core.Commitment
+		copy(commitment[:], reply.Commitment[commitmentsIndex:commitmentsIndex+core.CommitmentSize])
+		commitments = append(commitments, commitment)
+		commitmentsIndex += core.CommitmentSize
+	}
+	return &core.ExtendedMatrix{
+		Length:      blobLength,
+		Rows:        rows,
+		Commitments: commitments,
+	}, nil
+}
+
+func (c client) EncodeBlob(ctx context.Context, data []byte, dims core.MatrixDimsions) (*core.ExtendedMatrix, error) {
 	conn, err := grpc.Dial(
 		c.addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*1024)), // 1 GiB
 	)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to dial encoder: %w", err)
+		return nil, fmt.Errorf("failed to dial encoder: %w", err)
 	}
 	defer conn.Close()
 
 	encoder := pb.NewEncoderClient(conn)
 	reply, err := encoder.EncodeBlob(ctx, &pb.EncodeBlobRequest{
 		Data: data,
-		EncodingParams: &pb.EncodingParams{
-			ChunkLength: uint32(encodingParams.ChunkLength),
-			NumChunks:   uint32(encodingParams.NumChunks),
-		},
+		Cols: uint32(dims.Cols),
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	commitment, err := new(core.Commitment).Deserialize(reply.GetCommitment().GetCommitment())
-	if err != nil {
-		return nil, nil, err
-	}
-	lengthProof, err := new(core.Commitment).Deserialize(reply.GetCommitment().GetLengthProof())
-	if err != nil {
-		return nil, nil, err
-	}
-	chunks := make([]*core.Chunk, len(reply.GetChunks()))
-	for i, chunk := range reply.GetChunks() {
-		deserialized, err := new(core.Chunk).Deserialize(chunk)
-		if err != nil {
-			return nil, nil, err
-		}
-		chunks[i] = deserialized
-	}
-	return &core.BlobCommitments{
-		Commitment:  commitment,
-		LengthProof: lengthProof,
-		Length:      uint(reply.GetCommitment().GetLength()),
-	}, chunks, nil
+	return ExtendedMatrixFromReply(reply, core.GetBlobLength(uint(len(data))))
 }

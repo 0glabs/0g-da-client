@@ -20,12 +20,6 @@ const (
 	indexerWarmupDelay = 2 * time.Second
 )
 
-type QuorumInfo struct {
-	Assignments        map[core.OperatorID]core.Assignment
-	Info               core.AssignmentInfo
-	QuantizationFactor uint
-}
-
 type TimeoutConfig struct {
 	EncodingTimeout   time.Duration
 	ChainReadTimeout  time.Duration
@@ -195,7 +189,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	if err != nil {
 		return ts, err
 	}
-	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.EncodedBlobs))
+	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.ExtendedMatrix))
 
 	// Get the batch header hash
 	log.Trace("[batcher] Getting batch header hash...")
@@ -229,7 +223,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	// Dispatch encoded batch
 	log.Info("[batcher] Dispatching encoded batch...")
 	stageTimer = time.Now()
-	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, proofs)
+	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.ExtendedMatrix, batch.BlobHeaders, proofs)
 	if err != nil {
 		return ts, err
 	}

@@ -5,7 +5,6 @@ import (
 	"github.com/0glabs/0g-data-avail/common/geth"
 	"github.com/0glabs/0g-data-avail/common/logging"
 	"github.com/0glabs/0g-data-avail/common/storage_node"
-	"github.com/0glabs/0g-data-avail/core/encoding"
 	"github.com/0glabs/0g-data-avail/disperser/batcher"
 	"github.com/0glabs/0g-data-avail/disperser/cmd/batcher/flags"
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
@@ -18,7 +17,6 @@ type Config struct {
 	BlobstoreConfig   blobstore.Config
 	EthClientConfig   geth.EthClientConfig
 	AwsClientConfig   aws.ClientConfig
-	EncoderConfig     encoding.EncoderConfig
 	LoggerConfig      logging.Config
 	MetricsConfig     batcher.MetricsConfig
 	StorageNodeConfig storage_node.ClientConfig
@@ -33,7 +31,6 @@ func NewConfig(ctx *cli.Context) Config {
 		},
 		EthClientConfig: geth.ReadEthClientConfig(ctx),
 		AwsClientConfig: aws.ReadClientConfig(ctx, flags.FlagPrefix),
-		EncoderConfig:   encoding.ReadCLIConfig(ctx),
 		LoggerConfig:    logging.ReadCLIConfig(ctx, flags.FlagPrefix),
 		BatcherConfig: batcher.Config{
 			PullInterval:             ctx.GlobalDuration(flags.PullIntervalFlag.Name),
@@ -42,7 +39,6 @@ func NewConfig(ctx *cli.Context) Config {
 			NumConnections:           ctx.GlobalInt(flags.NumConnectionsFlag.Name),
 			EncodingRequestQueueSize: ctx.GlobalInt(flags.EncodingRequestQueueSizeFlag.Name),
 			BatchSizeMBLimit:         ctx.GlobalUint(flags.BatchSizeLimitFlag.Name),
-			SRSOrder:                 ctx.GlobalInt(flags.SRSOrderFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(flags.MaxNumRetriesPerBlobFlag.Name),
 			ConfirmerNum:             ctx.GlobalUint(flags.ConfirmerNumFlag.Name),
 		},

@@ -6,13 +6,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/urfave/cli"
 	"github.com/0glabs/0g-data-avail/cli/flags"
 	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
 	"github.com/0glabs/0g-data-avail/common/aws/s3"
 	"github.com/0glabs/0g-data-avail/common/logging"
 	"github.com/0glabs/0g-data-avail/common/store"
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
+	"github.com/urfave/cli"
 )
 
 var (

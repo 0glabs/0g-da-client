@@ -2,16 +2,9 @@ package core
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/gob"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
-	"regexp"
-
-	"github.com/0glabs/0g-data-avail/pkg/kzg/bn254"
-	bn "github.com/consensys/gnark-crypto/ecc/bn254"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/wealdtech/go-merkletree"
@@ -20,22 +13,6 @@ import (
 )
 
 var ErrInvalidCommitment = errors.New("invalid commitment")
-
-func ComputeSignatoryRecordHash(referenceBlockNumber uint32, nonSignerKeys []*G1Point) [32]byte {
-	buf := make([]byte, 4)
-	binary.BigEndian.PutUint32(buf, referenceBlockNumber)
-	for _, nonSignerKey := range nonSignerKeys {
-		hash := nonSignerKey.GetOperatorID()
-		buf = append(buf, hash[:]...)
-	}
-
-	var res [32]byte
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(buf)
-	copy(res[:], hasher.Sum(nil)[:32])
-
-	return res
-}
 
 // SetBatchRoot sets the BatchRoot field of the BatchHeader to the Merkle root of the blob headers in the batch (i.e. the root of the Merkle tree whose leaves are the blob headers)
 func (h *BatchHeader) SetBatchRoot(blobHeaders []*BlobHeader) (*merkletree.MerkleTree, error) {
@@ -85,7 +62,7 @@ func (h *BatchHeader) Encode() ([]byte, error) {
 		ReferenceBlockNumber uint32
 	}{
 		BlobHeadersRoot:      h.BatchRoot,
-		ReferenceBlockNumber: uint32(h.ReferenceBlockNumber),
+		ReferenceBlockNumber: 0,
 	}
 
 	bytes, err := arguments.Pack(s)
@@ -110,6 +87,31 @@ func (h BatchHeader) GetBatchHeaderHash() ([32]byte, error) {
 	copy(headerHash[:], hasher.Sum(nil)[:32])
 
 	return headerHash, nil
+}
+
+func (h *BlobHeader) SetCommitmentRoot(commitments []Commitment) error {
+	leafs := make([][]byte, len(commitments))
+	for i, commitment := range commitments {
+		leaf := GetCommitmentHash(commitment)
+		leafs[i] = leaf[:]
+	}
+
+	tree, err := merkletree.NewTree(merkletree.WithData(leafs), merkletree.WithHashType(keccak256.New()))
+	if err != nil {
+		return err
+	}
+
+	h.CommitmentRoot = tree.Root()
+	return nil
+}
+
+func GetCommitmentHash(commitment Commitment) [32]byte {
+	var commitmentHash [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(commitment[:])
+	copy(commitmentHash[:], hasher.Sum(nil)[:32])
+
+	return commitmentHash
 }
 
 // GetBlobHeaderHash returns the hash of the BlobHeader that is used to sign the Blob
@@ -164,15 +166,7 @@ func (h *BlobHeader) GetQuorumBlobParamsHash() ([32]byte, error) {
 		QuantizationParameter        uint8
 	}
 
-	qbp := make([]quorumBlobParams, len(h.QuorumInfos))
-	for i, q := range h.QuorumInfos {
-		qbp[i] = quorumBlobParams{
-			QuorumNumber:                 uint8(q.QuorumID),
-			AdversaryThresholdPercentage: uint8(q.AdversaryThreshold),
-			QuorumThresholdPercentage:    uint8(q.QuorumThreshold),
-			QuantizationParameter:        0,
-		}
-	}
+	qbp := make([]quorumBlobParams, 0)
 
 	bytes, err := arguments.Pack(qbp)
 	if err != nil {
@@ -188,104 +182,11 @@ func (h *BlobHeader) GetQuorumBlobParamsHash() ([32]byte, error) {
 }
 
 func (h *BlobHeader) Encode() ([]byte, error) {
-	if h.Commitment == nil || h.Commitment.G1Point == nil {
+	if h.CommitmentRoot == nil {
 		return nil, ErrInvalidCommitment
 	}
 
-	// The order here has to match the field ordering of BlobHeader defined in IZGDAServiceManager.sol
-	blobHeaderType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
-		{
-			Name: "commitment",
-			Type: "tuple",
-			Components: []abi.ArgumentMarshaling{
-				{
-					Name: "X",
-					Type: "uint256",
-				},
-				{
-					Name: "Y",
-					Type: "uint256",
-				},
-			},
-		},
-		{
-			Name: "dataLength",
-			Type: "uint32",
-		},
-		{
-			Name: "quorumBlobParams",
-			Type: "tuple[]",
-			Components: []abi.ArgumentMarshaling{
-				{
-					Name: "quorumNumber",
-					Type: "uint8",
-				},
-				{
-					Name: "adversaryThresholdPercentage",
-					Type: "uint8",
-				},
-				{
-					Name: "quorumThresholdPercentage",
-					Type: "uint8",
-				},
-				{
-					Name: "quantizationParameter",
-					Type: "uint8",
-				},
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	arguments := abi.Arguments{
-		{
-			Type: blobHeaderType,
-		},
-	}
-
-	type quorumBlobParams struct {
-		QuorumNumber                 uint8
-		AdversaryThresholdPercentage uint8
-		QuorumThresholdPercentage    uint8
-		QuantizationParameter        uint8
-	}
-
-	type commitment struct {
-		X *big.Int
-		Y *big.Int
-	}
-
-	qbp := make([]quorumBlobParams, len(h.QuorumInfos))
-	for i, q := range h.QuorumInfos {
-		qbp[i] = quorumBlobParams{
-			QuorumNumber:                 uint8(q.QuorumID),
-			AdversaryThresholdPercentage: uint8(q.AdversaryThreshold),
-			QuorumThresholdPercentage:    uint8(q.QuorumThreshold),
-			QuantizationParameter:        0,
-		}
-	}
-
-	s := struct {
-		Commitment       commitment
-		DataLength       uint32
-		QuorumBlobParams []quorumBlobParams
-	}{
-		Commitment: commitment{
-			X: h.Commitment.X.BigInt(new(big.Int)),
-			Y: h.Commitment.Y.BigInt(new(big.Int)),
-		},
-		DataLength:       uint32(h.Length),
-		QuorumBlobParams: qbp,
-	}
-
-	bytes, err := arguments.Pack(s)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
+	return h.CommitmentRoot, nil
 }
 
 func (h *BatchHeader) Serialize() ([]byte, error) {
@@ -302,74 +203,6 @@ func (h *BlobHeader) Serialize() ([]byte, error) {
 }
 
 func (h *BlobHeader) Deserialize(data []byte) (*BlobHeader, error) {
-	err := Decode(data, h)
-	return h, err
-}
-
-func (c *Chunk) Serialize() ([]byte, error) {
-	return Encode(c)
-}
-
-func (c *Chunk) Deserialize(data []byte) (*Chunk, error) {
-	err := Decode(data, c)
-	return c, err
-}
-
-func (c Commitment) Serialize() ([]byte, error) {
-	return Encode(c)
-}
-
-func (c *Commitment) Deserialize(data []byte) (*Commitment, error) {
-	err := Decode(data, c)
-	return c, err
-}
-
-func (c *Commitment) UnmarshalJSON(data []byte) error {
-	var g1Point bn.G1Affine
-	err := json.Unmarshal(data, &g1Point)
-	if err != nil {
-		return err
-	}
-	c.G1Point = &bn254.G1Point{
-		X: g1Point.X,
-		Y: g1Point.Y,
-	}
-
-	return nil
-}
-
-func (h *KVBlobInfoKey) Bytes() []byte {
-	b := make([]byte, 0)
-	b = append(b, h.BatchHeaderHash[:]...)
-	blobIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(blobIndex, h.BlobIndex)
-	b = append(b, blobIndex...)
-	return b
-}
-
-func (h *KVBlobInfoKey) FromBytes(data []byte) (*KVBlobInfoKey, error) {
-	if len(data) < 36 {
-		return nil, errors.New("data length mismatch")
-	}
-	copy(h.BatchHeaderHash[:], data[:32])
-	h.BlobIndex = binary.BigEndian.Uint32(data[32:36])
-	return h, nil
-}
-
-func (h *KVBlobInfo) Serialize() ([]byte, error) {
-	return Encode(h)
-}
-
-func (h *KVBlobInfo) Deserialize(data []byte) (*KVBlobInfo, error) {
-	err := Decode(data, h)
-	return h, err
-}
-
-func (h *KVBatchInfo) Serialize() ([]byte, error) {
-	return Encode(h)
-}
-
-func (h *KVBatchInfo) Deserialize(data []byte) (*KVBatchInfo, error) {
 	err := Decode(data, h)
 	return h, err
 }
@@ -392,35 +225,4 @@ func Decode(data []byte, obj any) error {
 		return err
 	}
 	return nil
-}
-
-func (s OperatorSocket) GetDispersalSocket() string {
-	ip, port1, _, err := extractIPAndPorts(string(s))
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%s:%s", ip, port1)
-}
-
-func (s OperatorSocket) GetRetrievalSocket() string {
-	ip, _, port2, err := extractIPAndPorts(string(s))
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%s:%s", ip, port2)
-}
-
-func extractIPAndPorts(s string) (string, string, string, error) {
-	regex := regexp.MustCompile(`^([^:]+):([^;]+);([^;]+)$`)
-	matches := regex.FindStringSubmatch(s)
-
-	if len(matches) != 4 {
-		return "", "", "", errors.New("input string does not match expected format")
-	}
-
-	ip := matches[1]
-	port1 := matches[2]
-	port2 := matches[3]
-
-	return ip, port1, port2, nil
 }

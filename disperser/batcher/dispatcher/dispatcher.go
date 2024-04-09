@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/0glabs/0g-data-avail/common"
@@ -64,37 +65,37 @@ func NewDispatcher(cfg *Config, transactor *transactor.Transactor, logger common
 
 var _ disperser.Dispatcher = (*dispatcher)(nil)
 
-func DumpEncodedBlobs(blobs []*core.EncodedBlob) ([]byte, error) {
-	blobLocations := make([]*core.BlobLocation, len(blobs))
-	for i, blob := range blobs {
-		chunkLength := uint(len(blob.Bundles[0].Coeffs))
-		chunkNum := uint(len(blob.Bundles))
+func DumpEncodedBlobs(extendedMatrix []*core.ExtendedMatrix) ([]byte, error) {
+	blobLocations := make([]*core.BlobLocation, len(extendedMatrix))
+	for i, matrix := range extendedMatrix {
+		rows := matrix.GetRows()
+		cols := matrix.GetCols()
 		blobLocations[i] = &core.BlobLocation{
-			ChunkLength:    chunkLength,
-			ChunkNum:       chunkNum,
-			SegmentIndexes: make([]uint, chunkNum),
-			Offsets:        make([]uint, chunkNum),
+			Rows:           uint(rows),
+			Cols:           uint(cols),
+			SegmentIndexes: make([]uint, rows),
+			Offsets:        make([]uint, rows),
 		}
 	}
-	segmentNum := core.AllocateChunks(blobLocations)
+	segmentNum := core.AllocateRows(blobLocations)
 	res := make([]byte, segmentNum*core.SegmentSize)
 	for i, location := range blobLocations {
 		for j := range location.SegmentIndexes {
 			offset := location.SegmentIndexes[j]*core.SegmentSize + location.Offsets[j]
-			coeffs := blobs[i].Bundles[j].CoeffsToBytes()
-			proof := blobs[i].Bundles[j].ProofToBytes()
+			coeffs := extendedMatrix[i].GetRowInBytes(j)
+			commitment := extendedMatrix[i].Commitments[j][:]
 			copy(res[offset:], coeffs)
-			copy(res[offset+uint(len(coeffs)):], proof[:])
+			copy(res[offset+uint(len(coeffs)):], commitment)
 		}
 	}
 	return res, nil
 }
 
-func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobs []*core.EncodedBlob, proofs []*merkletree.Proof) (eth_common.Hash, error) {
+func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.ExtendedMatrix, blobHeaders []*core.BlobHeader, proofs []*merkletree.Proof) (eth_common.Hash, error) {
 	uploader := transfer.NewUploader(c.Flow, c.Nodes)
-	encoded, err := DumpEncodedBlobs(blobs)
+	encoded, err := DumpEncodedBlobs(extendedMatrix)
 	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "NewClient: cannot get chainId: %w")
+		return eth_common.Hash{}, errors.WithMessage(err, "failed to dump encoded blobs")
 	}
 
 	// encoded blobs
@@ -113,33 +114,40 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	// kv
 	// batcher info
 	batcher := c.KVNode.Batcher()
-	blobDisperseInfos := make([]core.BlobDisperseInfo, len(blobs))
-	for i, blob := range blobs {
+	blobDisperseInfos := make([]core.BlobDisperseInfo, len(extendedMatrix))
+	for i, matrix := range extendedMatrix {
 		blobDisperseInfos[i] = core.BlobDisperseInfo{
-			BlobLength:   blob.BlobHeader.Length,
-			BlobChunkNum: uint(len(blob.Bundles)),
+			BlobLength: matrix.Length,
+			Rows:       uint(matrix.GetRows()),
+			Cols:       uint(matrix.GetCols()),
 		}
 	}
 	kvBatchInfo := core.KVBatchInfo{
 		BatchHeader:       batchHeader,
 		BlobDisperseInfos: blobDisperseInfos,
 	}
-	serializedBatchInfo, err := kvBatchInfo.Serialize()
+	serializedBatchInfo, err := json.Marshal(kvBatchInfo)
 	if err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize batch info")
 	}
 	batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchInfo)
 	// blob info
-	for blobIndex := range blobs {
-		key := (&core.KVBlobInfoKey{
+	for blobIndex := range extendedMatrix {
+		key, err := json.Marshal((&core.KVBlobInfoKey{
 			BatchHeaderHash: batchHeaderHash,
 			BlobIndex:       uint32(blobIndex),
-		}).Bytes()
+		}))
+		if err != nil {
+			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize kv blob info key")
+		}
 
-		value, err := (&core.KVBlobInfo{
-			BlobHeader:  blobs[blobIndex].BlobHeader,
-			MerkleProof: proofs[blobIndex],
-		}).Serialize()
+		value, err := json.Marshal(core.KVBlobInfo{
+			BlobHeader: blobHeaders[blobIndex],
+			MerkleProof: &core.MerkleProof{
+				Hashes: proofs[blobIndex].Hashes,
+				Index:  proofs[blobIndex].Index,
+			},
+		})
 		if err != nil {
 			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize blob info")
 		}

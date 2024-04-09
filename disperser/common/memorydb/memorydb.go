@@ -60,24 +60,23 @@ func sizeOf(metadata *disperser.BlobMetadata) uint64 {
 		size += 24 + uint64(len(metadata.ConfirmationInfo.BatchRoot))
 		// Inclusion Proof
 		size += 24 + uint64(len(metadata.ConfirmationInfo.BlobInclusionProof))
-		// BlobCommitments
-		if metadata.ConfirmationInfo.BlobCommitment != nil {
-			size += 136
-		}
 		// Fee
 		size += 24 + uint64(len(metadata.ConfirmationInfo.Fee))
+		// Commitment
+		size += 24 + uint64(len(metadata.ConfirmationInfo.CommitmentRoot))
 		// BatchHeaderHash: 32
 		// BlobIndex: 8
 		// BlobCount: 8
 		// SignatoryRecordHash: 32
 		// ReferenceBlockNumber: 8
 		// BlobCommitment: 8
+		// Length: 4
 		// BatchID: 4
 		// ConfirmationTxnHash: 32
 		// ConfirmationBlockNumber: 4
 		// QuorumResults: 8
 		// BlobQuorumInfos: 24
-		size += 168
+		size += 172
 	}
 	return size
 }

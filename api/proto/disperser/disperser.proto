@@ -35,9 +35,9 @@ message DisperseBlobRequest {
 	// The disperser will ensure that the encoded blobs for each quorum are all processed
 	// within the same batch.
 	repeated SecurityParams security_params = 2;
-	// The number of chunks that encoded blob split into.
+	// The number of rows that encoded blob split into.
 	// The number will be aligned to the next power of 2 and be bounded by blob size.
-	uint32 target_chunk_num = 3;
+	uint32 target_row_num = 3;
 }
 
 message DisperseBlobReply {
@@ -144,8 +144,8 @@ message BlobInfo {
 }
 
 message BlobHeader {
-	// KZG commitment to the blob.
-	bytes commitment = 1;
+	// Merkle root of KZG commitments of blob. 
+	bytes commitment_root = 1;
 	// The length of the blob in symbols (each symbol is 31 bytes).
 	uint32 data_length = 2;
 	// The params of the quorums that this blob participates in.
