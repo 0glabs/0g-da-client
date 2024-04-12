@@ -9,6 +9,7 @@ import (
 
 var (
 	rpcUrlFlagName                 = "chain.rpc"
+	cosmosGrpcUrlFlagName          = "chain.cosmos-grpc"
 	privateKeyFlagName             = "chain.private-key"
 	numConfirmationsFlagName       = "chain.num-confirmations"
 	txGasLimitFlagName             = "chain.gas-limit"
@@ -18,6 +19,7 @@ var (
 
 type EthClientConfig struct {
 	RPCURL                 string
+	CosmosGrpc             string
 	PrivateKeyString       string
 	NumConfirmations       int
 	TxGasLimit             int
@@ -27,6 +29,12 @@ type EthClientConfig struct {
 
 func EthClientFlags(envPrefix string) []cli.Flag {
 	return []cli.Flag{
+		cli.StringFlag{
+			Name:     cosmosGrpcUrlFlagName,
+			Usage:    "Cosmos grpc ",
+			Required: false,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "COSMOS_GRPC"),
+		},
 		cli.StringFlag{
 			Name:     rpcUrlFlagName,
 			Usage:    "Chain rpc",
@@ -74,19 +82,11 @@ func EthClientFlags(envPrefix string) []cli.Flag {
 func ReadEthClientConfig(ctx *cli.Context) EthClientConfig {
 	cfg := EthClientConfig{}
 	cfg.RPCURL = ctx.GlobalString(rpcUrlFlagName)
+	cfg.CosmosGrpc = ctx.GlobalString(cosmosGrpcUrlFlagName)
 	cfg.PrivateKeyString = ctx.GlobalString(privateKeyFlagName)
 	cfg.NumConfirmations = ctx.GlobalInt(numConfirmationsFlagName)
 	cfg.TxGasLimit = ctx.GlobalInt(txGasLimitFlagName)
 	cfg.ReceiptPollingRounds = ctx.GlobalUint(receiptPollingRoundsFlagName)
 	cfg.ReceiptPollingInterval = ctx.GlobalDuration(receiptPollingIntervalFlagName)
-	return cfg
-}
-
-// ReadEthClientConfigRPCOnly doesn't read private key from flag.
-// The private key for Node should be read from encrypted key file.
-func ReadEthClientConfigRPCOnly(ctx *cli.Context) EthClientConfig {
-	cfg := EthClientConfig{}
-	cfg.RPCURL = ctx.GlobalString(rpcUrlFlagName)
-	cfg.NumConfirmations = ctx.GlobalInt(numConfirmationsFlagName)
 	return cfg
 }

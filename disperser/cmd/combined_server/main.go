@@ -102,7 +102,10 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 
 func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger) error {
 	// transactor
-	transactor := transactor.NewTransactor(logger)
+	transactor, err := transactor.NewTransactor(config.EthClientConfig, logger)
+	if err != nil {
+		return err
+	}
 	// dispatcher
 	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
 		EthClientURL:      config.EthClientConfig.RPCURL,

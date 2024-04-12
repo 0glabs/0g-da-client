@@ -5,23 +5,39 @@ import (
 	"time"
 
 	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/common/geth"
 	zg_core "github.com/0glabs/0g-storage-client/core"
 	"github.com/0glabs/0g-storage-client/core/merkle"
 	"github.com/0glabs/0g-storage-client/transfer"
 	eth_common "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/pkg/errors"
 )
 
 type Transactor struct {
 	mu sync.Mutex
 
-	logger common.Logger
+	logger     common.Logger
+	rpcClient  *rpc.Client
+	cosmosGrpc string
+	privKey    string
 }
 
-func NewTransactor(logger common.Logger) *Transactor {
-	return &Transactor{
-		logger: logger,
+func NewTransactor(ethConfig geth.EthClientConfig, logger common.Logger) (*Transactor, error) {
+	rpcClient, err := rpc.Dial(ethConfig.RPCURL)
+	if err != nil {
+		return nil, err
 	}
+	return &Transactor{
+		logger:     logger,
+		rpcClient:  rpcClient,
+		cosmosGrpc: ethConfig.CosmosGrpc,
+		privKey:    ethConfig.PrivateKeyString,
+	}, nil
+}
+
+func (t *Transactor) SubmitDASRequest() (eth_common.Hash, error) {
+	return eth_common.Hash{}, nil
 }
 
 func (t *Transactor) SubmitLogEntry(uploader *transfer.Uploader, datas []zg_core.IterableData, tags [][]byte) (eth_common.Hash, error) {

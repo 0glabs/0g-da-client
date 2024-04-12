@@ -54,7 +54,10 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// transactor
-	transactor := transactor.NewTransactor(logger)
+	transactor, err := transactor.NewTransactor(config.EthClientConfig, logger)
+	if err != nil {
+		return err
+	}
 	// dispatcher
 	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
 		EthClientURL:      config.EthClientConfig.RPCURL,
