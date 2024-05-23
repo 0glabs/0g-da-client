@@ -10,13 +10,13 @@ service Encoder {
 // EncodeBlobRequest contains data and pre-computed encoding params provided to Encoder
 message EncodeBlobRequest {
   bytes data = 1;
-  uint32 cols = 2;
 }
 
 // EncodeBlobReply 
 message EncodeBlobReply {
-  uint32 rows = 1;
-  uint32 cols = 2;
-  bytes commitment = 3;
-  bytes chunks = 4;
+  uint32 version = 1;
+  bytes erasure_commitment = 2;
+  bytes storage_root = 3;
+  bytes encoded_data = 4;
+  repeated bytes encoded_slice = 5;
 }

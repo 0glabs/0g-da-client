@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "github.com/0glabs/0g-data-avail/api/grpc/signer";
+package signer;
+
+service Signer {
+  rpc BatchSign(BatchSignRequest) returns (BatchSignReply) {}
+}
+
+message SignRequest {
+  uint64 epoch = 1; // epoch number of DASigners internal contract
+  bytes erasure_commitment = 2;
+  bytes storage_root = 3; 
+  repeated bytes encoded_slice = 4;
+}
+
+message BatchSignRequest {
+  repeated SignRequest requests = 1;
+}
+
+message BatchSignReply {
+  repeated bytes signatures = 1;
+}

@@ -16,12 +16,20 @@ import (
 type FailReason string
 
 const (
-	FailBatchHeaderHash        FailReason = "batch_header_hash"
-	FailAggregateSignatures    FailReason = "aggregate_signatures"
-	FailNoSignatures           FailReason = "no_signatures"
-	FailConfirmBatch           FailReason = "confirm_batch"
-	FailGetBatchID             FailReason = "get_batch_id"
-	FailUpdateConfirmationInfo FailReason = "update_confirmation_info"
+	FailBatchHeaderHash           FailReason = "batch_header_hash"
+	FailBatchBlobIndex            FailReason = "batch_blob_index"
+	FailBatchBlobHeaderHash       FailReason = "batch_blob_header_hash"
+	FailBatchProof                FailReason = "batch_proof"
+	FailBatchSubmitRoot           FailReason = "batch_submit_root"
+	FailBatchReceipt              FailReason = "batch_receipt"
+	FailBatchEpochMismatch        FailReason = "batch_epoch_mismatch"
+	FailGetSigners                FailReason = "get_signers"
+	FailAggregateSignatures       FailReason = "aggregate_signatures"
+	FailSubmitAggregateSignatures FailReason = "submit_aggregate_signatures"
+	FailNoSignatures              FailReason = "no_signatures"
+	FailConfirmBatch              FailReason = "confirm_batch"
+	FailGetBatchID                FailReason = "get_batch_id"
+	FailUpdateConfirmationInfo    FailReason = "update_confirmation_info"
 )
 
 type MetricsConfig struct {
@@ -44,6 +52,7 @@ type Metrics struct {
 	GasUsed          prometheus.Gauge
 	Attestation      *prometheus.GaugeVec
 	BatchError       *prometheus.CounterVec
+	SignedBlobs      *prometheus.GaugeVec
 
 	httpPort string
 	logger   common.Logger
@@ -116,6 +125,14 @@ func NewMetrics(httpPort string, logger common.Logger) *Metrics {
 			},
 			[]string{"type"},
 		),
+		SignedBlobs: promauto.With(reg).NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Name:      "signed_blobs",
+				Help:      "number and size of all signed blobs",
+			},
+			[]string{"type"},
+		),
 		registry: reg,
 		httpPort: httpPort,
 		logger:   logger,
@@ -174,6 +191,11 @@ func (g *Metrics) Start(ctx context.Context) {
 		err := http.ListenAndServe(addr, mux)
 		log.Error("prometheus server failed", "err", err)
 	}()
+}
+
+func (e *Metrics) UpdateSignedBlobs(count int, size uint64) {
+	e.EncodedBlobs.WithLabelValues("batch size").Set(float64(size))
+	e.EncodedBlobs.WithLabelValues("blob size").Set(float64(count))
 }
 
 func (e *EncodingStreamerMetrics) UpdateEncodedBlobs(count int, size uint64) {

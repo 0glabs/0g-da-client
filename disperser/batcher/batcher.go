@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-data-avail/common/geth"
+	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-data-avail/disperser/signer"
 	"github.com/gammazero/workerpool"
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
@@ -37,6 +41,8 @@ type Config struct {
 	BatchSizeMBLimit     uint
 	MaxNumRetriesPerBlob uint
 	ConfirmerNum         uint
+	MaxNumRetriesForSign uint
+	FinalizedBlockCount  uint
 }
 
 type Batcher struct {
@@ -50,14 +56,17 @@ type Batcher struct {
 	EncodingStreamer *EncodingStreamer
 	Metrics          *Metrics
 
-	finalizer Finalizer
-	confirmer *Confirmer
-	logger    common.Logger
+	finalizer   Finalizer
+	confirmer   *Confirmer
+	sliceSigner *SliceSigner
+	logger      common.Logger
 }
 
 func NewBatcher(
 	config Config,
 	timeoutConfig TimeoutConfig,
+	ethConfig geth.EthClientConfig,
+	storageNodeConfig storage_node.ClientConfig,
 	queue disperser.BlobStore,
 	dispatcher disperser.Dispatcher,
 	encoderClient disperser.EncoderClient,
@@ -81,6 +90,37 @@ func NewBatcher(
 		return nil, err
 	}
 
+	signerClient, err := signer.NewSignerClient(timeoutConfig.EncodingTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	signerTrigger := NewSignatureSizeNotifier(
+		make(chan struct{}, 1),
+		uint64(config.BatchSizeMBLimit)*1024*1024,
+	)
+	signerConfig := SignerConfig{
+		SigningRequestTimeout: timeoutConfig.EncodingTimeout,
+		EncodingQueueLimit:    config.EncodingRequestQueueSize,
+		MaxNumRetriesPerBlob:  config.MaxNumRetriesPerBlob,
+		MaxNumRetriesSign:     config.MaxNumRetriesForSign,
+	}
+	signingWorkerPool := workerpool.New(config.NumConnections)
+	sliceSigner, err := NewEncodedSliceSigner(
+		ethConfig,
+		storageNodeConfig,
+		signerConfig,
+		signingWorkerPool,
+		signerTrigger,
+		signerClient,
+		queue,
+		metrics,
+		logger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Batcher{
 		Config:        config,
 		TimeoutConfig: timeoutConfig,
@@ -92,9 +132,10 @@ func NewBatcher(
 		EncodingStreamer: encodingStreamer,
 		Metrics:          metrics,
 
-		finalizer: finalizer,
-		confirmer: confirmer,
-		logger:    logger,
+		finalizer:   finalizer,
+		confirmer:   confirmer,
+		sliceSigner: sliceSigner,
+		logger:      logger,
 	}, nil
 }
 
@@ -107,15 +148,23 @@ func (b *Batcher) Start(ctx context.Context) error {
 		return err
 	}
 	batchTrigger := b.EncodingStreamer.EncodedSizeNotifier
+	submitAggregateSignaturesTrigger := b.sliceSigner.SignatureSizeNotifier
+	b.sliceSigner.Start(ctx)
+	b.sliceSigner.EncodingStreamer = b.EncodingStreamer
+	b.sliceSigner.Finalizer = b.finalizer
+
 	// confirmer
 	b.confirmer.EncodingStreamer = b.EncodingStreamer
+	b.confirmer.Finalizer = b.finalizer
+	b.confirmer.SliceSigner = b.sliceSigner
 	b.confirmer.Start(ctx)
 	// finalizer
-	if !b.Queue.MetadataHashAsBlobKey() {
-		b.finalizer.Start(ctx)
-	}
+	b.finalizer.Start(ctx)
 
 	go func() {
+		submitAggregateSignaturesTicker := time.NewTicker(b.PullInterval)
+		defer submitAggregateSignaturesTicker.Stop()
+
 		ticker := time.NewTicker(b.PullInterval)
 		defer ticker.Stop()
 
@@ -143,6 +192,19 @@ func (b *Batcher) Start(ctx context.Context) error {
 					}
 				}
 				ticker.Reset(b.PullInterval)
+
+			case <-submitAggregateSignaturesTicker.C:
+				if err := b.HandleSignedBatch(ctx); err != nil {
+					b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+				}
+
+			case <-submitAggregateSignaturesTrigger.Notify:
+				submitAggregateSignaturesTicker.Stop()
+				if err := b.HandleSignedBatch(ctx); err != nil {
+					b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+				}
+
+				submitAggregateSignaturesTicker.Reset((b.PullInterval))
 			}
 		}
 	}()
@@ -189,7 +251,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	if err != nil {
 		return ts, err
 	}
-	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.ExtendedMatrix))
+	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.EncodedBlobs))
 
 	// Get the batch header hash
 	log.Trace("[batcher] Getting batch header hash...")
@@ -205,16 +267,19 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 		var blobHeader *core.BlobHeader
 		// generate inclusion proof
 		if blobIndex >= len(batch.BlobHeaders) {
+			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchBlobIndex)
 			return ts, fmt.Errorf("HandleSingleBatch: error preparing kv data: blob header at index %d not found in batch", blobIndex)
 		}
 		blobHeader = batch.BlobHeaders[blobIndex]
 
 		blobHeaderHash, err := blobHeader.GetBlobHeaderHash()
 		if err != nil {
+			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchBlobHeaderHash)
 			return ts, fmt.Errorf("HandleSingleBatch: failed to get blob header hash: %w", err)
 		}
 		merkleProof, err := batch.MerkleTree.GenerateProof(blobHeaderHash[:], 0)
 		if err != nil {
+			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchProof)
 			return ts, fmt.Errorf("HandleSingleBatch: failed to generate blob header inclusion proof: %w", err)
 		}
 		proofs = append(proofs, merkleProof)
@@ -223,17 +288,72 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	// Dispatch encoded batch
 	log.Info("[batcher] Dispatching encoded batch...")
 	stageTimer = time.Now()
-	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.ExtendedMatrix, batch.BlobHeaders, proofs)
+	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, batch.BlobHeaders)
 	if err != nil {
+		_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchSubmitRoot)
 		return ts, err
 	}
 	log.Info("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
 
-	b.confirmer.ConfirmChan <- &BatchInfo{
+	b.sliceSigner.SignerChan <- &SignInfo{
 		headerHash: headerHash,
 		batch:      batch,
 		proofs:     proofs,
 		ts:         ts,
+		reties:     0,
 	}
 	return ts, nil
+}
+
+func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
+	s, signedTs, err := b.sliceSigner.GetCommitRootSubmissionBatch()
+	if err != nil {
+		b.sliceSigner.RemoveBatchingStatus(signedTs)
+		return fmt.Errorf("HandleSingleBatch: error getting batch header hash: %w", err)
+	}
+
+	submissions := make([]*core.CommitRootSubmission, 0)
+	headerHash := make([][32]byte, 0)
+	batch := make([]*batch, 0)
+	ts := make([]uint64, 0)
+	proofs := make([][]*merkletree.Proof, 0)
+	epochs := make([]*big.Int, 0)
+	quorumIds := make([]*big.Int, 0)
+	for _, item := range s {
+		submissions = append(submissions, item.submissions...)
+
+		headerHash = append(headerHash, item.headerHash)
+		batch = append(batch, item.batch)
+		ts = append(ts, item.ts)
+		proofs = append(proofs, item.proofs)
+
+		epochs = append(epochs, item.submissions[0].Epoch)
+		quorumIds = append(quorumIds, item.submissions[0].QuorumId)
+	}
+
+	txHash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
+	if err != nil {
+		for _, item := range batch {
+			_ = b.handleFailure(ctx, item.BlobMetadata, FailSubmitAggregateSignatures)
+			// b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
+		}
+		b.sliceSigner.RemoveBatchingStatus(signedTs)
+
+		return err
+	}
+
+	b.logger.Info("[batcher] DisperseBatch took", "duration", txHash)
+
+	b.confirmer.ConfirmChan <- &BatchInfo{
+		headerHash: headerHash,
+		batch:      batch,
+		ts:         ts,
+		proofs:     proofs,
+		signedTs:   signedTs,
+		txHash:     txHash,
+		epochs:     epochs,
+		quorumIds:  quorumIds,
+	}
+
+	return nil
 }

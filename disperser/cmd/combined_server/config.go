@@ -82,6 +82,8 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			BatchSizeMBLimit:         ctx.GlobalUint(batcher_flags.BatchSizeLimitFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(batcher_flags.MaxNumRetriesPerBlobFlag.Name),
 			ConfirmerNum:             ctx.GlobalUint(batcher_flags.ConfirmerNumFlag.Name),
+			MaxNumRetriesForSign:     ctx.GlobalUint(batcher_flags.MaxNumRetriesForSignFlag.Name),
+			FinalizedBlockCount:      ctx.GlobalUint(batcher_flags.FinalizedBlockCountFlag.Name),
 		},
 		TimeoutConfig: batcher.TimeoutConfig{
 			EncodingTimeout:   ctx.GlobalDuration(batcher_flags.EncodingTimeoutFlag.Name),

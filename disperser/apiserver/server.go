@@ -12,8 +12,6 @@ import (
 	healthcheck "github.com/0glabs/0g-data-avail/common/healthcheck"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
-	"github.com/0glabs/0g-storage-client/kv"
-	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/openweb3/web3go/types"
 	"github.com/prometheus/client_golang/prometheus"
@@ -40,8 +38,7 @@ type DispersalServer struct {
 	metrics *disperser.Metrics
 
 	metadataHashAsBlobKey bool
-	KVNode                *kv.Client
-	StreamId              eth_common.Hash
+	kvStore               *disperser.Store
 
 	rpcClient            *rpc.Client
 	latestFinalizedBlock uint32
@@ -60,10 +57,16 @@ func NewDispersalServer(
 	ratelimiter common.RateLimiter,
 	rateConfig RateConfig,
 	metadataHashAsBlobKey bool,
-	kvClient *kv.Client,
-	streamId eth_common.Hash,
+	kvDbPath string,
 	rpcClient *rpc.Client,
 ) *DispersalServer {
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(kvDbPath+"/chunk", logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	return &DispersalServer{
 		config:                config,
 		blobStore:             store,
@@ -73,8 +76,7 @@ func NewDispersalServer(
 		rateConfig:            rateConfig,
 		mu:                    &sync.RWMutex{},
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
-		KVNode:                kvClient,
-		StreamId:              streamId,
+		kvStore:               kvStore,
 		rpcClient:             rpcClient,
 	}
 }
@@ -122,15 +124,15 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 	}, nil
 }
 
-func (s *DispersalServer) getMetadataFromKv(key []byte) (*disperser.BlobMetadata, error) {
-	val, err := s.KVNode.GetValue(s.StreamId, key)
+func (s *DispersalServer) getMetadataFromKv(ctx context.Context, key []byte) (*disperser.BlobRetrieveMetadata, error) {
+	val, err := s.kvStore.GetMetadata(ctx, key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get blob metadata from kv node: %v", err)
 	}
-	if len(val.Data) == 0 {
+	if len(val) == 0 {
 		return nil, nil
 	}
-	metadata, err := new(disperser.BlobMetadata).Deserialize(val.Data)
+	metadata, err := new(disperser.BlobRetrieveMetadata).Deserialize(val)
 	if err != nil {
 		return nil, fmt.Errorf("failed to deserialize blob metadata: %v", err)
 	}
@@ -160,12 +162,22 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 	}
 	if (metadata == nil || metadata.GetBlobKey().String() != string(requestID)) && s.metadataHashAsBlobKey {
 		// check on kv
-		metadataInKV, err := s.getMetadataFromKv(requestID)
+		metadataFromKV, err := s.getMetadataFromKv(ctx, requestID)
 		if err != nil {
 			s.logger.Warn("get metadata from kv", err)
 		}
-		if metadataInKV != nil {
-			metadata = metadataInKV
+		if metadataFromKV != nil {
+			// metadata = metadataInKV
+			metadata = &disperser.BlobMetadata{
+				BlobStatus: disperser.Processing,
+				ConfirmationInfo: &disperser.ConfirmationInfo{
+					DataRoot:                metadataFromKV.DataRoot,
+					Epoch:                   metadataFromKV.Epoch,
+					QuorumId:                metadataFromKV.QuorumId,
+					ConfirmationBlockNumber: metadataFromKV.BlockNumber,
+				},
+			}
+
 			s.mu.RLock()
 			defer s.mu.RUnlock()
 			if metadata.ConfirmationInfo.ConfirmationBlockNumber <= s.latestFinalizedBlock {
@@ -214,6 +226,9 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 					CommitmentRoot:   commitmentRoot,
 					DataLength:       dataLength,
 					BlobQuorumParams: blobQuorumParams,
+					DataRoot:         confirmationInfo.DataRoot,
+					Epoch:            uint32(confirmationInfo.Epoch),
+					QuorumId:         uint32(confirmationInfo.QuorumId),
 				},
 				BlobVerificationProof: &pb.BlobVerificationProof{
 					BatchId:   confirmationInfo.BatchID,

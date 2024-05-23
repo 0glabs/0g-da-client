@@ -9,7 +9,6 @@ import (
 
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/core"
-	"github.com/wealdtech/go-merkletree"
 
 	disperser_rpc "github.com/0glabs/0g-data-avail/api/grpc/disperser"
 	eth_common "github.com/ethereum/go-ethereum/common"
@@ -64,6 +63,22 @@ func ParseBlobKey(key string) (BlobKey, error) {
 		BlobHash:     parts[0],
 		MetadataHash: parts[1],
 	}, nil
+}
+
+type BlobRetrieveMetadata struct {
+	DataRoot    []byte
+	Epoch       uint64
+	QuorumId    uint64
+	BlockNumber uint32
+}
+
+func (m *BlobRetrieveMetadata) Serialize() ([]byte, error) {
+	return core.Encode(m)
+}
+
+func (m *BlobRetrieveMetadata) Deserialize(data []byte) (*BlobRetrieveMetadata, error) {
+	err := core.Decode(data, m)
+	return m, err
 }
 
 type BlobMetadata struct {
@@ -126,8 +141,12 @@ type ConfirmationInfo struct {
 	BatchRoot               []byte                               `json:"batch_root"`
 	BlobInclusionProof      []byte                               `json:"blob_inclusion_proof"`
 	CommitmentRoot          []byte                               `json:"commitment_root"`
+	DataRoot                []byte                               `json:"data_root"`
+	Epoch                   uint64                               `json:"epoch"`
+	QuorumId                uint64                               `json:"quorum_id"`
 	Length                  uint32                               `json:"length"`
 	BatchID                 uint32                               `json:"batch_id"`
+	SubmissionTxnHash       gcommon.Hash                         `json:"submission_txn_hash"`
 	ConfirmationTxnHash     gcommon.Hash                         `json:"confirmation_txn_hash"`
 	ConfirmationBlockNumber uint32                               `json:"confirmation_block_number"`
 	Fee                     []byte                               `json:"fee"`
@@ -170,7 +189,8 @@ type BlobStore interface {
 }
 
 type Dispatcher interface {
-	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.ExtendedMatrix, blobHeaders []*core.BlobHeader, proofs []*merkletree.Proof) (eth_common.Hash, error)
+	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.BlobCommitments, blobHeaders []*core.BlobHeader) (eth_common.Hash, error)
+	SubmitAggregateSignatures(ctx context.Context, rootSubmission []*core.CommitRootSubmission) (eth_common.Hash, error)
 }
 
 // GenerateReverseIndexKey returns the key used to store the blob key in the reverse index

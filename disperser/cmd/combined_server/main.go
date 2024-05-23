@@ -14,8 +14,6 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
 	"github.com/0glabs/0g-data-avail/disperser/common/memorydb"
 	"github.com/0glabs/0g-data-avail/disperser/encoder"
-	"github.com/0glabs/0g-storage-client/kv"
-	"github.com/0glabs/0g-storage-client/node"
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
@@ -77,18 +75,16 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	var kvClient *kv.Client
 	var rpcClient *rpc.Client
 
 	if config.BlobstoreConfig.MetadataHashAsBlobKey {
-		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
 		var err error
 		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
 		if err != nil {
 			return err
 		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId, rpcClient)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, config.StorageNodeConfig.KvDbPath, rpcClient)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
@@ -143,10 +139,10 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger) 
 	}
 
 	//finalizer
-	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger)
+	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger, config.BatcherConfig.FinalizedBlockCount)
 
 	//batcher
-	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, queue, dispatcher, encoderClient, finalizer, confirmer, logger, metrics)
+	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, config.StorageNodeConfig, queue, dispatcher, encoderClient, finalizer, confirmer, logger, metrics)
 	if err != nil {
 		return err
 	}

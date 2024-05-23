@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -64,12 +63,12 @@ type EncodingStreamer struct {
 }
 
 type batch struct {
-	ExtendedMatrix []*core.ExtendedMatrix
-	BlobMetadata   []*disperser.BlobMetadata
-	BlobHeaders    []*core.BlobHeader
-	BatchHeader    *core.BatchHeader
-	MerkleTree     *merkletree.MerkleTree
-	TxHash         eth_common.Hash
+	EncodedBlobs []*core.BlobCommitments // todo: only map EncodedData?
+	BlobMetadata []*disperser.BlobMetadata
+	BlobHeaders  []*core.BlobHeader
+	BatchHeader  *core.BatchHeader
+	MerkleTree   *merkletree.MerkleTree
+	TxHash       eth_common.Hash
 }
 
 func NewEncodedSizeNotifier(notify chan struct{}, threshold uint64) *EncodedSizeNotifier {
@@ -206,29 +205,24 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	return nil
 }
 
-type pendingRequestInfo struct {
-	Dims core.MatrixDimsions
-}
-
 func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata *disperser.BlobMetadata, blob *core.Blob, encoderChan chan EncodingResultOrStatus) {
 
 	// Validate the encoding parameters for each quorum
 
 	blobKey := metadata.GetBlobKey()
+	// blobLength := core.GetBlobLength(metadata.RequestMetadata.BlobSize)
 
-	blobLength := core.GetBlobLength(metadata.RequestMetadata.BlobSize)
+	// rows, cols := core.SplitToMatrix(blobLength, uint(blob.RequestHeader.TargetRowNum))
 
-	rows, cols := core.SplitToMatrix(blobLength, uint(blob.RequestHeader.TargetRowNum))
-
-	dims := core.MatrixDimsions{
-		Rows: rows,
-		Cols: cols,
-	}
+	// dims := core.MatrixDimsions{
+	// 	Rows: rows,
+	// 	Cols: cols,
+	// }
 
 	encodingCtx, cancel := context.WithTimeout(ctx, e.EncodingRequestTimeout)
 	e.Pool.Submit(func() {
 		defer cancel()
-		extendedMatrix, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data, dims)
+		blobCommits, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data)
 		if err != nil {
 			encoderChan <- EncodingResultOrStatus{Err: err, EncodingResult: EncodingResult{
 				BlobMetadata: metadata,
@@ -240,7 +234,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 			EncodingResult: EncodingResult{
 				BlobMetadata:         metadata,
 				ReferenceBlockNumber: 0,
-				ExtendedMatrix:       extendedMatrix,
+				BlobCommitments:      blobCommits,
 			},
 			Err: nil,
 		}
@@ -297,7 +291,7 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 		return nil, ts, errNoEncodedResults
 	}
 
-	encodedBlobByKey := make(map[disperser.BlobKey]*core.ExtendedMatrix)
+	encodedBlobByKey := make(map[disperser.BlobKey]*core.BlobCommitments)
 	blobHeaderByKey := make(map[disperser.BlobKey]*core.BlobHeader)
 	metadataByKey := make(map[disperser.BlobKey]*disperser.BlobMetadata)
 	blobKeys := make([]disperser.BlobKey, 0)
@@ -311,22 +305,23 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 			metadataByKey[blobKey] = result.BlobMetadata
 		}
 		blobHeader := &core.BlobHeader{
-			Length: result.ExtendedMatrix.Length,
+			Length:         uint(len(result.BlobCommitments.ErasureCommitment)), // todo: correct?
+			CommitmentRoot: result.BlobCommitments.ErasureCommitment,
 		}
-		if err := blobHeader.SetCommitmentRoot(result.ExtendedMatrix.Commitments); err != nil {
-			return nil, ts, err
-		}
+		// if err := blobHeader.SetCommitmentRoot(result.Commitment.ErasureCommitment); err != nil {
+		// 	return nil, ts, err
+		// }
 		blobHeaderByKey[blobKey] = blobHeader
-		encodedBlobByKey[blobKey] = result.ExtendedMatrix
+		encodedBlobByKey[blobKey] = result.BlobCommitments
 	}
 
 	// sort blobs by rows
-	sort.SliceStable(blobKeys, func(i, j int) bool {
-		return encodedBlobByKey[blobKeys[i]].GetRows() < encodedBlobByKey[blobKeys[j]].GetRows()
-	})
+	// sort.SliceStable(blobKeys, func(i, j int) bool {
+	// 	return encodedBlobByKey[blobKeys[i]].GetRows() < encodedBlobByKey[blobKeys[j]].GetRows()
+	// })
 
 	// Transform maps to slices so orders in different slices match
-	encodedBlobs := make([]*core.ExtendedMatrix, len(metadataByKey))
+	encodedBlobs := make([]*core.BlobCommitments, len(metadataByKey))
 	blobHeaders := make([]*core.BlobHeader, len(metadataByKey))
 	metadatas := make([]*disperser.BlobMetadata, len(metadataByKey))
 	i := 0
@@ -350,11 +345,11 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 	e.ReferenceBlockNumber = 0
 
 	return &batch{
-		ExtendedMatrix: encodedBlobs,
-		BatchHeader:    batchHeader,
-		BlobHeaders:    blobHeaders,
-		BlobMetadata:   metadatas,
-		MerkleTree:     tree,
+		EncodedBlobs: encodedBlobs,
+		BatchHeader:  batchHeader,
+		BlobHeaders:  blobHeaders,
+		BlobMetadata: metadatas,
+		MerkleTree:   tree,
 	}, ts, nil
 }
 

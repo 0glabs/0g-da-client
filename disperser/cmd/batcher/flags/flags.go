@@ -118,6 +118,21 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "CONFIRMER_NUM"),
 		Value:    1,
 	}
+	MaxNumRetriesForSignFlag = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-for-sign"),
+		Usage:    "Maximum number of retries to sign a blob before marking the blob as FAILED",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "MAX-NUM-RETRIES-FOR-SIGN"),
+		Value:    1,
+	}
+	FinalizedBlockCountFlag = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "finalized-block-count"),
+		Usage:    "Number of latest block before finalized",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "FINALIZED_BLOCK_COUNT"),
+		Value:    1,
+	}
+
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
 	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
 	// downloaded by light clients for DAS.
