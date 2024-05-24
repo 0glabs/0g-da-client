@@ -83,8 +83,18 @@ func (c client) EncodeBlob(ctx context.Context, data []byte) (*core.BlobCommitme
 		return nil, err
 	}
 
+	// little endian to big endian
+	commitment := encodeBlobReply.GetErasureCommitment()
+	for i := 0; i < (len(commitment)-1)/2; i++ {
+		commitment[i], commitment[len(commitment)-i-1] = commitment[len(commitment)-i-1], commitment[i]
+	}
+	commitmentPoint, err := new(core.G1Point).Deserialize(commitment)
+	if err != nil {
+		return nil, err
+	}
+
 	return &core.BlobCommitments{
-		ErasureCommitment: encodeBlobReply.GetErasureCommitment(),
+		ErasureCommitment: commitmentPoint,
 		StorageRoot:       encodeBlobReply.GetStorageRoot(),
 		EncodedData:       encodeBlobReply.GetEncodedData(),
 		EncodedSlice:      encodeBlobReply.GetEncodedSlice(),

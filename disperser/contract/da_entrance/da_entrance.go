@@ -43,18 +43,18 @@ type BN254G2Point struct {
 
 // IDAEntranceCommitRootSubmission is an auto generated low-level Go binding around an user-defined struct.
 type IDAEntranceCommitRootSubmission struct {
-	DataRoot     [32]byte
-	Epoch        *big.Int
-	QuorumId     *big.Int
-	CommitRoot   [32]byte
-	QuorumBitmap []byte
-	AggPkG2      BN254G2Point
-	Signature    BN254G1Point
+	DataRoot          [32]byte
+	Epoch             *big.Int
+	QuorumId          *big.Int
+	ErasureCommitment BN254G1Point
+	QuorumBitmap      []byte
+	AggPkG2           BN254G2Point
+	Signature         BN254G1Point
 }
 
 // DAEntranceMetaData contains all meta data concerning the DAEntrance contract.
 var DAEntranceMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"CommitRootVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"DataUpload\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DA_SIGNERS\",\"outputs\":[{\"internalType\":\"contractIDASigners\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_DENOMINATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_NUMERATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_dataRoots\",\"type\":\"bytes32[]\"}],\"name\":\"submitOriginalData\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"commitRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"quorumBitmap\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\"}],\"internalType\":\"structBN254.G2Point\",\"name\":\"aggPkG2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"signature\",\"type\":\"tuple\"}],\"internalType\":\"structIDAEntrance.CommitRootSubmission[]\",\"name\":\"_submissions\",\"type\":\"tuple[]\"}],\"name\":\"submitVerifiedCommitRoots\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"verifiedCommitRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"DataUpload\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"ErasureCommitmentVerified\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DA_SIGNERS\",\"outputs\":[{\"internalType\":\"contractIDASigners\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_DENOMINATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_NUMERATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_dataRoots\",\"type\":\"bytes32[]\"}],\"name\":\"submitOriginalData\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"erasureCommitment\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"quorumBitmap\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\"}],\"internalType\":\"structBN254.G2Point\",\"name\":\"aggPkG2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"signature\",\"type\":\"tuple\"}],\"internalType\":\"structIDAEntrance.CommitRootSubmission[]\",\"name\":\"_submissions\",\"type\":\"tuple[]\"}],\"name\":\"submitVerifiedCommitRoots\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_quorumId\",\"type\":\"uint256\"}],\"name\":\"verifiedErasureCommitment\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // DAEntranceABI is the input ABI used to generate the binding from.
@@ -327,35 +327,35 @@ func (_DAEntrance *DAEntranceCallerSession) Initialized() (bool, error) {
 	return _DAEntrance.Contract.Initialized(&_DAEntrance.CallOpts)
 }
 
-// VerifiedCommitRoot is a free data retrieval call binding the contract method 0x0cb1eebf.
+// VerifiedErasureCommitment is a free data retrieval call binding the contract method 0x9da3a69b.
 //
-// Solidity: function verifiedCommitRoot(bytes32 , uint256 , uint256 ) view returns(bytes32)
-func (_DAEntrance *DAEntranceCaller) VerifiedCommitRoot(opts *bind.CallOpts, arg0 [32]byte, arg1 *big.Int, arg2 *big.Int) ([32]byte, error) {
+// Solidity: function verifiedErasureCommitment(bytes32 _dataRoot, uint256 _epoch, uint256 _quorumId) view returns((uint256,uint256))
+func (_DAEntrance *DAEntranceCaller) VerifiedErasureCommitment(opts *bind.CallOpts, _dataRoot [32]byte, _epoch *big.Int, _quorumId *big.Int) (BN254G1Point, error) {
 	var out []interface{}
-	err := _DAEntrance.contract.Call(opts, &out, "verifiedCommitRoot", arg0, arg1, arg2)
+	err := _DAEntrance.contract.Call(opts, &out, "verifiedErasureCommitment", _dataRoot, _epoch, _quorumId)
 
 	if err != nil {
-		return *new([32]byte), err
+		return *new(BN254G1Point), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+	out0 := *abi.ConvertType(out[0], new(BN254G1Point)).(*BN254G1Point)
 
 	return out0, err
 
 }
 
-// VerifiedCommitRoot is a free data retrieval call binding the contract method 0x0cb1eebf.
+// VerifiedErasureCommitment is a free data retrieval call binding the contract method 0x9da3a69b.
 //
-// Solidity: function verifiedCommitRoot(bytes32 , uint256 , uint256 ) view returns(bytes32)
-func (_DAEntrance *DAEntranceSession) VerifiedCommitRoot(arg0 [32]byte, arg1 *big.Int, arg2 *big.Int) ([32]byte, error) {
-	return _DAEntrance.Contract.VerifiedCommitRoot(&_DAEntrance.CallOpts, arg0, arg1, arg2)
+// Solidity: function verifiedErasureCommitment(bytes32 _dataRoot, uint256 _epoch, uint256 _quorumId) view returns((uint256,uint256))
+func (_DAEntrance *DAEntranceSession) VerifiedErasureCommitment(_dataRoot [32]byte, _epoch *big.Int, _quorumId *big.Int) (BN254G1Point, error) {
+	return _DAEntrance.Contract.VerifiedErasureCommitment(&_DAEntrance.CallOpts, _dataRoot, _epoch, _quorumId)
 }
 
-// VerifiedCommitRoot is a free data retrieval call binding the contract method 0x0cb1eebf.
+// VerifiedErasureCommitment is a free data retrieval call binding the contract method 0x9da3a69b.
 //
-// Solidity: function verifiedCommitRoot(bytes32 , uint256 , uint256 ) view returns(bytes32)
-func (_DAEntrance *DAEntranceCallerSession) VerifiedCommitRoot(arg0 [32]byte, arg1 *big.Int, arg2 *big.Int) ([32]byte, error) {
-	return _DAEntrance.Contract.VerifiedCommitRoot(&_DAEntrance.CallOpts, arg0, arg1, arg2)
+// Solidity: function verifiedErasureCommitment(bytes32 _dataRoot, uint256 _epoch, uint256 _quorumId) view returns((uint256,uint256))
+func (_DAEntrance *DAEntranceCallerSession) VerifiedErasureCommitment(_dataRoot [32]byte, _epoch *big.Int, _quorumId *big.Int) (BN254G1Point, error) {
+	return _DAEntrance.Contract.VerifiedErasureCommitment(&_DAEntrance.CallOpts, _dataRoot, _epoch, _quorumId)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
@@ -400,23 +400,23 @@ func (_DAEntrance *DAEntranceTransactorSession) SubmitOriginalData(_dataRoots []
 	return _DAEntrance.Contract.SubmitOriginalData(&_DAEntrance.TransactOpts, _dataRoots)
 }
 
-// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0x0e503c17.
+// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0xeafed6ce.
 //
-// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,bytes32,bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
+// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,(uint256,uint256),bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
 func (_DAEntrance *DAEntranceTransactor) SubmitVerifiedCommitRoots(opts *bind.TransactOpts, _submissions []IDAEntranceCommitRootSubmission) (*types.Transaction, error) {
 	return _DAEntrance.contract.Transact(opts, "submitVerifiedCommitRoots", _submissions)
 }
 
-// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0x0e503c17.
+// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0xeafed6ce.
 //
-// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,bytes32,bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
+// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,(uint256,uint256),bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
 func (_DAEntrance *DAEntranceSession) SubmitVerifiedCommitRoots(_submissions []IDAEntranceCommitRootSubmission) (*types.Transaction, error) {
 	return _DAEntrance.Contract.SubmitVerifiedCommitRoots(&_DAEntrance.TransactOpts, _submissions)
 }
 
-// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0x0e503c17.
+// SubmitVerifiedCommitRoots is a paid mutator transaction binding the contract method 0xeafed6ce.
 //
-// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,bytes32,bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
+// Solidity: function submitVerifiedCommitRoots((bytes32,uint256,uint256,(uint256,uint256),bytes,(uint256[2],uint256[2]),(uint256,uint256))[] _submissions) returns()
 func (_DAEntrance *DAEntranceTransactorSession) SubmitVerifiedCommitRoots(_submissions []IDAEntranceCommitRootSubmission) (*types.Transaction, error) {
 	return _DAEntrance.Contract.SubmitVerifiedCommitRoots(&_DAEntrance.TransactOpts, _submissions)
 }
@@ -440,142 +440,6 @@ func (_DAEntrance *DAEntranceSession) Receive() (*types.Transaction, error) {
 // Solidity: receive() payable returns()
 func (_DAEntrance *DAEntranceTransactorSession) Receive() (*types.Transaction, error) {
 	return _DAEntrance.Contract.Receive(&_DAEntrance.TransactOpts)
-}
-
-// DAEntranceCommitRootVerifiedIterator is returned from FilterCommitRootVerified and is used to iterate over the raw logs and unpacked data for CommitRootVerified events raised by the DAEntrance contract.
-type DAEntranceCommitRootVerifiedIterator struct {
-	Event *DAEntranceCommitRootVerified // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *DAEntranceCommitRootVerifiedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(DAEntranceCommitRootVerified)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(DAEntranceCommitRootVerified)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *DAEntranceCommitRootVerifiedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *DAEntranceCommitRootVerifiedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// DAEntranceCommitRootVerified represents a CommitRootVerified event raised by the DAEntrance contract.
-type DAEntranceCommitRootVerified struct {
-	DataRoot [32]byte
-	Id       *big.Int
-	QuorumId *big.Int
-	Raw      types.Log // Blockchain specific contextual infos
-}
-
-// FilterCommitRootVerified is a free log retrieval operation binding the contract event 0x9bcddda2f5ba09afe6b4660d9de83fa8a0f3509a753a144d1ce38ae46a158999.
-//
-// Solidity: event CommitRootVerified(bytes32 dataRoot, uint256 id, uint256 quorumId)
-func (_DAEntrance *DAEntranceFilterer) FilterCommitRootVerified(opts *bind.FilterOpts) (*DAEntranceCommitRootVerifiedIterator, error) {
-
-	logs, sub, err := _DAEntrance.contract.FilterLogs(opts, "CommitRootVerified")
-	if err != nil {
-		return nil, err
-	}
-	return &DAEntranceCommitRootVerifiedIterator{contract: _DAEntrance.contract, event: "CommitRootVerified", logs: logs, sub: sub}, nil
-}
-
-// WatchCommitRootVerified is a free log subscription operation binding the contract event 0x9bcddda2f5ba09afe6b4660d9de83fa8a0f3509a753a144d1ce38ae46a158999.
-//
-// Solidity: event CommitRootVerified(bytes32 dataRoot, uint256 id, uint256 quorumId)
-func (_DAEntrance *DAEntranceFilterer) WatchCommitRootVerified(opts *bind.WatchOpts, sink chan<- *DAEntranceCommitRootVerified) (event.Subscription, error) {
-
-	logs, sub, err := _DAEntrance.contract.WatchLogs(opts, "CommitRootVerified")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(DAEntranceCommitRootVerified)
-				if err := _DAEntrance.contract.UnpackLog(event, "CommitRootVerified", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseCommitRootVerified is a log parse operation binding the contract event 0x9bcddda2f5ba09afe6b4660d9de83fa8a0f3509a753a144d1ce38ae46a158999.
-//
-// Solidity: event CommitRootVerified(bytes32 dataRoot, uint256 id, uint256 quorumId)
-func (_DAEntrance *DAEntranceFilterer) ParseCommitRootVerified(log types.Log) (*DAEntranceCommitRootVerified, error) {
-	event := new(DAEntranceCommitRootVerified)
-	if err := _DAEntrance.contract.UnpackLog(event, "CommitRootVerified", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
 }
 
 // DAEntranceDataUploadIterator is returned from FilterDataUpload and is used to iterate over the raw logs and unpacked data for DataUpload events raised by the DAEntrance contract.
@@ -648,14 +512,14 @@ func (it *DAEntranceDataUploadIterator) Close() error {
 // DAEntranceDataUpload represents a DataUpload event raised by the DAEntrance contract.
 type DAEntranceDataUpload struct {
 	DataRoot [32]byte
-	Id       *big.Int
+	Epoch    *big.Int
 	QuorumId *big.Int
 	Raw      types.Log // Blockchain specific contextual infos
 }
 
 // FilterDataUpload is a free log retrieval operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 id, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
 func (_DAEntrance *DAEntranceFilterer) FilterDataUpload(opts *bind.FilterOpts) (*DAEntranceDataUploadIterator, error) {
 
 	logs, sub, err := _DAEntrance.contract.FilterLogs(opts, "DataUpload")
@@ -667,7 +531,7 @@ func (_DAEntrance *DAEntranceFilterer) FilterDataUpload(opts *bind.FilterOpts) (
 
 // WatchDataUpload is a free log subscription operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 id, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
 func (_DAEntrance *DAEntranceFilterer) WatchDataUpload(opts *bind.WatchOpts, sink chan<- *DAEntranceDataUpload) (event.Subscription, error) {
 
 	logs, sub, err := _DAEntrance.contract.WatchLogs(opts, "DataUpload")
@@ -704,10 +568,146 @@ func (_DAEntrance *DAEntranceFilterer) WatchDataUpload(opts *bind.WatchOpts, sin
 
 // ParseDataUpload is a log parse operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 id, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
 func (_DAEntrance *DAEntranceFilterer) ParseDataUpload(log types.Log) (*DAEntranceDataUpload, error) {
 	event := new(DAEntranceDataUpload)
 	if err := _DAEntrance.contract.UnpackLog(event, "DataUpload", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// DAEntranceErasureCommitmentVerifiedIterator is returned from FilterErasureCommitmentVerified and is used to iterate over the raw logs and unpacked data for ErasureCommitmentVerified events raised by the DAEntrance contract.
+type DAEntranceErasureCommitmentVerifiedIterator struct {
+	Event *DAEntranceErasureCommitmentVerified // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *DAEntranceErasureCommitmentVerifiedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(DAEntranceErasureCommitmentVerified)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(DAEntranceErasureCommitmentVerified)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *DAEntranceErasureCommitmentVerifiedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *DAEntranceErasureCommitmentVerifiedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// DAEntranceErasureCommitmentVerified represents a ErasureCommitmentVerified event raised by the DAEntrance contract.
+type DAEntranceErasureCommitmentVerified struct {
+	DataRoot [32]byte
+	Epoch    *big.Int
+	QuorumId *big.Int
+	Raw      types.Log // Blockchain specific contextual infos
+}
+
+// FilterErasureCommitmentVerified is a free log retrieval operation binding the contract event 0x0f1b20d87bebd11dddaaab51f01cf2726880cb3f8073b636dbafa2aa8cacd256.
+//
+// Solidity: event ErasureCommitmentVerified(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+func (_DAEntrance *DAEntranceFilterer) FilterErasureCommitmentVerified(opts *bind.FilterOpts) (*DAEntranceErasureCommitmentVerifiedIterator, error) {
+
+	logs, sub, err := _DAEntrance.contract.FilterLogs(opts, "ErasureCommitmentVerified")
+	if err != nil {
+		return nil, err
+	}
+	return &DAEntranceErasureCommitmentVerifiedIterator{contract: _DAEntrance.contract, event: "ErasureCommitmentVerified", logs: logs, sub: sub}, nil
+}
+
+// WatchErasureCommitmentVerified is a free log subscription operation binding the contract event 0x0f1b20d87bebd11dddaaab51f01cf2726880cb3f8073b636dbafa2aa8cacd256.
+//
+// Solidity: event ErasureCommitmentVerified(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+func (_DAEntrance *DAEntranceFilterer) WatchErasureCommitmentVerified(opts *bind.WatchOpts, sink chan<- *DAEntranceErasureCommitmentVerified) (event.Subscription, error) {
+
+	logs, sub, err := _DAEntrance.contract.WatchLogs(opts, "ErasureCommitmentVerified")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(DAEntranceErasureCommitmentVerified)
+				if err := _DAEntrance.contract.UnpackLog(event, "ErasureCommitmentVerified", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseErasureCommitmentVerified is a log parse operation binding the contract event 0x0f1b20d87bebd11dddaaab51f01cf2726880cb3f8073b636dbafa2aa8cacd256.
+//
+// Solidity: event ErasureCommitmentVerified(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+func (_DAEntrance *DAEntranceFilterer) ParseErasureCommitmentVerified(log types.Log) (*DAEntranceErasureCommitmentVerified, error) {
+	event := new(DAEntranceErasureCommitmentVerified)
+	if err := _DAEntrance.contract.UnpackLog(event, "ErasureCommitmentVerified", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

@@ -52,9 +52,13 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 	}
 
 	sigBytes := reply.GetSignatures()
-	signatures := make([]*core.Signature, 0, len(data))
+	signatures := make([]*core.Signature, len(data))
 	for i := 0; i < len(data); i++ {
-		point, err := new(core.Signature).Deserialize(sigBytes[i])
+		signature := sigBytes[i]
+		for j := 0; j < (len(signature)-1)/2; j++ {
+			signature[j], signature[len(signature)-j-1] = signature[len(signature)-j-1], signature[j]
+		}
+		point, err := new(core.Signature).Deserialize(signature)
 		if err != nil {
 			return nil, err
 		}

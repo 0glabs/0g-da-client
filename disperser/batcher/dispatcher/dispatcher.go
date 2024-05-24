@@ -216,11 +216,13 @@ func (c *dispatcher) SubmitAggregateSignatures(ctx context.Context, rootSubmissi
 	submissions := make([]da_entrance.IDAEntranceCommitRootSubmission, len(rootSubmission))
 	for i, s := range rootSubmission {
 		submissions[i] = da_entrance.IDAEntranceCommitRootSubmission{
-			DataRoot:   s.DataRoot,
-			Epoch:      s.Epoch,
-			QuorumId:   s.QuorumId,
-			CommitRoot: s.CommitRoot,
-
+			DataRoot: s.DataRoot,
+			Epoch:    s.Epoch,
+			QuorumId: s.QuorumId,
+			ErasureCommitment: da_entrance.BN254G1Point{
+				X: s.ErasureCommitment.X.BigInt(new(big.Int)),
+				Y: s.ErasureCommitment.Y.BigInt(new(big.Int)),
+			},
 			QuorumBitmap: s.QuorumBitmap,
 			AggPkG2: da_entrance.BN254G2Point{
 				X: [2]*big.Int{

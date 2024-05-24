@@ -73,17 +73,17 @@ type EncodedRow = []Coeff
 type Commitment = [48]byte
 
 type CommitRootSubmission struct {
-	DataRoot     [32]byte
-	Epoch        *big.Int
-	QuorumId     *big.Int
-	CommitRoot   [32]byte
-	QuorumBitmap []byte
-	AggPkG2      *G2Point
-	AggSigs      *Signature
+	DataRoot          [32]byte
+	Epoch             *big.Int
+	QuorumId          *big.Int
+	ErasureCommitment *G1Point
+	QuorumBitmap      []byte
+	AggPkG2           *G2Point
+	AggSigs           *Signature
 }
 
 type BlobCommitments struct {
-	ErasureCommitment []byte
+	ErasureCommitment *G1Point
 	StorageRoot       []byte
 	EncodedData       []byte
 	EncodedSlice      [][]byte
@@ -92,7 +92,7 @@ type BlobCommitments struct {
 func (b *BlobCommitments) GetHash() [32]byte {
 	var message [32]byte
 	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(b.ErasureCommitment)
+	hasher.Write(b.ErasureCommitment.Serialize())
 	hasher.Write(b.StorageRoot)
 	copy(message[:], hasher.Sum(nil)[:32])
 	return message

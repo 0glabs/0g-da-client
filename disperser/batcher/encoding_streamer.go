@@ -305,8 +305,8 @@ func (e *EncodingStreamer) CreateBatch() (*batch, uint64, error) {
 			metadataByKey[blobKey] = result.BlobMetadata
 		}
 		blobHeader := &core.BlobHeader{
-			Length:         uint(len(result.BlobCommitments.ErasureCommitment)), // todo: correct?
-			CommitmentRoot: result.BlobCommitments.ErasureCommitment,
+			Length:         uint(len(result.BlobCommitments.EncodedData)),
+			CommitmentRoot: result.BlobCommitments.ErasureCommitment.Serialize(),
 		}
 		// if err := blobHeader.SetCommitmentRoot(result.Commitment.ErasureCommitment); err != nil {
 		// 	return nil, ts, err

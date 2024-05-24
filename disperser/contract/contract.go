@@ -107,7 +107,7 @@ func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntr
 }
 
 func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
-	params := make([][32]byte, 0, len(dataRoots))
+	params := make([][32]byte, len(dataRoots))
 	for i, dataRoot := range dataRoots {
 		params[i] = dataRoot
 	}

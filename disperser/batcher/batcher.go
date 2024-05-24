@@ -309,7 +309,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 	s, signedTs, err := b.sliceSigner.GetCommitRootSubmissionBatch()
 	if err != nil {
 		b.sliceSigner.RemoveBatchingStatus(signedTs)
-		return fmt.Errorf("HandleSingleBatch: error getting batch header hash: %w", err)
+		return fmt.Errorf("HandleSignedBatch: error getting batch header hash: %w", err)
 	}
 
 	submissions := make([]*core.CommitRootSubmission, 0)
@@ -331,6 +331,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 		quorumIds = append(quorumIds, item.submissions[0].QuorumId)
 	}
 
+	stageTimer := time.Now()
 	txHash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
 	if err != nil {
 		for _, item := range batch {
@@ -342,7 +343,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 		return err
 	}
 
-	b.logger.Info("[batcher] DisperseBatch took", "duration", txHash)
+	b.logger.Info("[batcher] submit aggregate signatures", "duration", stageTimer)
 
 	b.confirmer.ConfirmChan <- &BatchInfo{
 		headerHash: headerHash,
