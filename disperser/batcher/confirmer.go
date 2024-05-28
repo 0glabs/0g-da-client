@@ -56,7 +56,7 @@ type BatchInfo struct {
 	quorumIds  []*big.Int
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
 	daEntranceAddress := eth_common.HexToAddress(storageNodeConfig.DAEntranceContractAddress)
 	daSignersAddress := eth_common.HexToAddress(storageNodeConfig.DASignersContractAddress)
@@ -67,11 +67,6 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 
 	if ethConfig.TxGasLimit > 0 {
 		blockchain.CustomGasLimit = uint64(ethConfig.TxGasLimit)
-	}
-
-	kvStore, err := disperser.NewLevelDBStore(storageNodeConfig.KvDbPath+"/chunk", logger)
-	if err != nil {
-		return nil, fmt.Errorf("NewConfirmer: failed to create kv db: %v", err)
 	}
 
 	return &Confirmer{

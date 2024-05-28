@@ -57,15 +57,9 @@ func NewDispersalServer(
 	ratelimiter common.RateLimiter,
 	rateConfig RateConfig,
 	metadataHashAsBlobKey bool,
-	kvDbPath string,
 	rpcClient *rpc.Client,
+	kvStore *disperser.Store,
 ) *DispersalServer {
-	// Create new store
-	kvStore, err := disperser.NewLevelDBStore(kvDbPath+"/chunk", logger)
-	if err != nil {
-		logger.Error("create level db failed")
-		return nil
-	}
 
 	return &DispersalServer{
 		config:                config,

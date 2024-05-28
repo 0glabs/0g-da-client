@@ -195,13 +195,21 @@ func (b *Batcher) Start(ctx context.Context) error {
 
 			case <-submitAggregateSignaturesTicker.C:
 				if err := b.HandleSignedBatch(ctx); err != nil {
-					b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+					if errors.Is(err, errNoSignedResults) {
+						b.logger.Debug("[batcher] no signed results to make a batch with(Notified)")
+					} else {
+						b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+					}
 				}
 
 			case <-submitAggregateSignaturesTrigger.Notify:
 				submitAggregateSignaturesTicker.Stop()
 				if err := b.HandleSignedBatch(ctx); err != nil {
-					b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+					if errors.Is(err, errNoSignedResults) {
+						b.logger.Debug("[batcher] no signed results to make a batch with(Notified)")
+					} else {
+						b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+					}
 				}
 
 				submitAggregateSignaturesTicker.Reset((b.PullInterval))
@@ -309,7 +317,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 	s, signedTs, err := b.sliceSigner.GetCommitRootSubmissionBatch()
 	if err != nil {
 		b.sliceSigner.RemoveBatchingStatus(signedTs)
-		return fmt.Errorf("HandleSignedBatch: error getting batch header hash: %w", err)
+		return err
 	}
 
 	submissions := make([]*core.CommitRootSubmission, 0)

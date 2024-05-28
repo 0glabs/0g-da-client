@@ -51,7 +51,7 @@ func main() {
 	select {}
 }
 
-func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger common.Logger) error {
+func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger common.Logger, kvStore *disperser.Store) error {
 	var ratelimiter common.RateLimiter
 	if config.EnableRatelimiter {
 		globalParams := config.RatelimiterConfig.GlobalRateParams
@@ -84,7 +84,7 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 			return err
 		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, config.StorageNodeConfig.KvDbPath, rpcClient)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
@@ -96,7 +96,7 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 	return server.Start(context.Background())
 }
 
-func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger) error {
+func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, kvStore *disperser.Store) error {
 	// transactor
 	transactor := transactor.NewTransactor(logger)
 	// dispatcher
@@ -133,7 +133,7 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger) 
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}
@@ -189,13 +189,21 @@ func RunCombinedServer(ctx *cli.Context) error {
 		config.BlobstoreConfig.MetadataHashAsBlobKey = true
 		blobStore = memorydb.NewBlobStore(config.BlobstoreConfig.MemoryDBSize, logger)
 	}
+
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	errChan := make(chan error)
 	go func() {
-		err := RunDisperserServer(config, blobStore, logger)
+		err := RunDisperserServer(config, blobStore, logger, kvStore)
 		errChan <- err
 	}()
 	go func() {
-		err := RunBatcher(config, blobStore, logger)
+		err := RunBatcher(config, blobStore, logger, kvStore)
 		errChan <- err
 	}()
 	err = <-errChan

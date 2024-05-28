@@ -74,6 +74,13 @@ func RunDisperserServer(ctx *cli.Context) error {
 	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
 	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	if config.EnableRatelimiter {
 		globalParams := config.RatelimiterConfig.GlobalRateParams
 
@@ -104,7 +111,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 			return err
 		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, config.StorageNodeConfig.KvDbPath, rpcClient)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

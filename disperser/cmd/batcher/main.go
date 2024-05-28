@@ -96,6 +96,13 @@ func RunBatcher(ctx *cli.Context) error {
 
 	metrics := batcher.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	// encoder
 	if len(config.BatcherConfig.EncoderSocket) == 0 {
 		return fmt.Errorf("encoder socket must be specified")
@@ -106,7 +113,7 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}

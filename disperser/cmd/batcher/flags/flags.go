@@ -122,7 +122,7 @@ var (
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-for-sign"),
 		Usage:    "Maximum number of retries to sign a blob before marking the blob as FAILED",
 		Required: false,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "MAX-NUM-RETRIES-FOR-SIGN"),
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "MAX_NUM_RETRIES_FOR_SIGN"),
 		Value:    1,
 	}
 	FinalizedBlockCountFlag = cli.UintFlag{
@@ -169,6 +169,8 @@ var OptionalFlags = []cli.Flag{
 	EncodingRequestQueueSizeFlag,
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
+	MaxNumRetriesForSignFlag,
+	FinalizedBlockCountFlag,
 	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
 }

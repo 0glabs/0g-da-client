@@ -422,6 +422,11 @@ func (s *SliceSigner) getPendingBatchToSign() *SignInfo {
 
 func (s *SliceSigner) doSigning(ctx context.Context) error {
 	signInfo := s.getPendingBatchToSign()
+	if signInfo == nil {
+		s.logger.Info("[singer] no new batch to sign")
+		return nil
+	}
+
 	requestData := s.assignEncodedBlobs(signInfo.signers, signInfo.batch, signInfo.epoch.Uint64())
 
 	update := make(chan SignResultOrStatus, len(requestData))
