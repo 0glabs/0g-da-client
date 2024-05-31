@@ -9,9 +9,10 @@ service Signer {
 
 message SignRequest {
   uint64 epoch = 1; // epoch number of DASigners internal contract
-  bytes erasure_commitment = 2;
-  bytes storage_root = 3; 
-  repeated bytes encoded_slice = 4;
+  uint64 quorum_id = 2; // quorum id of DASigners internal contract
+  bytes erasure_commitment = 3;
+  bytes storage_root = 4; 
+  repeated bytes encoded_slice = 5;
 }
 
 message BatchSignRequest {

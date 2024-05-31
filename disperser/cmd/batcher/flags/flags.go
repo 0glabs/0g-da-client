@@ -104,6 +104,20 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_REQUEST_QUEUE_SIZE"),
 		Value:    500,
 	}
+	EncodingIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "encoding-interval"),
+		Usage:    "Interval for encoding loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_INTERVAL"),
+		Value:    15 * time.Second,
+	}
+	SigningIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "signing-interval"),
+		Usage:    "Interval for signing loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_INTERVAL"),
+		Value:    15 * time.Second,
+	}
 	MaxNumRetriesPerBlobFlag = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-per-blob"),
 		Usage:    "Maximum number of retries to process a blob before marking the blob as FAILED",
@@ -167,6 +181,8 @@ var OptionalFlags = []cli.Flag{
 	NumConnectionsFlag,
 	FinalizerIntervalFlag,
 	EncodingRequestQueueSizeFlag,
+	EncodingIntervalFlag,
+	SigningIntervalFlag,
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
 	MaxNumRetriesForSignFlag,

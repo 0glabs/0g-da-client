@@ -15,8 +15,6 @@ import (
 	"github.com/wealdtech/go-merkletree"
 )
 
-const encodingInterval = 2 * time.Second
-
 var errNoEncodedResults = errors.New("no encoded results")
 
 type EncodedSizeNotifier struct {
@@ -39,6 +37,8 @@ type StreamerConfig struct {
 
 	// EncodingQueueLimit is the maximum number of encoding requests that can be queued
 	EncodingQueueLimit int
+
+	EncodingInterval time.Duration
 }
 
 type EncodingStreamer struct {
@@ -128,7 +128,7 @@ func (e *EncodingStreamer) Start(ctx context.Context) error {
 
 	// goroutine for making blob encoding requests
 	go func() {
-		ticker := time.NewTicker(encodingInterval)
+		ticker := time.NewTicker(e.EncodingInterval)
 		defer ticker.Stop()
 
 		for {
@@ -222,7 +222,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 	encodingCtx, cancel := context.WithTimeout(ctx, e.EncodingRequestTimeout)
 	e.Pool.Submit(func() {
 		defer cancel()
-		blobCommits, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data)
+		blobCommits, err := e.encoderClient.EncodeBlob(encodingCtx, blob.Data, e.logger)
 		if err != nil {
 			encoderChan <- EncodingResultOrStatus{Err: err, EncodingResult: EncodingResult{
 				BlobMetadata: metadata,
@@ -240,7 +240,7 @@ func (e *EncodingStreamer) RequestEncodingForBlob(ctx context.Context, metadata 
 		}
 	})
 	e.EncodedBlobstore.PutEncodingRequest(blobKey)
-	e.logger.Trace("requested encoding for blob", "blob key", blobKey)
+	e.logger.Trace("[encodingstreamer] requested encoding for blob", "blob key", blobKey)
 }
 
 func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result EncodingResultOrStatus) error {
@@ -254,7 +254,7 @@ func (e *EncodingStreamer) ProcessEncodedBlobs(ctx context.Context, result Encod
 		return fmt.Errorf("failed to putEncodedBlob: %w", err)
 	}
 
-	e.logger.Trace("blob encoded", "blob key", result.BlobMetadata.GetBlobKey())
+	e.logger.Trace("[encodingstreamer] blob encoded", "blob key", result.BlobMetadata.GetBlobKey())
 
 	count, encodedSize := e.EncodedBlobstore.GetEncodedResultSize()
 	e.metrics.UpdateEncodedBlobs(count, encodedSize)

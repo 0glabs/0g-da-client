@@ -38,6 +38,8 @@ func NewConfig(ctx *cli.Context) Config {
 			EncoderSocket:            ctx.GlobalString(flags.EncoderSocket.Name),
 			NumConnections:           ctx.GlobalInt(flags.NumConnectionsFlag.Name),
 			EncodingRequestQueueSize: ctx.GlobalInt(flags.EncodingRequestQueueSizeFlag.Name),
+			EncodingInterval:         ctx.GlobalDuration(flags.EncodingIntervalFlag.Name),
+			SigningInterval:          ctx.GlobalDuration(flags.SigningIntervalFlag.Name),
 			BatchSizeMBLimit:         ctx.GlobalUint(flags.BatchSizeLimitFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(flags.MaxNumRetriesPerBlobFlag.Name),
 			ConfirmerNum:             ctx.GlobalUint(flags.ConfirmerNumFlag.Name),

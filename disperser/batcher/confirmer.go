@@ -163,7 +163,7 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, error) {
 	if txHash.Cmp(eth_common.Hash{}) == 0 {
 		return 0, errors.New("empty transaction hash")
 	}
-	c.logger.Info("[confirmer] Waiting batch be confirmed", "transaction hash", txHash)
+	c.logger.Info("[confirmer] Waiting signing batch be confirmed", "transaction hash", txHash)
 	// data is not duplicate, there is a new transaction
 
 	for {
@@ -173,6 +173,7 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, error) {
 		}
 
 		blockNumber := receipt.BlockNumber
+		c.logger.Debug("[confirmer] waiting signed tx to be confirmed", "receipt block", blockNumber, "finalized block", c.Finalizer.LatestFinalizedBlock())
 		if blockNumber > c.Finalizer.LatestFinalizedBlock() {
 			time.Sleep(time.Second * 5)
 			continue
@@ -299,14 +300,14 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 				ConfirmationTxnHash:     batchInfo.txHash,
 				ConfirmationBlockNumber: blockNumber,
 			}
-			c.logger.Trace("confirming blob", "blob key", metadata.GetBlobKey())
+			c.logger.Trace("[confirmer] confirming blob", "blob key", metadata.GetBlobKey())
 			var confirmedMetadata *disperser.BlobMetadata
 			confirmedMetadata, updateConfirmationInfoErr := c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo)
 			if updateConfirmationInfoErr == nil {
 				c.Metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Confirmed)
 				// remove encoded blob from storage so we don't disperse it again
 				c.EncodingStreamer.RemoveEncodedBlob(metadata)
-				c.logger.Trace("blob confirmed", "blob key", metadata.GetBlobKey())
+				c.logger.Trace("[confirmer] blob confirmed", "blob key", metadata.GetBlobKey())
 
 				confirmedMetadatas = append(confirmedMetadatas, confirmedMetadata)
 			} else {

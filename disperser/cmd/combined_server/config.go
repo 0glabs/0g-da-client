@@ -79,6 +79,8 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			EncoderSocket:            ctx.GlobalString(batcher_flags.EncoderSocket.Name),
 			NumConnections:           ctx.GlobalInt(batcher_flags.NumConnectionsFlag.Name),
 			EncodingRequestQueueSize: ctx.GlobalInt(batcher_flags.EncodingRequestQueueSizeFlag.Name),
+			EncodingInterval:         ctx.GlobalDuration(batcher_flags.EncodingIntervalFlag.Name),
+			SigningInterval:          ctx.GlobalDuration(batcher_flags.SigningIntervalFlag.Name),
 			BatchSizeMBLimit:         ctx.GlobalUint(batcher_flags.BatchSizeLimitFlag.Name),
 			MaxNumRetriesPerBlob:     ctx.GlobalUint(batcher_flags.MaxNumRetriesPerBlobFlag.Name),
 			ConfirmerNum:             ctx.GlobalUint(batcher_flags.ConfirmerNumFlag.Name),

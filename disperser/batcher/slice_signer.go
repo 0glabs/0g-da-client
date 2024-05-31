@@ -18,6 +18,7 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser/contract"
 	"github.com/0glabs/0g-storage-client/common/blockchain"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
+	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -57,6 +58,8 @@ type SignerConfig struct {
 	MaxNumRetriesPerBlob uint
 
 	MaxNumRetriesSign uint
+
+	SigningInterval time.Duration
 }
 
 type SignInfo struct {
@@ -177,7 +180,7 @@ func NewEncodedSliceSigner(
 func (s *SliceSigner) Start(ctx context.Context) error {
 	// goroutine for making blob signing requests
 	go func() {
-		ticker := time.NewTicker(encodingInterval)
+		ticker := time.NewTicker(s.SigningInterval)
 		defer ticker.Stop()
 
 		for {
@@ -234,7 +237,7 @@ func (s *SliceSigner) putPendingBatches(info *SignInfo) {
 	defer s.mu.Unlock()
 
 	s.pendingBatches = append(s.pendingBatches, info)
-	s.logger.Info(`[signer] received pending batch`, "queue size", len(s.pendingBatches))
+	s.logger.Info(`[signer] received pending batch for sign`, "queue size", len(s.pendingBatches))
 }
 
 func (s *SliceSigner) getPendingBatch() *SignInfo {
@@ -246,15 +249,15 @@ func (s *SliceSigner) getPendingBatch() *SignInfo {
 	}
 	info := s.pendingBatches[0]
 	s.pendingBatches = s.pendingBatches[1:]
-	s.logger.Info(`[signer] retrieved one pending batch`, "queue size", len(s.pendingBatches))
+	s.logger.Info(`[signer] retrieved one pending batch for sign`, "queue size", len(s.pendingBatches))
 	return info
 }
 
 func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignInfo) error {
 	dataUploadEvents, blockNumber, err := s.waitForReceipt(batchInfo.batch.TxHash)
-	s.logger.Debug("[signer] wait for receipt", "epochs", dataUploadEvents, "block number", blockNumber)
+	s.logger.Debug("[signer] batch tx finalized", "event size", len(dataUploadEvents), "block number", blockNumber)
 
-	if err != nil {
+	if err != nil || len(dataUploadEvents) == 0 {
 		// batch is not confirmed
 		_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchReceipt)
 		s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
@@ -295,7 +298,7 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.pendingBatchesToSign = append(s.pendingBatchesToSign, batchInfo)
-	s.logger.Info(`[signer] batch finalized`, "batch ts", batchInfo.ts)
+	s.logger.Info("[signer] encode batch finalized", "ts", batchInfo.ts, "epoch", epoch, "quorum", quorumId, "unique signers", len(signers))
 	return nil
 }
 
@@ -303,7 +306,7 @@ func (s *SliceSigner) waitForReceipt(txHash eth_common.Hash) ([]*contract.DataUp
 	if txHash.Cmp(eth_common.Hash{}) == 0 {
 		return nil, 0, errors.New("empty transaction hash")
 	}
-	s.logger.Info("[signer] Waiting batch be confirmed", "transaction hash", txHash)
+	s.logger.Info("[signer] Waiting batch tx be confirmed", "transaction hash", txHash)
 	// data is not duplicate, there is a new transaction
 	var blockNumber uint64
 	submitEventHash := eth_common.HexToHash(contract.DataUploadEventHash)
@@ -316,8 +319,9 @@ func (s *SliceSigner) waitForReceipt(txHash eth_common.Hash) ([]*contract.DataUp
 		}
 
 		blockNumber = receipt.BlockNumber
+		s.logger.Debug("[signer] waiting batch tx to be confirmed", "receipt block", blockNumber, "finalized block", s.Finalizer.LatestFinalizedBlock())
+
 		if blockNumber > s.Finalizer.LatestFinalizedBlock() {
-			s.logger.Debug("[signer] waiting batch be confirmed")
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -347,8 +351,14 @@ func (s *SliceSigner) waitForReceipt(txHash eth_common.Hash) ([]*contract.DataUp
 
 func (s *SliceSigner) getSigners(epoch *big.Int, quorumId *big.Int) (map[eth_common.Address]*SignerState, error) {
 	signerAddresses, err := s.daContract.GetQuorum(nil, epoch, quorumId)
+	s.logger.Debug("[signer] get signers for quorum", "size", len(signerAddresses))
+
 	if err != nil {
 		return nil, err
+	}
+
+	if len(signerAddresses) == 0 {
+		return nil, fmt.Errorf("signer is none")
 	}
 
 	hm := make(map[eth_common.Address]*SignerState)
@@ -374,10 +384,10 @@ func (s *SliceSigner) getSigners(epoch *big.Int, quorumId *big.Int) (map[eth_com
 		pubkeyG1 := core.NewG1Point(signer.PkG1.X, signer.PkG1.Y)
 
 		pubkeyG2 := new(bn254.G2Affine)
-		pubkeyG2.X.A0.SetBigInt(signer.PkG2.X[1])
-		pubkeyG2.X.A1.SetBigInt(signer.PkG2.X[0])
-		pubkeyG2.Y.A0.SetBigInt(signer.PkG2.Y[1])
-		pubkeyG2.X.A1.SetBigInt(signer.PkG2.X[0])
+		pubkeyG2.X.A0.SetBigInt(signer.PkG2.X[0])
+		pubkeyG2.X.A1.SetBigInt(signer.PkG2.X[1])
+		pubkeyG2.Y.A0.SetBigInt(signer.PkG2.Y[0])
+		pubkeyG2.Y.A1.SetBigInt(signer.PkG2.Y[1])
 
 		hm[signer.Signer].SignerInfo = &SignerInfo{
 			Signer: signer.Signer,
@@ -423,11 +433,15 @@ func (s *SliceSigner) getPendingBatchToSign() *SignInfo {
 func (s *SliceSigner) doSigning(ctx context.Context) error {
 	signInfo := s.getPendingBatchToSign()
 	if signInfo == nil {
-		s.logger.Info("[singer] no new batch to sign")
+		s.logger.Info("[signer] no new batch to sign")
 		return nil
 	}
 
-	requestData := s.assignEncodedBlobs(signInfo.signers, signInfo.batch, signInfo.epoch.Uint64())
+	requestData := s.assignEncodedBlobs(signInfo.signers, signInfo.batch, signInfo.epoch.Uint64(), signInfo.quorumId.Uint64())
+	if len(requestData) == 0 {
+		s.logger.Warn("[signer] data for sign is empty")
+		return nil
+	}
 
 	update := make(chan SignResultOrStatus, len(requestData))
 	for signerAddress, content := range requestData {
@@ -444,11 +458,11 @@ func (s *SliceSigner) doSigning(ctx context.Context) error {
 			// 	}
 			// }
 
-			reply, err := s.signerClient.BatchSign(encodingCtx, signInfo.signers[signerAddress].Socket, content)
+			reply, err := s.signerClient.BatchSign(encodingCtx, signInfo.signers[signerAddress].Socket, content, s.logger)
 			if err != nil {
 				update <- SignResultOrStatus{
 					Err:        err,
-					SignResult: SignResult{},
+					SignResult: SignResult{signer: signInfo.signers[signerAddress]},
 				}
 				return
 			}
@@ -462,7 +476,7 @@ func (s *SliceSigner) doSigning(ctx context.Context) error {
 			}
 		})
 
-		s.logger.Trace("requested sign for batch", "ts", signInfo.ts)
+		s.logger.Trace("[signer] requested sign for batch", "encode batch ts", signInfo.ts)
 	}
 
 	err := s.aggregateSignature(ctx, signInfo, update)
@@ -473,7 +487,7 @@ func (s *SliceSigner) doSigning(ctx context.Context) error {
 	return nil
 }
 
-func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerState, batch *batch, epoch uint64) map[eth_common.Address][]*pb.SignRequest {
+func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerState, batch *batch, epoch uint64, quorumId uint64) map[eth_common.Address][]*pb.SignRequest {
 	requestData := make(map[eth_common.Address][]*pb.SignRequest)
 	for blobIdx, encodedBlobs := range batch.EncodedBlobs {
 		for addr, state := range signers {
@@ -482,9 +496,19 @@ func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerS
 			}
 
 			if requestData[addr][blobIdx] == nil {
+				commitment := encodedBlobs.ErasureCommitment.Serialize()
+
+				for i := 0; i < fp.Bytes/2; i++ {
+					commitment[i], commitment[fp.Bytes-i-1] = commitment[fp.Bytes-i-1], commitment[i]
+				}
+				for i := fp.Bytes; i < fp.Bytes+fp.Bytes/2; i++ {
+					commitment[i], commitment[len(commitment)-(i-fp.Bytes)-1] = commitment[len(commitment)-(i-fp.Bytes)-1], commitment[i]
+				}
+
 				requestData[addr][blobIdx] = &pb.SignRequest{
 					Epoch:             epoch,
-					ErasureCommitment: encodedBlobs.ErasureCommitment.Serialize(),
+					QuorumId:          quorumId,
+					ErasureCommitment: commitment,
 					StorageRoot:       encodedBlobs.StorageRoot,
 					EncodedSlice:      make([][]byte, 0),
 				}
@@ -514,7 +538,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 		storageRoots[blobIdx] = dataRoot
 		msg, err := s.getHash(dataRoot, signInfo.epoch, signInfo.quorumId, encodedBlobs.ErasureCommitment)
 		if err != nil {
-			s.logger.Error("failed to get hash for batch", "batch", signInfo.ts, "error", err)
+			s.logger.Error("[signer] failed to get hash for batch", "batch", signInfo.ts, "error", err)
 			if signInfo.reties < s.MaxNumRetriesSign {
 				s.mu.Lock()
 				defer s.mu.Unlock()
@@ -543,7 +567,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 		signatures := recv.signatures
 
 		if recv.Err != nil {
-			s.logger.Warn("error returned from messageChan", "socket", signer.Socket, "err", recv.Err)
+			s.logger.Warn("[signer] error returned from messageChan", "socket", signer.Socket, "err", recv.Err)
 			continue
 		}
 
@@ -581,6 +605,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 				offset := sliceIdx % 8
 				quorumBitmap[blobIdx][slot] |= 1 << offset
 			}
+
+			s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket)
 		}
 	}
 
@@ -607,6 +633,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	if valid {
 		s.mu.Lock()
 		defer s.mu.Unlock()
+
+		s.logger.Debug("[signer] get aggregate signature for batch", "ts", signInfo.ts)
 		s.pendingSubmissions[signInfo.ts] = &BatchCommitRootSubmission{
 			submissions: rootSubmissions,
 			headerHash:  signInfo.headerHash,
@@ -634,6 +662,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 
 			signInfo.reties += 1
 			s.pendingBatchesToSign = append(s.pendingBatchesToSign, signInfo)
+			s.logger.Warn("[signer] retry signing", "retries", signInfo.reties)
 		} else {
 			_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures)
 			s.EncodingStreamer.RemoveBatchingStatus(signInfo.ts)
@@ -729,7 +758,7 @@ func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmissi
 			s.signedBatches[ts] = append(s.signedBatches[ts], id)
 		}
 	}
-	s.logger.Trace("consumed signed results", "fetched", len(fetched))
+	s.logger.Trace("[signer] consumed signed results", "fetched", len(fetched))
 
 	if len(fetched) == 0 {
 		return nil, ts, errNoSignedResults

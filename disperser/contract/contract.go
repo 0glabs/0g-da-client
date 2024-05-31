@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const DataUploadEventHash = "0x14875b7d8815073fac5ab87ee8f53431fc634767659e261c78df3440973003cb"
+const DataUploadEventHash = "0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb"
 
 var Web3LogEnabled bool
 

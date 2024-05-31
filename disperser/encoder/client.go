@@ -3,11 +3,16 @@ package encoder
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
+	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
 	pb "github.com/0glabs/0g-data-avail/disperser/api/grpc/encoder"
+	bn "github.com/consensys/gnark-crypto/ecc/bn254"
+	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -64,7 +69,7 @@ func NewEncoderClient(addr string, timeout time.Duration) (disperser.EncoderClie
 // 	}, nil
 // }
 
-func (c client) EncodeBlob(ctx context.Context, data []byte) (*core.BlobCommitments, error) {
+func (c client) EncodeBlob(ctx context.Context, data []byte, log common.Logger) (*core.BlobCommitments, error) {
 	conn, err := grpc.Dial(
 		c.addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -85,9 +90,21 @@ func (c client) EncodeBlob(ctx context.Context, data []byte) (*core.BlobCommitme
 
 	// little endian to big endian
 	commitment := encodeBlobReply.GetErasureCommitment()
-	for i := 0; i < (len(commitment)-1)/2; i++ {
-		commitment[i], commitment[len(commitment)-i-1] = commitment[len(commitment)-i-1], commitment[i]
+	if len(commitment) != bn.SizeOfG1AffineUncompressed {
+		return nil, io.ErrShortBuffer
 	}
+
+	commitment[bn.SizeOfG1AffineUncompressed-1] &= 63
+	for i := 0; i < fp.Bytes/2; i++ {
+		commitment[i], commitment[fp.Bytes-i-1] = commitment[fp.Bytes-i-1], commitment[i]
+	}
+
+	for i := fp.Bytes; i < fp.Bytes+fp.Bytes/2; i++ {
+		commitment[i], commitment[len(commitment)-(i-fp.Bytes)-1] = commitment[len(commitment)-(i-fp.Bytes)-1], commitment[i]
+	}
+
+	log.Debug("blob erasure commit", "commit", hexutil.Encode(commitment))
+
 	commitmentPoint, err := new(core.G1Point).Deserialize(commitment)
 	if err != nil {
 		return nil, err

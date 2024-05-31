@@ -37,6 +37,8 @@ type Config struct {
 	SRSOrder                 int
 	NumConnections           int
 	EncodingRequestQueueSize int
+	EncodingInterval         time.Duration
+	SigningInterval          time.Duration
 	// BatchSizeMBLimit is the maximum size of a batch in MB
 	BatchSizeMBLimit     uint
 	MaxNumRetriesPerBlob uint
@@ -83,6 +85,7 @@ func NewBatcher(
 		SRSOrder:               config.SRSOrder,
 		EncodingRequestTimeout: timeoutConfig.EncodingTimeout,
 		EncodingQueueLimit:     config.EncodingRequestQueueSize,
+		EncodingInterval:       config.EncodingInterval,
 	}
 	encodingWorkerPool := workerpool.New(config.NumConnections)
 	encodingStreamer, err := NewEncodingStreamer(streamerConfig, queue, encoderClient, batchTrigger, encodingWorkerPool, metrics.EncodingStreamerMetrics, logger)
@@ -104,6 +107,7 @@ func NewBatcher(
 		EncodingQueueLimit:    config.EncodingRequestQueueSize,
 		MaxNumRetriesPerBlob:  config.MaxNumRetriesPerBlob,
 		MaxNumRetriesSign:     config.MaxNumRetriesForSign,
+		SigningInterval:       config.SigningInterval,
 	}
 	signingWorkerPool := workerpool.New(config.NumConnections)
 	sliceSigner, err := NewEncodedSliceSigner(
@@ -196,7 +200,7 @@ func (b *Batcher) Start(ctx context.Context) error {
 			case <-submitAggregateSignaturesTicker.C:
 				if err := b.HandleSignedBatch(ctx); err != nil {
 					if errors.Is(err, errNoSignedResults) {
-						b.logger.Debug("[batcher] no signed results to make a batch with(Notified)")
+						b.logger.Debug("[batcher] no signed results to make a batch with")
 					} else {
 						b.logger.Error("[batcher] failed to process a signed batch", "err", err)
 					}
@@ -208,7 +212,7 @@ func (b *Batcher) Start(ctx context.Context) error {
 					if errors.Is(err, errNoSignedResults) {
 						b.logger.Debug("[batcher] no signed results to make a batch with(Notified)")
 					} else {
-						b.logger.Error("[batcher] failed to process a signed batch", "err", err)
+						b.logger.Error("[batcher] failed to process a signed batch(Notified)", "err", err)
 					}
 				}
 
@@ -314,11 +318,15 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 }
 
 func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
+	log := b.logger
+
 	s, signedTs, err := b.sliceSigner.GetCommitRootSubmissionBatch()
 	if err != nil {
 		b.sliceSigner.RemoveBatchingStatus(signedTs)
 		return err
 	}
+
+	log.Info("[batcher] CreateSignedBatch", "batch size", len(s), "signed ts", signedTs)
 
 	submissions := make([]*core.CommitRootSubmission, 0)
 	headerHash := make([][32]byte, 0)
