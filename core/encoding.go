@@ -12,7 +12,7 @@ const (
 	CoeffSize       = 32
 	CommitmentSize  = 48
 	MaxCols         = 1024
-	MaxRows         = 2048
+	MaxRows         = 1024
 	MaxBlobSize     = MaxCols * MaxRows * ScalarSize
 )
 

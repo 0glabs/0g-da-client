@@ -146,6 +146,13 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "FINALIZED_BLOCK_COUNT"),
 		Value:    1,
 	}
+	ExpirationPollIntervalSecFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "expiration-poll-interval"),
+		Usage:    "How often (in second) to poll status and expire outdated blobs",
+		Required: false,
+		Value:    "180",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "EXPIRATION_POLL_INTERVAL"),
+	}
 
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
 	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
@@ -187,6 +194,7 @@ var OptionalFlags = []cli.Flag{
 	ConfirmerNumFlag,
 	MaxNumRetriesForSignFlag,
 	FinalizedBlockCountFlag,
+	ExpirationPollIntervalSecFlag,
 	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
 }

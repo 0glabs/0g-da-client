@@ -3,6 +3,7 @@ package batcher
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"sync"
 	"time"
@@ -20,6 +21,11 @@ import (
 	"github.com/wealdtech/go-merkletree"
 )
 
+const (
+	// The percentage of time in garbage collection in a GC cycle.
+	gcPercentageTime = 0.1
+)
+
 type Confirmer struct {
 	mu sync.RWMutex
 
@@ -31,8 +37,9 @@ type Confirmer struct {
 	daContract  *contract.DAContract
 	ConfirmChan chan *BatchInfo
 
-	pendingBatches       []*BatchInfo
-	MaxNumRetriesPerBlob uint
+	pendingBatches            []*BatchInfo
+	MaxNumRetriesPerBlob      uint
+	ExpirationPollIntervalSec uint64
 
 	routines uint
 
@@ -56,7 +63,7 @@ type BatchInfo struct {
 	quorumIds  []*big.Int
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, expirationPollIntervalSec uint64, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
 	daEntranceAddress := eth_common.HexToAddress(storageNodeConfig.DAEntranceContractAddress)
 	daSignersAddress := eth_common.HexToAddress(storageNodeConfig.DASignersContractAddress)
@@ -79,15 +86,18 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 			Rounds:   ethConfig.ReceiptPollingRounds,
 			Interval: ethConfig.ReceiptPollingInterval,
 		},
-		kvStore:        kvStore,
-		logger:         logger,
-		Metrics:        metrics,
-		UploadTaskSize: storageNodeConfig.UploadTaskSize,
-		transactor:     transactor,
+		kvStore:                   kvStore,
+		logger:                    logger,
+		Metrics:                   metrics,
+		UploadTaskSize:            storageNodeConfig.UploadTaskSize,
+		transactor:                transactor,
+		ExpirationPollIntervalSec: expirationPollIntervalSec,
 	}, nil
 }
 
 func (c *Confirmer) Start(ctx context.Context) {
+	go c.expireLoop()
+
 	go func() {
 		for {
 			select {
@@ -225,6 +235,8 @@ func (c *Confirmer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 	// 	return errors.WithMessage(err, "failed to confirm metadata onchain")
 	// }
 
+	keys := make([][]byte, 0)
+	values := make([][]byte, 0)
 	for _, metadata := range metadatas {
 		retrieveMetadata := disperser.BlobRetrieveMetadata{
 			DataRoot:    metadata.ConfirmationInfo.DataRoot,
@@ -238,10 +250,13 @@ func (c *Confirmer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 		}
 
 		key := []byte(metadata.GetBlobKey().String())
-		err = c.kvStore.StoreMetadata(ctx, key, val)
-		if err != nil {
-			return errors.WithMessage(err, "failed to save retrieve metadata to kv db")
-		}
+		keys = append(keys, key)
+		values = append(values, val)
+	}
+
+	_, err := c.kvStore.StoreMetadataBatch(ctx, keys, values)
+	if err != nil {
+		return errors.WithMessage(err, "failed to save retrieve metadata to kv db")
 	}
 
 	c.logger.Info("[confirmer] removing confirmed blobs")
@@ -351,4 +366,31 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 	c.SliceSigner.RemoveBatchingStatus(batchInfo.signedTs)
 	return nil
+}
+
+// The expireLoop is a loop that is run once per configured second(s) while the node
+// is running. It scans for expired blobs and removes them from the local database.
+func (c *Confirmer) expireLoop() {
+	c.logger.Info("Start expireLoop goroutine in background to periodically remove expired blobs on the node")
+	ticker := time.NewTicker(time.Duration(c.ExpirationPollIntervalSec) * time.Second)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+
+		// We cap the time the deletion function can run, to make sure there is no overlapping
+		// between loops and the garbage collection doesn't take too much resource.
+		// The heuristic is to cap the GC time to a percentage of the poll interval, but at
+		// least have 1 second.
+		timeLimitSec := uint64(math.Max(float64(c.ExpirationPollIntervalSec)*gcPercentageTime, 1.0))
+		numBlobsDeleted, err := c.kvStore.DeleteExpiredEntries(time.Now().Unix(), timeLimitSec)
+		c.logger.Info("Complete an expiration cycle to remove expired blobs", "num expired blobs found and removed", numBlobsDeleted)
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				c.logger.Error("Expiration cycle exited with ContextDeadlineExceed, meaning more expired blobs need to be removed, which will continue in next cycle", "time limit (sec)", timeLimitSec)
+			} else {
+				c.logger.Error("Expiration cycle encountered error when removing expired blobs, which will be retried in next cycle", "err", err)
+			}
+		}
+	}
 }

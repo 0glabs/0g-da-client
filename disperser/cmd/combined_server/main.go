@@ -133,7 +133,7 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, 
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics, kvStore)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, config.BatcherConfig.ExpirationPollIntervalSec, transactor, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func RunCombinedServer(ctx *cli.Context) error {
 	}
 
 	// Create new store
-	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", logger)
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", config.StorageNodeConfig.TimeToExpire, logger)
 	if err != nil {
 		logger.Error("create level db failed")
 		return nil

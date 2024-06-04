@@ -12,7 +12,6 @@ import (
 
 	disperser_rpc "github.com/0glabs/0g-data-avail/api/grpc/disperser"
 	eth_common "github.com/ethereum/go-ethereum/common"
-	gcommon "github.com/ethereum/go-ethereum/common"
 )
 
 type BlobStatus uint
@@ -146,8 +145,8 @@ type ConfirmationInfo struct {
 	QuorumId                uint64                               `json:"quorum_id"`
 	Length                  uint32                               `json:"length"`
 	BatchID                 uint32                               `json:"batch_id"`
-	SubmissionTxnHash       gcommon.Hash                         `json:"submission_txn_hash"`
-	ConfirmationTxnHash     gcommon.Hash                         `json:"confirmation_txn_hash"`
+	SubmissionTxnHash       eth_common.Hash                      `json:"submission_txn_hash"`
+	ConfirmationTxnHash     eth_common.Hash                      `json:"confirmation_txn_hash"`
 	ConfirmationBlockNumber uint32                               `json:"confirmation_block_number"`
 	Fee                     []byte                               `json:"fee"`
 	QuorumResults           map[core.QuorumID]*core.QuorumResult `json:"quorum_results"`

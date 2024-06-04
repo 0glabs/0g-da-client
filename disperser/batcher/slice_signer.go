@@ -298,7 +298,7 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.pendingBatchesToSign = append(s.pendingBatchesToSign, batchInfo)
-	s.logger.Info("[signer] encode batch finalized", "ts", batchInfo.ts, "epoch", epoch, "quorum", quorumId, "unique signers", len(signers))
+	s.logger.Info("[signer] encode batch tx finalized", "ts", batchInfo.ts, "epoch", epoch, "quorum", quorumId, "unique signers", len(signers))
 	return nil
 }
 
@@ -306,7 +306,7 @@ func (s *SliceSigner) waitForReceipt(txHash eth_common.Hash) ([]*contract.DataUp
 	if txHash.Cmp(eth_common.Hash{}) == 0 {
 		return nil, 0, errors.New("empty transaction hash")
 	}
-	s.logger.Info("[signer] Waiting batch tx be confirmed", "transaction hash", txHash)
+	s.logger.Info("[signer] waiting batch tx be confirmed", "tx hash", txHash)
 	// data is not duplicate, there is a new transaction
 	var blockNumber uint64
 	submitEventHash := eth_common.HexToHash(contract.DataUploadEventHash)
@@ -476,7 +476,7 @@ func (s *SliceSigner) doSigning(ctx context.Context) error {
 			}
 		})
 
-		s.logger.Trace("[signer] requested sign for batch", "encode batch ts", signInfo.ts)
+		s.logger.Trace("[signer] requested sign for batch", "ts", signInfo.ts, "signer", signerAddress)
 	}
 
 	err := s.aggregateSignature(ctx, signInfo, update)
@@ -577,7 +577,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			// Verify Signature
 			ok := sig.Verify(signer.PkG2, message)
 			if !ok {
-				s.logger.Error("signature is not valid", "signerAddress", signer.Signer, "socket", signer.Socket, "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
+				s.logger.Error("signature is not valid", "address", signer.Signer, "socket", signer.Socket, "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
 				continue
 			}
 

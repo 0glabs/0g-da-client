@@ -214,7 +214,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 
 func (c *dispatcher) SubmitAggregateSignatures(ctx context.Context, rootSubmission []*core.CommitRootSubmission) (eth_common.Hash, error) {
 	submissions := make([]da_entrance.IDAEntranceCommitRootSubmission, len(rootSubmission))
-	c.logger.Debug("[dispatcher] submit aggregate signatures", "root submission length", len(rootSubmission))
+	c.logger.Debug("[dispatcher] submit aggregate signatures", "size", len(rootSubmission))
 	for i, s := range rootSubmission {
 		submissions[i] = da_entrance.IDAEntranceCommitRootSubmission{
 			DataRoot: s.DataRoot,

@@ -50,6 +50,8 @@ func (t *Transactor) BatchUpload(daContract *contract.DAContract, dataRoots []et
 }
 
 func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, submissions []da_entrance.IDAEntranceCommitRootSubmission) (eth_common.Hash, error) {
+	t.logger.Debug("[transactor] start submit verified commit roots")
+
 	t.mu.Lock()
 	defer t.mu.Unlock()
 

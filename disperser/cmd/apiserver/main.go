@@ -75,7 +75,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
 	// Create new store
-	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", logger)
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", config.StorageNodeConfig.TimeToExpire, logger)
 	if err != nil {
 		logger.Error("create level db failed")
 		return nil

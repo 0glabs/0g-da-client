@@ -45,6 +45,8 @@ type Config struct {
 	ConfirmerNum         uint
 	MaxNumRetriesForSign uint
 	FinalizedBlockCount  uint
+
+	ExpirationPollIntervalSec uint64
 }
 
 type Batcher struct {
@@ -326,7 +328,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 		return err
 	}
 
-	log.Info("[batcher] CreateSignedBatch", "batch size", len(s), "signed ts", signedTs)
+	log.Info("[batcher] Create signed batch", "batch size", len(s), "signed ts", signedTs)
 
 	submissions := make([]*core.CommitRootSubmission, 0)
 	headerHash := make([][32]byte, 0)
