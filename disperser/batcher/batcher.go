@@ -37,15 +37,17 @@ type Config struct {
 	SRSOrder                 int
 	NumConnections           int
 	EncodingRequestQueueSize int
-	EncodingInterval         time.Duration
-	SigningInterval          time.Duration
 	// BatchSizeMBLimit is the maximum size of a batch in MB
 	BatchSizeMBLimit     uint
 	MaxNumRetriesPerBlob uint
 	ConfirmerNum         uint
-	MaxNumRetriesForSign uint
-	FinalizedBlockCount  uint
 
+	DAEntranceContractAddress string
+	DASignersContractAddress  string
+	EncodingInterval          time.Duration
+	SigningInterval           time.Duration
+	MaxNumRetriesForSign      uint
+	FinalizedBlockCount       uint
 	ExpirationPollIntervalSec uint64
 }
 
@@ -105,16 +107,17 @@ func NewBatcher(
 		uint64(config.BatchSizeMBLimit)*1024*1024,
 	)
 	signerConfig := SignerConfig{
-		SigningRequestTimeout: timeoutConfig.EncodingTimeout,
-		EncodingQueueLimit:    config.EncodingRequestQueueSize,
-		MaxNumRetriesPerBlob:  config.MaxNumRetriesPerBlob,
-		MaxNumRetriesSign:     config.MaxNumRetriesForSign,
-		SigningInterval:       config.SigningInterval,
+		SigningRequestTimeout:     timeoutConfig.EncodingTimeout,
+		EncodingQueueLimit:        config.EncodingRequestQueueSize,
+		MaxNumRetriesPerBlob:      config.MaxNumRetriesPerBlob,
+		MaxNumRetriesSign:         config.MaxNumRetriesForSign,
+		SigningInterval:           config.SigningInterval,
+		DAEntranceContractAddress: config.DAEntranceContractAddress,
+		DASignersContractAddress:  config.DASignersContractAddress,
 	}
 	signingWorkerPool := workerpool.New(config.NumConnections)
 	sliceSigner, err := NewEncodedSliceSigner(
 		ethConfig,
-		storageNodeConfig,
 		signerConfig,
 		signingWorkerPool,
 		signerTrigger,

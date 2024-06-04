@@ -104,20 +104,6 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_REQUEST_QUEUE_SIZE"),
 		Value:    500,
 	}
-	EncodingIntervalFlag = cli.DurationFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "encoding-interval"),
-		Usage:    "Interval for encoding loop",
-		Required: false,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_INTERVAL"),
-		Value:    15 * time.Second,
-	}
-	SigningIntervalFlag = cli.DurationFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "signing-interval"),
-		Usage:    "Interval for signing loop",
-		Required: false,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_INTERVAL"),
-		Value:    15 * time.Second,
-	}
 	MaxNumRetriesPerBlobFlag = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-per-blob"),
 		Usage:    "Maximum number of retries to process a blob before marking the blob as FAILED",
@@ -131,6 +117,34 @@ var (
 		Required: false,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "CONFIRMER_NUM"),
 		Value:    1,
+	}
+	DAEntranceContractAddressFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "da-entrance-contract"),
+		Usage:    "DAEntrance contract address",
+		Required: false,
+		Value:    "0x0000000000000000000000000000000000000000",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DAENTRANCE_CONTRACT_ADDRESS"),
+	}
+	DASignersContractAddressFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "da-signers-contract"),
+		Usage:    "DASigners contract address",
+		Required: false,
+		Value:    "0x0000000000000000000000000000000000000000",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DASIGNERS_CONTRACT_ADDRESS"),
+	}
+	EncodingIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "encoding-interval"),
+		Usage:    "Interval for encoding loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_INTERVAL"),
+		Value:    15 * time.Second,
+	}
+	SigningIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "signing-interval"),
+		Usage:    "Interval for signing loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_INTERVAL"),
+		Value:    15 * time.Second,
 	}
 	MaxNumRetriesForSignFlag = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-for-sign"),
@@ -188,10 +202,12 @@ var OptionalFlags = []cli.Flag{
 	NumConnectionsFlag,
 	FinalizerIntervalFlag,
 	EncodingRequestQueueSizeFlag,
-	EncodingIntervalFlag,
-	SigningIntervalFlag,
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
+	DAEntranceContractAddressFlag,
+	DASignersContractAddressFlag,
+	EncodingIntervalFlag,
+	SigningIntervalFlag,
 	MaxNumRetriesForSignFlag,
 	FinalizedBlockCountFlag,
 	ExpirationPollIntervalSecFlag,

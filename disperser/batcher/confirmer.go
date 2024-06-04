@@ -10,7 +10,6 @@ import (
 
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/common/geth"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
 	"github.com/0glabs/0g-data-avail/disperser/contract"
@@ -43,10 +42,9 @@ type Confirmer struct {
 
 	routines uint
 
-	retryOption    contract.RetryOption
-	kvStore        *disperser.Store
-	UploadTaskSize uint
-	transactor     *transactor.Transactor
+	retryOption contract.RetryOption
+	kvStore     *disperser.Store
+	transactor  *transactor.Transactor
 
 	logger  common.Logger
 	Metrics *Metrics
@@ -63,10 +61,10 @@ type BatchInfo struct {
 	quorumIds  []*big.Int
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node.ClientConfig, queue disperser.BlobStore, maxNumRetriesPerBlob uint, routines uint, expirationPollIntervalSec uint64, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue disperser.BlobStore, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(storageNodeConfig.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(storageNodeConfig.DASignersContractAddress)
+	daEntranceAddress := eth_common.HexToAddress(batcherConfig.DAEntranceContractAddress)
+	daSignersAddress := eth_common.HexToAddress(batcherConfig.DASignersContractAddress)
 	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("NewConfirmer: failed to create DAEntrance contract: %v", err)
@@ -77,11 +75,12 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 	}
 
 	return &Confirmer{
-		Queue:          queue,
-		daContract:     daContract,
-		ConfirmChan:    make(chan *BatchInfo),
-		pendingBatches: make([]*BatchInfo, 0),
-		routines:       routines,
+		Queue:                queue,
+		daContract:           daContract,
+		ConfirmChan:          make(chan *BatchInfo),
+		pendingBatches:       make([]*BatchInfo, 0),
+		routines:             batcherConfig.ConfirmerNum,
+		MaxNumRetriesPerBlob: batcherConfig.MaxNumRetriesPerBlob,
 		retryOption: contract.RetryOption{
 			Rounds:   ethConfig.ReceiptPollingRounds,
 			Interval: ethConfig.ReceiptPollingInterval,
@@ -89,9 +88,8 @@ func NewConfirmer(ethConfig geth.EthClientConfig, storageNodeConfig storage_node
 		kvStore:                   kvStore,
 		logger:                    logger,
 		Metrics:                   metrics,
-		UploadTaskSize:            storageNodeConfig.UploadTaskSize,
 		transactor:                transactor,
-		ExpirationPollIntervalSec: expirationPollIntervalSec,
+		ExpirationPollIntervalSec: batcherConfig.ExpirationPollIntervalSec,
 	}, nil
 }
 

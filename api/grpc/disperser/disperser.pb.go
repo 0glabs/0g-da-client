@@ -588,7 +588,7 @@ type BlobHeader struct {
 	DataLength uint32 `protobuf:"varint,2,opt,name=data_length,json=dataLength,proto3" json:"data_length,omitempty"`
 	// The params of the quorums that this blob participates in.
 	BlobQuorumParams []*BlobQuorumParam `protobuf:"bytes,3,rep,name=blob_quorum_params,json=blobQuorumParams,proto3" json:"blob_quorum_params,omitempty"`
-	// Merkle root of data
+	// The data merkle root
 	DataRoot []byte `protobuf:"bytes,4,opt,name=data_root,json=dataRoot,proto3" json:"data_root,omitempty"`
 	// Signers epoch
 	Epoch uint32 `protobuf:"varint,5,opt,name=epoch,proto3" json:"epoch,omitempty"`

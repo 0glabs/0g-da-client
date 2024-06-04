@@ -57,9 +57,10 @@ func RunBatcher(ctx *cli.Context) error {
 	transactor := transactor.NewTransactor(logger)
 	// dispatcher
 	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
-		EthClientURL:      config.EthClientConfig.RPCURL,
-		PrivateKeyString:  config.EthClientConfig.PrivateKeyString,
-		StorageNodeConfig: config.StorageNodeConfig,
+		EthClientURL:              config.EthClientConfig.RPCURL,
+		PrivateKeyString:          config.EthClientConfig.PrivateKeyString,
+		DAEntranceContractAddress: config.BatcherConfig.DAEntranceContractAddress,
+		DASignersContractAddress:  config.BatcherConfig.DASignersContractAddress,
 	}, transactor, logger)
 	if err != nil {
 		return err
@@ -113,7 +114,7 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, config.BatcherConfig.ExpirationPollIntervalSec, transactor, logger, metrics, kvStore)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}

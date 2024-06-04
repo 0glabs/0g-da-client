@@ -11,7 +11,6 @@ import (
 
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/common/geth"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
 	pb "github.com/0glabs/0g-data-avail/disperser/api/grpc/signer"
@@ -59,7 +58,9 @@ type SignerConfig struct {
 
 	MaxNumRetriesSign uint
 
-	SigningInterval time.Duration
+	SigningInterval           time.Duration
+	DAEntranceContractAddress string
+	DASignersContractAddress  string
 }
 
 type SignInfo struct {
@@ -136,7 +137,6 @@ type SliceSigner struct {
 
 func NewEncodedSliceSigner(
 	ethConfig geth.EthClientConfig,
-	storageNodeConfig storage_node.ClientConfig,
 	config SignerConfig,
 	workerPool common.WorkerPool,
 	signatureSizeNotifier *SignatureSizeNotifier,
@@ -146,8 +146,8 @@ func NewEncodedSliceSigner(
 	logger common.Logger) (*SliceSigner, error) {
 
 	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(storageNodeConfig.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(storageNodeConfig.DASignersContractAddress)
+	daEntranceAddress := eth_common.HexToAddress(config.DAEntranceContractAddress)
+	daSignersAddress := eth_common.HexToAddress(config.DASignersContractAddress)
 	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("signer: failed to create DAEntrance contract: %v", err)

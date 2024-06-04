@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
@@ -22,17 +21,16 @@ import (
 )
 
 type Config struct {
-	EthClientURL      string
-	PrivateKeyString  string
-	StorageNodeConfig storage_node.ClientConfig
-	UploadTaskSize    uint
+	EthClientURL              string
+	PrivateKeyString          string
+	DAEntranceContractAddress string
+	DASignersContractAddress  string
 }
 
 type dispatcher struct {
 	*Config
 
-	daContract     *contract.DAContract
-	UploadTaskSize uint
+	daContract *contract.DAContract
 
 	transactor *transactor.Transactor
 
@@ -41,19 +39,18 @@ type dispatcher struct {
 
 func NewDispatcher(cfg *Config, transactor *transactor.Transactor, logger common.Logger) (*dispatcher, error) {
 	client := blockchain.MustNewWeb3(cfg.EthClientURL, cfg.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(cfg.StorageNodeConfig.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(cfg.StorageNodeConfig.DASignersContractAddress)
+	daEntranceAddress := eth_common.HexToAddress(cfg.DAEntranceContractAddress)
+	daSignersAddress := eth_common.HexToAddress(cfg.DASignersContractAddress)
 	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("NewDispatcher: failed to create DAEntrance contract: %v", err)
 	}
 
 	return &dispatcher{
-		Config:         cfg,
-		logger:         logger,
-		daContract:     daContract,
-		UploadTaskSize: cfg.StorageNodeConfig.UploadTaskSize,
-		transactor:     transactor,
+		Config:     cfg,
+		logger:     logger,
+		daContract: daContract,
+		transactor: transactor,
 	}, nil
 }
 

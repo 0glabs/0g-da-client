@@ -150,7 +150,7 @@ message BlobHeader {
 	uint32 data_length = 2;
 	// The params of the quorums that this blob participates in.
 	repeated BlobQuorumParam blob_quorum_params = 3;
-	// Merkle root of data
+	// The data merkle root
 	bytes data_root = 4;
 	// Signers epoch
 	uint32 epoch = 5;
