@@ -36,7 +36,7 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*1024)), // 1 GiB
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial encoder: %w", err)
+		return nil, fmt.Errorf("failed to dial signer: %w", err)
 	}
 	defer conn.Close()
 

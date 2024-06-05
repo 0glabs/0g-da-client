@@ -9,6 +9,10 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser"
 )
 
+const (
+	maxSliceSize = 1000000000
+)
+
 type requestID string
 
 type encodedBlobStore struct {
@@ -143,11 +147,19 @@ func (e *encodedBlobStore) GetNewEncodingResults(ts uint64) []*EncodingResult {
 	if _, ok := e.batches[ts]; !ok {
 		e.batches[ts] = make([]requestID, 0)
 	}
+	sliceSize := 0
 	for id, encodedResult := range e.encoded {
 		if _, ok := e.batching[id]; !ok {
+			t := sliceSize + len(encodedResult.BlobCommitments.EncodedSlice)*len(encodedResult.BlobCommitments.EncodedSlice[0])
+			if t > maxSliceSize {
+				e.logger.Info("maximum slice size reached", "current size", sliceSize)
+				break
+			}
+
 			fetched = append(fetched, encodedResult)
 			e.batching[id] = ts
 			e.batches[ts] = append(e.batches[ts], id)
+			sliceSize = t
 		}
 	}
 	e.logger.Trace("consumed encoded results", "fetched", len(fetched), "encodedSize", e.encodedResultSize)

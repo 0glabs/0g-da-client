@@ -173,7 +173,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 	for i := 0; i < n; i++ {
 		data := encoded[i]
 
-		c.logger.Info("[dispatcher] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
+		// c.logger.Info("[dispatcher] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
 
 		// Calculate file merkle root.
 		tree, err := zg_core.MerkleTree(data)

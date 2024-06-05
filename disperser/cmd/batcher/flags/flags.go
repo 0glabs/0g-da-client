@@ -137,14 +137,14 @@ var (
 		Usage:    "Interval for encoding loop",
 		Required: false,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_INTERVAL"),
-		Value:    15 * time.Second,
+		Value:    10 * time.Second,
 	}
 	SigningIntervalFlag = cli.DurationFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "signing-interval"),
 		Usage:    "Interval for signing loop",
 		Required: false,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_INTERVAL"),
-		Value:    15 * time.Second,
+		Value:    10 * time.Second,
 	}
 	MaxNumRetriesForSignFlag = cli.UintFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-for-sign"),
@@ -166,6 +166,12 @@ var (
 		Required: false,
 		Value:    "180",
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "EXPIRATION_POLL_INTERVAL"),
+	}
+	SignedPullIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "signed-pull-interval"),
+		Usage:    "Interval at which to pull from the signed queue",
+		Required: true,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNED_PULL_INTERVAL"),
 	}
 
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
@@ -192,6 +198,7 @@ var RequiredFlags = []cli.Flag{
 	EncoderSocket,
 	EnableMetrics,
 	BatchSizeLimitFlag,
+	SignedPullIntervalFlag,
 }
 
 var OptionalFlags = []cli.Flag{

@@ -150,7 +150,7 @@ func NewEncodedSliceSigner(
 	daSignersAddress := eth_common.HexToAddress(config.DASignersContractAddress)
 	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
 	if err != nil {
-		return nil, fmt.Errorf("signer: failed to create DAEntrance contract: %v", err)
+		return nil, fmt.Errorf("signer: failed to create DAEntrance contract: %w", err)
 	}
 
 	return &SliceSigner{
@@ -249,7 +249,7 @@ func (s *SliceSigner) getPendingBatch() *SignInfo {
 	}
 	info := s.pendingBatches[0]
 	s.pendingBatches = s.pendingBatches[1:]
-	s.logger.Info(`[signer] retrieved one pending batch for sign`, "queue size", len(s.pendingBatches))
+	s.logger.Info(`[signer] wait one pending batch for sign`, "queue size", len(s.pendingBatches))
 	return info
 }
 
@@ -265,10 +265,10 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 	}
 
 	for i := 1; i < len(dataUploadEvents); i++ {
-		if dataUploadEvents[i].Epoch != dataUploadEvents[i-1].Epoch {
+		if dataUploadEvents[i].Epoch.Cmp(dataUploadEvents[i-1].Epoch) != 0 {
 			_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchEpochMismatch)
 			s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
-			return fmt.Errorf("error epoch in one batch is mismatch: %w", err)
+			return fmt.Errorf("epoch in one batch is mismatch: epoch %v, %v", dataUploadEvents[i].Epoch, dataUploadEvents[i-1].Epoch)
 		}
 	}
 
@@ -287,7 +287,7 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 		s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
 		// }
 
-		return fmt.Errorf("error getting signers from contract: %w", err)
+		return fmt.Errorf("failed to get signers from contract: %w", err)
 	}
 
 	// update epoch
@@ -571,6 +571,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			continue
 		}
 
+		s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket, "signature size", len(signatures))
 		for blobIdx, sig := range signatures {
 			message := messages[blobIdx]
 
@@ -605,8 +606,6 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 				offset := sliceIdx % 8
 				quorumBitmap[blobIdx][slot] |= 1 << offset
 			}
-
-			s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket)
 		}
 	}
 
@@ -634,7 +633,6 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 		s.mu.Lock()
 		defer s.mu.Unlock()
 
-		s.logger.Debug("[signer] get aggregate signature for batch", "ts", signInfo.ts)
 		s.pendingSubmissions[signInfo.ts] = &BatchCommitRootSubmission{
 			submissions: rootSubmissions,
 			headerHash:  signInfo.headerHash,
@@ -643,13 +641,15 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			proofs:      signInfo.proofs,
 		}
 		s.signedBlobSize += uint64(len(signInfo.batch.EncodedBlobs))
-
+		s.logger.Debug("[signer] get aggregate signature for batch", "ts", signInfo.ts)
 		s.metrics.UpdateSignedBlobs(len(s.pendingSubmissions), s.signedBlobSize)
 
 		if s.SignatureSizeNotifier.threshold > 0 && s.signedBlobSize > s.SignatureSizeNotifier.threshold {
 			s.SignatureSizeNotifier.mu.Lock()
 
 			if s.SignatureSizeNotifier.active {
+				s.logger.Info("[signer] signed size threshold reached", "size", s.signedBlobSize)
+
 				s.SignatureSizeNotifier.Notify <- struct{}{}
 				s.SignatureSizeNotifier.active = false
 			}
@@ -751,14 +751,18 @@ func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmissi
 	if _, ok := s.signedBatches[ts]; !ok {
 		s.signedBatches[ts] = make([]uint64, 0)
 	}
+
+	blobSize := 0
 	for id, signedResult := range s.pendingSubmissions {
 		if _, ok := s.signedBatching[id]; !ok {
 			fetched = append(fetched, signedResult)
 			s.signedBatching[id] = ts
 			s.signedBatches[ts] = append(s.signedBatches[ts], id)
+
+			blobSize += len(signedResult.submissions)
 		}
 	}
-	s.logger.Trace("[signer] consumed signed results", "fetched", len(fetched))
+	s.logger.Trace("[signer] consumed signed results", "fetched", len(fetched), "blob size", blobSize)
 
 	if len(fetched) == 0 {
 		return nil, ts, errNoSignedResults

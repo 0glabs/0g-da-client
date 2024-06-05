@@ -9,7 +9,6 @@ import (
 
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/common/geth"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/0glabs/0g-data-avail/disperser/signer"
@@ -49,6 +48,7 @@ type Config struct {
 	MaxNumRetriesForSign      uint
 	FinalizedBlockCount       uint
 	ExpirationPollIntervalSec uint64
+	SignedPullInterval        time.Duration
 }
 
 type Batcher struct {
@@ -72,7 +72,6 @@ func NewBatcher(
 	config Config,
 	timeoutConfig TimeoutConfig,
 	ethConfig geth.EthClientConfig,
-	storageNodeConfig storage_node.ClientConfig,
 	queue disperser.BlobStore,
 	dispatcher disperser.Dispatcher,
 	encoderClient disperser.EncoderClient,
@@ -83,7 +82,7 @@ func NewBatcher(
 ) (*Batcher, error) {
 	batchTrigger := NewEncodedSizeNotifier(
 		make(chan struct{}, 1),
-		uint64(config.BatchSizeMBLimit)*1024*1024, // convert to bytes
+		uint64(config.BatchSizeMBLimit)*1024*1024*10, // convert to bytes
 	)
 	streamerConfig := StreamerConfig{
 		SRSOrder:               config.SRSOrder,
@@ -104,7 +103,7 @@ func NewBatcher(
 
 	signerTrigger := NewSignatureSizeNotifier(
 		make(chan struct{}, 1),
-		uint64(config.BatchSizeMBLimit)*1024*1024,
+		uint64(config.BatchSizeMBLimit)*1024*1024*10,
 	)
 	signerConfig := SignerConfig{
 		SigningRequestTimeout:     timeoutConfig.EncodingTimeout,
@@ -158,9 +157,10 @@ func (b *Batcher) Start(ctx context.Context) error {
 	}
 	batchTrigger := b.EncodingStreamer.EncodedSizeNotifier
 	submitAggregateSignaturesTrigger := b.sliceSigner.SignatureSizeNotifier
-	b.sliceSigner.Start(ctx)
+
 	b.sliceSigner.EncodingStreamer = b.EncodingStreamer
 	b.sliceSigner.Finalizer = b.finalizer
+	b.sliceSigner.Start(ctx)
 
 	// confirmer
 	b.confirmer.EncodingStreamer = b.EncodingStreamer
@@ -171,9 +171,6 @@ func (b *Batcher) Start(ctx context.Context) error {
 	b.finalizer.Start(ctx)
 
 	go func() {
-		submitAggregateSignaturesTicker := time.NewTicker(b.PullInterval)
-		defer submitAggregateSignaturesTicker.Stop()
-
 		ticker := time.NewTicker(b.PullInterval)
 		defer ticker.Stop()
 
@@ -201,6 +198,18 @@ func (b *Batcher) Start(ctx context.Context) error {
 					}
 				}
 				ticker.Reset(b.PullInterval)
+			}
+		}
+	}()
+
+	go func() {
+		submitAggregateSignaturesTicker := time.NewTicker(b.SignedPullInterval)
+		defer submitAggregateSignaturesTicker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
 
 			case <-submitAggregateSignaturesTicker.C:
 				if err := b.HandleSignedBatch(ctx); err != nil {
@@ -364,7 +373,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 		return err
 	}
 
-	b.logger.Info("[batcher] submit aggregate signatures", "duration", stageTimer)
+	b.logger.Info("[batcher] submit aggregate signatures", "duration", time.Since(stageTimer))
 
 	b.confirmer.ConfirmChan <- &BatchInfo{
 		headerHash: headerHash,

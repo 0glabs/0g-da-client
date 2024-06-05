@@ -63,7 +63,7 @@ type EncodingStreamer struct {
 }
 
 type batch struct {
-	EncodedBlobs []*core.BlobCommitments // todo: only map EncodedData?
+	EncodedBlobs []*core.BlobCommitments
 	BlobMetadata []*disperser.BlobMetadata
 	BlobHeaders  []*core.BlobHeader
 	BatchHeader  *core.BatchHeader

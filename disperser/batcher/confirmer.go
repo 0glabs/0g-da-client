@@ -369,7 +369,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 // The expireLoop is a loop that is run once per configured second(s) while the node
 // is running. It scans for expired blobs and removes them from the local database.
 func (c *Confirmer) expireLoop() {
-	c.logger.Info("Start expireLoop goroutine in background to periodically remove expired blobs on the node")
+	c.logger.Info("[confirmer] start expireLoop goroutine in background to periodically remove expired blobs on the node")
 	ticker := time.NewTicker(time.Duration(c.ExpirationPollIntervalSec) * time.Second)
 	defer ticker.Stop()
 
@@ -382,7 +382,7 @@ func (c *Confirmer) expireLoop() {
 		// least have 1 second.
 		timeLimitSec := uint64(math.Max(float64(c.ExpirationPollIntervalSec)*gcPercentageTime, 1.0))
 		numBlobsDeleted, err := c.kvStore.DeleteExpiredEntries(time.Now().Unix(), timeLimitSec)
-		c.logger.Info("Complete an expiration cycle to remove expired blobs", "num expired blobs found and removed", numBlobsDeleted)
+		c.logger.Info("[confirmer] complete an expiration cycle to remove expired blobs", "num expired blobs found and removed", numBlobsDeleted)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
 				c.logger.Error("Expiration cycle exited with ContextDeadlineExceed, meaning more expired blobs need to be removed, which will continue in next cycle", "time limit (sec)", timeLimitSec)

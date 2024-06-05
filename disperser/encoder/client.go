@@ -70,7 +70,10 @@ func NewEncoderClient(addr string, timeout time.Duration) (disperser.EncoderClie
 // }
 
 func (c client) EncodeBlob(ctx context.Context, data []byte, log common.Logger) (*core.BlobCommitments, error) {
-	conn, err := grpc.Dial(
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(
+		ctxWithTimeout,
 		c.addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*1024)), // 1 GiB

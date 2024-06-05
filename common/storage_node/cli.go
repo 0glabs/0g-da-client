@@ -28,7 +28,7 @@ func ClientFlags(envPrefix string, flagPrefix string) []cli.Flag {
 			Name:     common.PrefixFlag(flagPrefix, TimeToExpireFlagName),
 			Usage:    "time to expire",
 			Required: false,
-			Value:    5184000,
+			Value:    5184000, // 60 days
 			EnvVar:   common.PrefixEnvVar(envPrefix, "TimeToExpire"),
 		},
 	}

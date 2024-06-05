@@ -48,6 +48,7 @@ func NewConfig(ctx *cli.Context) Config {
 			MaxNumRetriesForSign:      ctx.GlobalUint(flags.MaxNumRetriesForSignFlag.Name),
 			FinalizedBlockCount:       ctx.GlobalUint(flags.FinalizedBlockCountFlag.Name),
 			ExpirationPollIntervalSec: ctx.GlobalUint64(flags.ExpirationPollIntervalSecFlag.Name),
+			SignedPullInterval:        ctx.GlobalDuration(flags.SignedPullIntervalFlag.Name),
 		},
 		TimeoutConfig: batcher.TimeoutConfig{
 			EncodingTimeout:   ctx.GlobalDuration(flags.EncodingTimeoutFlag.Name),
