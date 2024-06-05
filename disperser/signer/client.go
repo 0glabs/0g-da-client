@@ -27,7 +27,7 @@ func NewSignerClient(timeout time.Duration) (disperser.SignerClient, error) {
 }
 
 func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignRequest, log common.Logger) ([]*core.Signature, error) {
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 	conn, err := grpc.DialContext(
 		ctxWithTimeout,

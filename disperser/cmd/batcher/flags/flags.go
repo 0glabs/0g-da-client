@@ -66,7 +66,7 @@ var (
 		Name:     "encoding-timeout",
 		Usage:    "connection timeout from grpc call to encoder",
 		Required: false,
-		Value:    10 * time.Second,
+		Value:    30 * time.Second,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_TIMEOUT"),
 	}
 	ChainReadTimeoutFlag = cli.DurationFlag{
@@ -89,6 +89,13 @@ var (
 		Required: false,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "NUM_CONNECTIONS"),
 		Value:    256,
+	}
+	SigningTimeoutFlag = cli.DurationFlag{
+		Name:     "Signing-timeout",
+		Usage:    "connection timeout from grpc call to signer",
+		Required: false,
+		Value:    30 * time.Second,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_TIMEOUT"),
 	}
 	FinalizerIntervalFlag = cli.DurationFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "finalizer-interval"),

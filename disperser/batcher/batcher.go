@@ -27,6 +27,7 @@ type TimeoutConfig struct {
 	EncodingTimeout   time.Duration
 	ChainReadTimeout  time.Duration
 	ChainWriteTimeout time.Duration
+	SigningTimeout    time.Duration
 }
 
 type Config struct {
@@ -82,7 +83,7 @@ func NewBatcher(
 ) (*Batcher, error) {
 	batchTrigger := NewEncodedSizeNotifier(
 		make(chan struct{}, 1),
-		uint64(config.BatchSizeMBLimit)*1024*1024*10, // convert to bytes
+		uint64(config.BatchSizeMBLimit)*1024*1024, // convert to bytes
 	)
 	streamerConfig := StreamerConfig{
 		SRSOrder:               config.SRSOrder,
@@ -96,7 +97,7 @@ func NewBatcher(
 		return nil, err
 	}
 
-	signerClient, err := signer.NewSignerClient(timeoutConfig.EncodingTimeout)
+	signerClient, err := signer.NewSignerClient(timeoutConfig.SigningTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func NewBatcher(
 		uint64(config.BatchSizeMBLimit)*1024*1024*10,
 	)
 	signerConfig := SignerConfig{
-		SigningRequestTimeout:     timeoutConfig.EncodingTimeout,
+		SigningRequestTimeout:     timeoutConfig.SigningTimeout,
 		EncodingQueueLimit:        config.EncodingRequestQueueSize,
 		MaxNumRetriesPerBlob:      config.MaxNumRetriesPerBlob,
 		MaxNumRetriesSign:         config.MaxNumRetriesForSign,

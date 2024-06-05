@@ -70,7 +70,7 @@ func NewEncoderClient(addr string, timeout time.Duration) (disperser.EncoderClie
 // }
 
 func (c client) EncodeBlob(ctx context.Context, data []byte, log common.Logger) (*core.BlobCommitments, error) {
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 	conn, err := grpc.DialContext(
 		ctxWithTimeout,

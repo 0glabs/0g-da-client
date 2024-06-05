@@ -54,6 +54,7 @@ func NewConfig(ctx *cli.Context) Config {
 			EncodingTimeout:   ctx.GlobalDuration(flags.EncodingTimeoutFlag.Name),
 			ChainReadTimeout:  ctx.GlobalDuration(flags.ChainReadTimeoutFlag.Name),
 			ChainWriteTimeout: ctx.GlobalDuration(flags.ChainWriteTimeoutFlag.Name),
+			SigningTimeout:    ctx.GlobalDuration(flags.SigningTimeoutFlag.Name),
 		},
 		MetricsConfig: batcher.MetricsConfig{
 			HTTPPort:      ctx.GlobalString(flags.MetricsHTTPPort.Name),
