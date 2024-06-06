@@ -13,7 +13,9 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
 	"github.com/0glabs/0g-data-avail/disperser/common/memorydb"
+	"github.com/0glabs/0g-data-avail/disperser/contract"
 	"github.com/0glabs/0g-data-avail/disperser/encoder"
+	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
@@ -98,14 +100,16 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 
 func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, kvStore *disperser.Store) error {
 	// transactor
-	transactor := transactor.NewTransactor(logger)
+	transactor := transactor.NewTransactor(config.BatcherConfig.VerifiedCommitRootsTxGasLimit, logger)
 	// dispatcher
-	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
-		EthClientURL:              config.EthClientConfig.RPCURL,
-		PrivateKeyString:          config.EthClientConfig.PrivateKeyString,
-		DAEntranceContractAddress: config.BatcherConfig.DAEntranceContractAddress,
-		DASignersContractAddress:  config.BatcherConfig.DASignersContractAddress,
-	}, transactor, logger)
+	daEntranceAddress := eth_common.HexToAddress(config.BatcherConfig.DAEntranceContractAddress)
+	daSignersAddress := eth_common.HexToAddress(config.BatcherConfig.DASignersContractAddress)
+	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, config.EthClientConfig.RPCURL, config.EthClientConfig.PrivateKeyString)
+	if err != nil {
+		return fmt.Errorf("failed to create DAEntrance contract: %w", err)
+	}
+
+	dispatcher, err := dispatcher.NewDispatcher(transactor, daContract, logger)
 	if err != nil {
 		return err
 	}
@@ -134,7 +138,7 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, 
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, logger, metrics, kvStore)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, daContract, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}
@@ -143,7 +147,7 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, 
 	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger, config.BatcherConfig.FinalizedBlockCount)
 
 	//batcher
-	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, logger, metrics)
+	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, daContract, logger, metrics)
 	if err != nil {
 		return err
 	}

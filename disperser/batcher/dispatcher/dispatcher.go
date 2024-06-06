@@ -11,25 +11,14 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
 	"github.com/0glabs/0g-data-avail/disperser/contract"
 	"github.com/0glabs/0g-data-avail/disperser/contract/da_entrance"
-	"github.com/0glabs/0g-storage-client/common/blockchain"
 	zg_core "github.com/0glabs/0g-storage-client/core"
-	"github.com/0glabs/0g-storage-client/core/merkle"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 	"github.com/wealdtech/go-merkletree"
 	"github.com/wealdtech/go-merkletree/keccak256"
 )
 
-type Config struct {
-	EthClientURL              string
-	PrivateKeyString          string
-	DAEntranceContractAddress string
-	DASignersContractAddress  string
-}
-
 type dispatcher struct {
-	*Config
-
 	daContract *contract.DAContract
 
 	transactor *transactor.Transactor
@@ -37,17 +26,8 @@ type dispatcher struct {
 	logger common.Logger
 }
 
-func NewDispatcher(cfg *Config, transactor *transactor.Transactor, logger common.Logger) (*dispatcher, error) {
-	client := blockchain.MustNewWeb3(cfg.EthClientURL, cfg.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(cfg.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(cfg.DASignersContractAddress)
-	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
-	if err != nil {
-		return nil, fmt.Errorf("NewDispatcher: failed to create DAEntrance contract: %v", err)
-	}
-
+func NewDispatcher(transactor *transactor.Transactor, daContract *contract.DAContract, logger common.Logger) (*dispatcher, error) {
 	return &dispatcher{
-		Config:     cfg,
 		logger:     logger,
 		daContract: daContract,
 		transactor: transactor,
@@ -94,81 +74,7 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		encoded[i] = encodedBlobsData
 	}
 
-	// encoded, err := DumpEncodedBlobs(extendedMatrix)
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "failed to dump encoded blobs")
-	// }
-
-	// // encoded blobs
-	// encodedBlobsData, err := zg_core.NewDataInMemory(encoded)
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
-	// }
-
-	// // calculate data root
-	// tree, err := zg_core.MerkleTree(encodedBlobsData)
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "failed to get encoded data merkle tree")
-	// }
-	// batchHeader.DataRoot = tree.Root()
-
-	// kv
-	// batcher info
-	// batcher := c.KVNode.Batcher()
-	// blobDisperseInfos := make([]core.BlobDisperseInfo, len(extendedMatrix))
-	// for i, matrix := range extendedMatrix {
-	// 	blobDisperseInfos[i] = core.BlobDisperseInfo{
-	// 		BlobLength: matrix.Length,
-	// 		Rows:       uint(matrix.GetRows()),
-	// 		Cols:       uint(matrix.GetCols()),
-	// 	}
-	// }
-	// kvBatchInfo := core.KVBatchInfo{
-	// 	BatchHeader:       batchHeader,
-	// 	BlobDisperseInfos: blobDisperseInfos,
-	// }
-	// serializedBatchInfo, err := json.Marshal(kvBatchInfo)
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize batch info")
-	// }
-	// batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchInfo)
-	// // blob info
-	// for blobIndex := range extendedMatrix {
-	// 	key, err := json.Marshal((&core.KVBlobInfoKey{
-	// 		BatchHeaderHash: batchHeaderHash,
-	// 		BlobIndex:       uint32(blobIndex),
-	// 	}))
-	// 	if err != nil {
-	// 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize kv blob info key")
-	// 	}
-
-	// 	value, err := json.Marshal(core.KVBlobInfo{
-	// 		BlobHeader: blobHeaders[blobIndex],
-	// 		MerkleProof: &core.MerkleProof{
-	// 			Hashes: proofs[blobIndex].Hashes,
-	// 			Index:  proofs[blobIndex].Index,
-	// 		},
-	// 	})
-	// 	if err != nil {
-	// 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize blob info")
-	// 	}
-	// 	batcher.Set(c.StreamId, key, value)
-	// }
-	// streamData, err := batcher.Build()
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "Failed to build stream data")
-	// }
-	// rawKVData, err := streamData.Encode()
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "Failed to encode stream data")
-	// }
-	// kvData, err := zg_core.NewDataInMemory(rawKVData)
-	// if err != nil {
-	// 	return eth_common.Hash{}, errors.WithMessage(err, "failed to build kv data")
-	// }
-
 	n := len(encoded)
-	trees := make([]*merkle.Tree, n)
 	dataRoots := make([]eth_common.Hash, n)
 	for i := 0; i < n; i++ {
 		data := encoded[i]
@@ -180,24 +86,16 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		if err != nil {
 			return eth_common.Hash{}, errors.WithMessage(err, "Failed to create data merkle tree")
 		}
-		c.logger.Info("[dispatcher] Data merkle root calculated", "root", tree.Root())
-		trees[i] = tree
-		dataRoots[i] = trees[i].Root()
+		c.logger.Info("[dispatcher] data merkle root calculated", "root", tree.Root())
+		dataRoots[i] = tree.Root()
 
 		if eth_common.BytesToHash(blobCommitments[i].StorageRoot) != dataRoots[i] {
-			return eth_common.Hash{}, fmt.Errorf("failed to storage root not match: %v", err)
+			return eth_common.Hash{}, fmt.Errorf("data merkle root is not match: local: %v, encoder: %v", dataRoots[i], eth_common.BytesToHash(blobCommitments[i].StorageRoot))
 		}
-	}
-
-	// upload batchly
-	txHash, dataRoots, err := c.transactor.BatchUpload(c.daContract, dataRoots)
-	if err != nil {
-		return eth_common.Hash{}, fmt.Errorf("failed to submit blob data roots: %v", err)
 	}
 
 	leafs := make([][]byte, len(dataRoots))
 	for i, dataRoot := range dataRoots {
-
 		leafs[i] = dataRoot[:]
 	}
 	tree, err := merkletree.NewTree(merkletree.WithData(leafs), merkletree.WithHashType(keccak256.New()))
@@ -205,6 +103,12 @@ func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte
 		return eth_common.Hash{}, fmt.Errorf("failed to get batch data root: %v", err)
 	}
 	batchHeader.DataRoot = eth_common.Hash(tree.Root())
+
+	// upload batchly
+	txHash, err := c.transactor.BatchUpload(c.daContract, dataRoots)
+	if err != nil {
+		return eth_common.Hash{}, fmt.Errorf("failed to submit blob data roots: %v", err)
+	}
 
 	return txHash, nil
 }

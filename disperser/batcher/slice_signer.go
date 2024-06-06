@@ -15,7 +15,6 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser"
 	pb "github.com/0glabs/0g-data-avail/disperser/api/grpc/signer"
 	"github.com/0glabs/0g-data-avail/disperser/contract"
-	"github.com/0glabs/0g-storage-client/common/blockchain"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -31,8 +30,7 @@ var errNoSignedResults = errors.New("no signed results")
 type SignatureSizeNotifier struct {
 	mu sync.Mutex
 
-	Notify chan struct{}
-	// threshold is the size of the total encoded blob results in bytes that triggers the notifier
+	Notify    chan struct{}
 	threshold uint64
 	// active is set to false after the notifier is triggered to prevent it from triggering again for the same batch
 	// This is reset when CreateBatch is called and the encoded results have been consumed
@@ -48,19 +46,14 @@ func NewSignatureSizeNotifier(notify chan struct{}, threshold uint64) *Signature
 }
 
 type SignerConfig struct {
-	// EncodingRequestTimeout is the timeout for each encoding request
+	// the timeout for each signing request
 	SigningRequestTimeout time.Duration
-
-	// EncodingQueueLimit is the maximum number of encoding requests that can be queued
-	EncodingQueueLimit int
 
 	MaxNumRetriesPerBlob uint
 
 	MaxNumRetriesSign uint
 
-	SigningInterval           time.Duration
-	DAEntranceContractAddress string
-	DASignersContractAddress  string
+	SigningInterval time.Duration
 }
 
 type SignInfo struct {
@@ -75,13 +68,13 @@ type SignInfo struct {
 	signers  map[eth_common.Address]*SignerState
 }
 
-type SignResult struct {
+type SignRequestResult struct {
 	signatures []*core.Signature
 	signer     *SignerState
 }
 
-type SignResultOrStatus struct {
-	SignResult
+type SignRequestResultOrStatus struct {
+	SignRequestResult
 	Err error
 }
 
@@ -142,17 +135,9 @@ func NewEncodedSliceSigner(
 	signatureSizeNotifier *SignatureSizeNotifier,
 	signerClient disperser.SignerClient,
 	blobStore disperser.BlobStore,
+	daContract *contract.DAContract,
 	metrics *Metrics,
 	logger common.Logger) (*SliceSigner, error) {
-
-	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(config.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(config.DASignersContractAddress)
-	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
-	if err != nil {
-		return nil, fmt.Errorf("signer: failed to create DAEntrance contract: %w", err)
-	}
-
 	return &SliceSigner{
 		SignerConfig:          config,
 		Pool:                  workerPool,
@@ -188,10 +173,14 @@ func (s *SliceSigner) Start(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				err := s.doSigning(ctx)
-				if err != nil {
-					s.logger.Warn("[signer] error requesting signing", "err", err)
+				signInfo := s.getPendingBatchToSign()
+				if signInfo != nil {
+					err := s.doSigning(ctx, signInfo)
+					if err != nil {
+						s.logger.Error("[signer] error during requesting signing", "err", err)
+					}
 				}
+
 			}
 		}
 	}()
@@ -405,7 +394,7 @@ func (s *SliceSigner) handleFailure(ctx context.Context, blobMetadatas []*disper
 	for _, metadata := range blobMetadatas {
 		err := s.blobStore.HandleBlobFailure(ctx, metadata, s.MaxNumRetriesPerBlob)
 		if err != nil {
-			s.logger.Error("[signer] HandleSingleBatch: error handling blob failure", "err", err)
+			s.logger.Error("[signer] error handling blob failure", "err", err)
 			// Append the error
 			result = multierror.Append(result, err)
 		}
@@ -430,20 +419,14 @@ func (s *SliceSigner) getPendingBatchToSign() *SignInfo {
 	return info
 }
 
-func (s *SliceSigner) doSigning(ctx context.Context) error {
-	signInfo := s.getPendingBatchToSign()
-	if signInfo == nil {
-		s.logger.Info("[signer] no new batch to sign")
-		return nil
-	}
-
+func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
 	requestData := s.assignEncodedBlobs(signInfo.signers, signInfo.batch, signInfo.epoch.Uint64(), signInfo.quorumId.Uint64())
 	if len(requestData) == 0 {
 		s.logger.Warn("[signer] data for sign is empty")
 		return nil
 	}
 
-	update := make(chan SignResultOrStatus, len(requestData))
+	update := make(chan SignRequestResultOrStatus, len(requestData))
 	for signerAddress, content := range requestData {
 		encodingCtx, cancel := context.WithTimeout(ctx, s.SigningRequestTimeout)
 		s.Pool.Submit(func() {
@@ -460,16 +443,16 @@ func (s *SliceSigner) doSigning(ctx context.Context) error {
 
 			reply, err := s.signerClient.BatchSign(encodingCtx, signInfo.signers[signerAddress].Socket, content, s.logger)
 			if err != nil {
-				update <- SignResultOrStatus{
-					Err:        err,
-					SignResult: SignResult{signer: signInfo.signers[signerAddress]},
+				update <- SignRequestResultOrStatus{
+					Err:               err,
+					SignRequestResult: SignRequestResult{signer: signInfo.signers[signerAddress]},
 				}
 				return
 			}
 
-			update <- SignResultOrStatus{
+			update <- SignRequestResultOrStatus{
 				Err: nil,
-				SignResult: SignResult{
+				SignRequestResult: SignRequestResult{
 					signatures: reply,
 					signer:     signInfo.signers[signerAddress],
 				},
@@ -523,7 +506,7 @@ func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerS
 	return requestData
 }
 
-func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo, update chan SignResultOrStatus) error {
+func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo, update chan SignRequestResultOrStatus) error {
 	signerCounter := len(signInfo.signers)
 
 	blobSize := len(signInfo.batch.EncodedBlobs)
@@ -578,7 +561,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			// Verify Signature
 			ok := sig.Verify(signer.PkG2, message)
 			if !ok {
-				s.logger.Error("signature is not valid", "address", signer.Signer, "socket", signer.Socket, "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
+				s.logger.Error("[signer] signature is not valid", "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
 				continue
 			}
 
@@ -762,20 +745,13 @@ func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmissi
 			blobSize += len(signedResult.submissions)
 		}
 	}
-	s.logger.Trace("[signer] consumed signed results", "fetched", len(fetched), "blob size", blobSize)
 
 	if len(fetched) == 0 {
 		return nil, ts, errNoSignedResults
 	}
 
-	// n := len(s.pendingSubmissions)
-
-	// info := make([]BatchedCommitRootSubmission, 0)
-	// info = append(info, s.pendingSubmissions[:n]...)
-	// s.pendingSubmissions = s.pendingSubmissions[n:]
-	// c.logger.Info(`[confirmer] retrieved one pending batch`, "queue size", len(c.pendingBatches))
+	s.logger.Trace("[signer] consumed signed results", "fetched", len(fetched), "blob size", blobSize)
 	return fetched, ts, nil
-
 }
 
 func (s *SliceSigner) RemoveSignedBlob(ts uint64) {

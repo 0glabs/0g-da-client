@@ -14,12 +14,14 @@ import (
 type Transactor struct {
 	mu sync.Mutex
 
-	logger common.Logger
+	gasLimit uint64
+	logger   common.Logger
 }
 
-func NewTransactor(logger common.Logger) *Transactor {
+func NewTransactor(gasLimit uint64, logger common.Logger) *Transactor {
 	return &Transactor{
-		logger: logger,
+		gasLimit: gasLimit,
+		logger:   logger,
 	}
 }
 
@@ -36,21 +38,21 @@ func (t *Transactor) SubmitLogEntry(daContract *contract.DAContract, dataRoots [
 	return txHash, nil
 }
 
-func (t *Transactor) BatchUpload(daContract *contract.DAContract, dataRoots []eth_common.Hash) (eth_common.Hash, []eth_common.Hash, error) {
+func (t *Transactor) BatchUpload(daContract *contract.DAContract, dataRoots []eth_common.Hash) (eth_common.Hash, error) {
 	stageTimer := time.Now()
 
 	txHash, err := t.SubmitLogEntry(daContract, dataRoots)
 	if err != nil {
-		return eth_common.Hash{}, nil, err
+		return eth_common.Hash{}, err
 	}
 
 	t.logger.Info("[transactor] batch upload took", "duration", time.Since(stageTimer))
 
-	return txHash, dataRoots, nil
+	return txHash, nil
 }
 
 func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, submissions []da_entrance.IDAEntranceCommitRootSubmission) (eth_common.Hash, error) {
-	t.logger.Debug("[transactor] start submit verified commit roots")
+	stageTimer := time.Now()
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -58,9 +60,11 @@ func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, 
 	var txHash eth_common.Hash
 	var err error
 
-	if txHash, _, err = daContract.SubmitVerifiedCommitRoots(submissions, false); err != nil {
+	if txHash, _, err = daContract.SubmitVerifiedCommitRoots(submissions, t.gasLimit, false); err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to submit verified commit roots")
 	}
+
+	t.logger.Debug("[transactor] submit verified commit roots took", "duration", time.Since(stageTimer))
 
 	return txHash, nil
 }

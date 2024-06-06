@@ -188,7 +188,7 @@ type BlobStore interface {
 }
 
 type Dispatcher interface {
-	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.BlobCommitments, blobHeaders []*core.BlobHeader) (eth_common.Hash, error)
+	DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobCommitments []*core.BlobCommitments, blobHeaders []*core.BlobHeader) (eth_common.Hash, error)
 	SubmitAggregateSignatures(ctx context.Context, rootSubmission []*core.CommitRootSubmission) (eth_common.Hash, error)
 }
 

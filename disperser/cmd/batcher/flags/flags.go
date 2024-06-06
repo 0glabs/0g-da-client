@@ -180,6 +180,13 @@ var (
 		Required: true,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNED_PULL_INTERVAL"),
 	}
+	VerifiedCommitRootsTxGasLimitFlag = cli.Uint64Flag{
+		Name:     common.PrefixFlag(FlagPrefix, "verified-commit-roots-tx-gas-limit"),
+		Usage:    "tx gas limit for VerifiedCommitRootsTx",
+		Required: false,
+		Value:    10000000,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "VERIFIED_COMMIT_ROOTS_TX_GAS_LIMIT"),
+	}
 
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
 	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
@@ -228,6 +235,7 @@ var OptionalFlags = []cli.Flag{
 	ExpirationPollIntervalSecFlag,
 	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
+	VerifiedCommitRootsTxGasLimitFlag,
 }
 
 // Flags contains the list of configuration options available to the binary.

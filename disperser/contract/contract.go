@@ -11,8 +11,10 @@ import (
 	gethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/openweb3/web3go"
 	"github.com/openweb3/web3go/interfaces"
+	"github.com/openweb3/web3go/signers"
 	"github.com/openweb3/web3go/types"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const DataUploadEventHash = "0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb"
@@ -59,7 +61,8 @@ func defaultSigner(clientWithSigner *web3go.Client) (interfaces.Signer, error) {
 	return signers[0], nil
 }
 
-func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, clientWithSigner *web3go.Client) (*DAContract, error) {
+func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcURL, privateKeyString string) (*DAContract, error) {
+	clientWithSigner := MustNewWeb3(rpcURL, privateKeyString)
 	backend, signer := clientWithSigner.ToClientForContract()
 
 	default_signer, err := defaultSigner(clientWithSigner)
@@ -86,12 +89,13 @@ func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, clien
 	}, nil
 }
 
-func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntranceCommitRootSubmission, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
+func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntranceCommitRootSubmission, gasLimit uint64, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
 	opts, err := c.CreateTransactOpts()
 	if err != nil {
 		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
 	}
 
+	opts.GasLimit = gasLimit
 	tx, err := c.DAEntrance.SubmitVerifiedCommitRoots(opts, submissions)
 
 	if err != nil {
@@ -210,4 +214,27 @@ func ConvertToGethLog(log *types.Log) *gethTypes.Log {
 		Index:       log.Index,
 		Removed:     log.Removed,
 	}
+}
+
+func MustNewWeb3(url, key string) *web3go.Client {
+	client, err := NewWeb3(url, key)
+	if err != nil {
+		logrus.WithError(err).WithField("url", url).Fatal("Failed to connect to fullnode")
+	}
+
+	return client
+}
+
+func NewWeb3(url, key string) (*web3go.Client, error) {
+	sm := signers.MustNewSignerManagerByPrivateKeyStrings([]string{key})
+
+	option := new(web3go.ClientOption).
+		WithTimout(60 * time.Second).
+		WithSignerManager(sm)
+
+	if Web3LogEnabled {
+		option = option.WithLooger(logrus.StandardLogger().Out)
+	}
+
+	return web3go.NewClientWithOption(url, *option)
 }

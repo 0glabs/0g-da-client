@@ -11,6 +11,7 @@ import (
 	"github.com/0glabs/0g-data-avail/common/geth"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-data-avail/disperser/contract"
 	"github.com/0glabs/0g-data-avail/disperser/signer"
 	"github.com/gammazero/workerpool"
 	"github.com/hashicorp/go-multierror"
@@ -42,14 +43,15 @@ type Config struct {
 	MaxNumRetriesPerBlob uint
 	ConfirmerNum         uint
 
-	DAEntranceContractAddress string
-	DASignersContractAddress  string
-	EncodingInterval          time.Duration
-	SigningInterval           time.Duration
-	MaxNumRetriesForSign      uint
-	FinalizedBlockCount       uint
-	ExpirationPollIntervalSec uint64
-	SignedPullInterval        time.Duration
+	DAEntranceContractAddress     string
+	DASignersContractAddress      string
+	EncodingInterval              time.Duration
+	SigningInterval               time.Duration
+	MaxNumRetriesForSign          uint
+	FinalizedBlockCount           uint
+	ExpirationPollIntervalSec     uint64
+	SignedPullInterval            time.Duration
+	VerifiedCommitRootsTxGasLimit uint64
 }
 
 type Batcher struct {
@@ -78,6 +80,7 @@ func NewBatcher(
 	encoderClient disperser.EncoderClient,
 	finalizer Finalizer,
 	confirmer *Confirmer,
+	daContract *contract.DAContract,
 	logger common.Logger,
 	metrics *Metrics,
 ) (*Batcher, error) {
@@ -104,16 +107,13 @@ func NewBatcher(
 
 	signerTrigger := NewSignatureSizeNotifier(
 		make(chan struct{}, 1),
-		uint64(config.BatchSizeMBLimit)*1024*1024*10,
+		10,
 	)
 	signerConfig := SignerConfig{
-		SigningRequestTimeout:     timeoutConfig.SigningTimeout,
-		EncodingQueueLimit:        config.EncodingRequestQueueSize,
-		MaxNumRetriesPerBlob:      config.MaxNumRetriesPerBlob,
-		MaxNumRetriesSign:         config.MaxNumRetriesForSign,
-		SigningInterval:           config.SigningInterval,
-		DAEntranceContractAddress: config.DAEntranceContractAddress,
-		DASignersContractAddress:  config.DASignersContractAddress,
+		SigningRequestTimeout: timeoutConfig.SigningTimeout,
+		MaxNumRetriesPerBlob:  config.MaxNumRetriesPerBlob,
+		MaxNumRetriesSign:     config.MaxNumRetriesForSign,
+		SigningInterval:       config.SigningInterval,
 	}
 	signingWorkerPool := workerpool.New(config.NumConnections)
 	sliceSigner, err := NewEncodedSliceSigner(
@@ -123,6 +123,7 @@ func NewBatcher(
 		signerTrigger,
 		signerClient,
 		queue,
+		daContract,
 		metrics,
 		logger,
 	)
@@ -204,15 +205,15 @@ func (b *Batcher) Start(ctx context.Context) error {
 	}()
 
 	go func() {
-		submitAggregateSignaturesTicker := time.NewTicker(b.SignedPullInterval)
-		defer submitAggregateSignaturesTicker.Stop()
+		ticker := time.NewTicker(b.SignedPullInterval)
+		defer ticker.Stop()
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
 
-			case <-submitAggregateSignaturesTicker.C:
+			case <-ticker.C:
 				if err := b.HandleSignedBatch(ctx); err != nil {
 					if errors.Is(err, errNoSignedResults) {
 						b.logger.Debug("[batcher] no signed results to make a batch with")
@@ -222,7 +223,7 @@ func (b *Batcher) Start(ctx context.Context) error {
 				}
 
 			case <-submitAggregateSignaturesTrigger.Notify:
-				submitAggregateSignaturesTicker.Stop()
+				ticker.Stop()
 				if err := b.HandleSignedBatch(ctx); err != nil {
 					if errors.Is(err, errNoSignedResults) {
 						b.logger.Debug("[batcher] no signed results to make a batch with(Notified)")
@@ -231,7 +232,7 @@ func (b *Batcher) Start(ctx context.Context) error {
 					}
 				}
 
-				submitAggregateSignaturesTicker.Reset((b.PullInterval))
+				ticker.Reset((b.PullInterval))
 			}
 		}
 	}()
@@ -329,6 +330,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 		ts:         ts,
 		reties:     0,
 	}
+
 	return ts, nil
 }
 

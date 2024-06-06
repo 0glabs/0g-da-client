@@ -86,11 +86,11 @@ func (f *finalizer) updateFinalizedBlockNumber(ctx context.Context) {
 	var blockNumber uint64
 	err := f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
 	if err != nil {
-		f.logger.Error("[finalizer] Finalizer: error getting latest finalized block", "err", err)
+		f.logger.Error("[finalizer] error getting latest finalized block", "err", err)
 
 		err := f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "latest", false)
 		if err != nil {
-			f.logger.Error("[finalizer] Finalizer: error getting latest block", "err", err)
+			f.logger.Error("[finalizer] error getting latest block", "err", err)
 		} else {
 			blockNumber = header.Number.Uint64() - f.defaultFinalizedBlockCount
 		}

@@ -61,15 +61,7 @@ type BatchInfo struct {
 	quorumIds  []*big.Int
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue disperser.BlobStore, transactor *transactor.Transactor, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
-	client := blockchain.MustNewWeb3(ethConfig.RPCURL, ethConfig.PrivateKeyString)
-	daEntranceAddress := eth_common.HexToAddress(batcherConfig.DAEntranceContractAddress)
-	daSignersAddress := eth_common.HexToAddress(batcherConfig.DASignersContractAddress)
-	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, client)
-	if err != nil {
-		return nil, fmt.Errorf("NewConfirmer: failed to create DAEntrance contract: %v", err)
-	}
-
+func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue disperser.BlobStore, transactor *transactor.Transactor, daContract *contract.DAContract, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
 	if ethConfig.TxGasLimit > 0 {
 		blockchain.CustomGasLimit = uint64(ethConfig.TxGasLimit)
 	}
