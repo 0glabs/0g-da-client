@@ -107,7 +107,7 @@ func NewBatcher(
 
 	signerTrigger := NewSignatureSizeNotifier(
 		make(chan struct{}, 1),
-		10,
+		100,
 	)
 	signerConfig := SignerConfig{
 		SigningRequestTimeout: timeoutConfig.SigningTimeout,

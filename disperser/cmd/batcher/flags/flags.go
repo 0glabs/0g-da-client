@@ -91,7 +91,7 @@ var (
 		Value:    256,
 	}
 	SigningTimeoutFlag = cli.DurationFlag{
-		Name:     "Signing-timeout",
+		Name:     "signing-timeout",
 		Usage:    "connection timeout from grpc call to signer",
 		Required: false,
 		Value:    30 * time.Second,

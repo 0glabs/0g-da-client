@@ -186,6 +186,10 @@ func (e *encodedBlobStore) GetEncodedResultSize() (int, uint64) {
 	return len(e.encoded), e.encodedResultSize
 }
 
+func (e *encodedBlobStore) GetEncodingRequestingSize() int {
+	return len(e.requested)
+}
+
 func getRequestID(key disperser.BlobKey) requestID {
 	return requestID(fmt.Sprintf("%s", key.String()))
 }

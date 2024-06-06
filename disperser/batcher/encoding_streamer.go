@@ -172,7 +172,7 @@ func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan
 	e.logger.Info("[encodingstreamer] metadata in processing status", "numMetadata", len(metadatas))
 
 	waitingQueueSize := e.Pool.WaitingQueueSize()
-	numMetadatastoProcess := e.EncodingQueueLimit - waitingQueueSize
+	numMetadatastoProcess := e.EncodingQueueLimit - waitingQueueSize - e.EncodedBlobstore.GetEncodingRequestingSize()
 	if numMetadatastoProcess > len(metadatas) {
 		numMetadatastoProcess = len(metadatas)
 	}

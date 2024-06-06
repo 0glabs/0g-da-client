@@ -287,7 +287,7 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.pendingBatchesToSign = append(s.pendingBatchesToSign, batchInfo)
-	s.logger.Info("[signer] encode batch tx finalized", "ts", batchInfo.ts, "epoch", epoch, "quorum", quorumId, "unique signers", len(signers))
+	s.logger.Info("[signer] blob epoch status", "ts", batchInfo.ts, "epoch", epoch, "quorum", quorumId, "unique signers", len(signers))
 	return nil
 }
 
