@@ -218,6 +218,7 @@ var OptionalFlags = []cli.Flag{
 	EncodingRequestQueueSizeFlag,
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
+	SigningTimeoutFlag,
 	DAEntranceContractAddressFlag,
 	DASignersContractAddressFlag,
 	EncodingIntervalFlag,

@@ -95,6 +95,7 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 			EncodingTimeout:   ctx.GlobalDuration(batcher_flags.EncodingTimeoutFlag.Name),
 			ChainReadTimeout:  ctx.GlobalDuration(batcher_flags.ChainReadTimeoutFlag.Name),
 			ChainWriteTimeout: ctx.GlobalDuration(batcher_flags.ChainWriteTimeoutFlag.Name),
+			SigningTimeout:    ctx.GlobalDuration(batcher_flags.SigningTimeoutFlag.Name),
 		},
 	}
 	return config, nil
