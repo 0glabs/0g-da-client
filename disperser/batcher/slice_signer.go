@@ -70,7 +70,7 @@ type SignInfo struct {
 
 type SignRequestResult struct {
 	signatures []*core.Signature
-	signer     *SignerState
+	signer     eth_common.Address
 }
 
 type SignRequestResultOrStatus struct {
@@ -428,6 +428,9 @@ func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
 
 	update := make(chan SignRequestResultOrStatus, len(requestData))
 	for signerAddress, content := range requestData {
+		address := eth_common.BytesToAddress(signerAddress[:])
+		requests := make([]*pb.SignRequest, len(content))
+		copy(requests, content)
 		encodingCtx, cancel := context.WithTimeout(ctx, s.SigningRequestTimeout)
 		s.Pool.Submit(func() {
 			defer cancel()
@@ -441,11 +444,11 @@ func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
 			// 	}
 			// }
 
-			reply, err := s.signerClient.BatchSign(encodingCtx, signInfo.signers[signerAddress].Socket, content, s.logger)
+			reply, err := s.signerClient.BatchSign(encodingCtx, signInfo.signers[address].Socket, requests, s.logger)
 			if err != nil {
 				update <- SignRequestResultOrStatus{
 					Err:               err,
-					SignRequestResult: SignRequestResult{signer: signInfo.signers[signerAddress]},
+					SignRequestResult: SignRequestResult{signer: address},
 				}
 				return
 			}
@@ -454,12 +457,12 @@ func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
 				Err: nil,
 				SignRequestResult: SignRequestResult{
 					signatures: reply,
-					signer:     signInfo.signers[signerAddress],
+					signer:     address,
 				},
 			}
 		})
 
-		s.logger.Trace("[signer] requested sign for batch", "ts", signInfo.ts, "signer", signerAddress)
+		s.logger.Trace("[signer] requested sign for batch", "ts", signInfo.ts, "signer", address)
 	}
 
 	err := s.aggregateSignature(ctx, signInfo, update)
@@ -546,7 +549,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 
 	for i := 0; i < signerCounter; i++ {
 		recv := <-update
-		signer := recv.signer
+		signerAddress := recv.signer
+		signer := signInfo.signers[signerAddress]
 		signatures := recv.signatures
 
 		if recv.Err != nil {
