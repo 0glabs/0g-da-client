@@ -63,34 +63,32 @@ func DumpEncodedBlobs(extendedMatrix []*core.ExtendedMatrix) ([]byte, error) {
 }
 
 func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobCommitments []*core.BlobCommitments, blobHeaders []*core.BlobHeader) (eth_common.Hash, error) {
-	encoded := make([]*zg_core.DataInMemory, len(blobCommitments))
-	for i, commit := range blobCommitments {
-		// encoded blobs
-		encodedBlobsData, err := zg_core.NewDataInMemory(commit.EncodedData)
-		if err != nil {
-			return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
-		}
-
-		encoded[i] = encodedBlobsData
-	}
-
-	n := len(encoded)
+	n := len(blobCommitments)
 	dataRoots := make([]eth_common.Hash, n)
-	for i := 0; i < n; i++ {
-		data := encoded[i]
 
-		// c.logger.Info("[dispatcher] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
+	for i, commit := range blobCommitments {
+		if len(commit.EncodedData) > 0 {
+			// encoded blobs
+			encodedBlobsData, err := zg_core.NewDataInMemory(commit.EncodedData)
+			if err != nil {
+				return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
+			}
 
-		// Calculate file merkle root.
-		tree, err := zg_core.MerkleTree(data)
-		if err != nil {
-			return eth_common.Hash{}, errors.WithMessage(err, "Failed to create data merkle tree")
-		}
-		c.logger.Info("[dispatcher] data merkle root calculated", "root", tree.Root())
-		dataRoots[i] = tree.Root()
+			// c.logger.Info("[dispatcher] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
 
-		if eth_common.BytesToHash(blobCommitments[i].StorageRoot) != dataRoots[i] {
-			return eth_common.Hash{}, fmt.Errorf("data merkle root is not match: local: %v, encoder: %v", dataRoots[i], eth_common.BytesToHash(blobCommitments[i].StorageRoot))
+			// Calculate file merkle root.
+			tree, err := zg_core.MerkleTree(encodedBlobsData)
+			if err != nil {
+				return eth_common.Hash{}, errors.WithMessage(err, "Failed to create data merkle tree")
+			}
+			c.logger.Info("[dispatcher] data merkle root calculated", "root", tree.Root())
+			dataRoots[i] = tree.Root()
+
+			if eth_common.BytesToHash(blobCommitments[i].StorageRoot) != dataRoots[i] {
+				return eth_common.Hash{}, fmt.Errorf("data merkle root is not match: local: %v, encoder: %v", dataRoots[i], eth_common.BytesToHash(blobCommitments[i].StorageRoot))
+			}
+		} else {
+			dataRoots[i] = eth_common.BytesToHash(blobCommitments[i].StorageRoot)
 		}
 	}
 

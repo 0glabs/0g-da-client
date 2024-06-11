@@ -10,6 +10,7 @@ service Encoder {
 // EncodeBlobRequest contains data and pre-computed encoding params provided to Encoder
 message EncodeBlobRequest {
   bytes data = 1;
+  bool require_data = 2;
 }
 
 // EncodeBlobReply 

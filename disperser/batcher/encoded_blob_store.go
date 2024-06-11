@@ -195,5 +195,5 @@ func getRequestID(key disperser.BlobKey) requestID {
 }
 
 func getChunksSize(result *EncodingResult) uint64 {
-	return uint64(len(result.BlobCommitments.EncodedData))
+	return uint64(len(result.BlobCommitments.EncodedSlice) * len(result.BlobCommitments.EncodedSlice[0]))
 }

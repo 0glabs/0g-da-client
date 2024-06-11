@@ -45,7 +45,8 @@ func (c client) EncodeBlob(ctx context.Context, data []byte, log common.Logger) 
 
 	encoder := pb.NewEncoderClient(conn)
 	encodeBlobReply, err := encoder.EncodeBlob(ctx, &pb.EncodeBlobRequest{
-		Data: data,
+		Data:        data,
+		RequireData: false,
 	})
 	if err != nil {
 		return nil, err
