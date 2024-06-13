@@ -62,17 +62,9 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 	signatures := make([]*core.Signature, len(data))
 	for i := 0; i < len(data); i++ {
 		signature := sigBytes[i]
-		if len(signature) != bn.SizeOfG1AffineUncompressed {
-			return nil, io.ErrShortBuffer
-		}
-
-		signature[bn.SizeOfG1AffineUncompressed-1] &= 63
-		for i := 0; i < fp.Bytes/2; i++ {
-			signature[i], signature[fp.Bytes-i-1] = signature[fp.Bytes-i-1], signature[i]
-		}
-
-		for i := fp.Bytes; i < fp.Bytes+fp.Bytes/2; i++ {
-			signature[i], signature[len(signature)-(i-fp.Bytes)-1] = signature[len(signature)-(i-fp.Bytes)-1], signature[i]
+		signature, err := toBigEndian(signature)
+		if err != nil {
+			return nil, err
 		}
 		point, err := new(core.Signature).Deserialize(signature)
 		if err != nil {
@@ -83,4 +75,21 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 	}
 
 	return signatures, nil
+}
+
+func toBigEndian(b []byte) ([]byte, error) {
+	if len(b) != bn.SizeOfG1AffineUncompressed {
+		return nil, io.ErrShortBuffer
+	}
+
+	b[bn.SizeOfG1AffineUncompressed-1] &= 63
+	for i := 0; i < fp.Bytes/2; i++ {
+		b[i], b[fp.Bytes-i-1] = b[fp.Bytes-i-1], b[i]
+	}
+
+	for i := fp.Bytes; i < fp.Bytes+fp.Bytes/2; i++ {
+		b[i], b[len(b)-(i-fp.Bytes)-1] = b[len(b)-(i-fp.Bytes)-1], b[i]
+	}
+
+	return b, nil
 }

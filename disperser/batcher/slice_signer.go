@@ -522,7 +522,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 
 		erasureCommitments[blobIdx] = encodedBlobs.ErasureCommitment
 		storageRoots[blobIdx] = dataRoot
-		msg, err := s.getHash(dataRoot, signInfo.epoch, signInfo.quorumId, encodedBlobs.ErasureCommitment)
+		msg, err := getHash(dataRoot, signInfo.epoch, signInfo.quorumId, encodedBlobs.ErasureCommitment)
 		if err != nil {
 			s.logger.Error("[signer] failed to get hash for batch", "batch", signInfo.ts, "error", err)
 			if signInfo.reties < s.MaxNumRetriesSign {
@@ -660,66 +660,6 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	return nil
 }
 
-func (s *SliceSigner) getHash(dataRoot [32]byte, epoch, quorumId *big.Int, erasureCommitment *core.G1Point) ([32]byte, error) {
-	dataType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
-		{
-			Name: "dataRoot",
-			Type: "bytes32",
-		},
-		{
-			Name: "epoch",
-			Type: "uint256",
-		},
-		{
-			Name: "quorumId",
-			Type: "uint256",
-		},
-		{
-			Name: "X",
-			Type: "uint256",
-		},
-		{
-			Name: "Y",
-			Type: "uint256",
-		},
-	})
-	if err != nil {
-		return [32]byte{}, err
-	}
-
-	arguments := abi.Arguments{
-		{
-			Type: dataType,
-		},
-	}
-
-	o := struct {
-		DataRoot [32]byte
-		Epoch    *big.Int
-		QuorumId *big.Int
-		X        *big.Int
-		Y        *big.Int
-	}{
-		DataRoot: dataRoot,
-		Epoch:    epoch,
-		QuorumId: quorumId,
-		X:        erasureCommitment.X.BigInt(new(big.Int)),
-		Y:        erasureCommitment.Y.BigInt(new(big.Int)),
-	}
-
-	bytes, err := arguments.Pack(o)
-	if err != nil {
-		return [32]byte{}, err
-	}
-
-	var headerHash [32]byte
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(bytes)
-	copy(headerHash[:], hasher.Sum(nil)[:32])
-
-	return headerHash, nil
-}
-
 func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmission, uint64, error) {
 	ts := uint64(time.Now().Nanosecond())
 
@@ -783,4 +723,64 @@ func (s *SliceSigner) RemoveBatchingStatus(ts uint64) {
 		}
 	}
 	delete(s.signedBatches, ts)
+}
+
+func getHash(dataRoot [32]byte, epoch, quorumId *big.Int, erasureCommitment *core.G1Point) ([32]byte, error) {
+	dataType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
+		{
+			Name: "dataRoot",
+			Type: "bytes32",
+		},
+		{
+			Name: "epoch",
+			Type: "uint256",
+		},
+		{
+			Name: "quorumId",
+			Type: "uint256",
+		},
+		{
+			Name: "X",
+			Type: "uint256",
+		},
+		{
+			Name: "Y",
+			Type: "uint256",
+		},
+	})
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	arguments := abi.Arguments{
+		{
+			Type: dataType,
+		},
+	}
+
+	o := struct {
+		DataRoot [32]byte
+		Epoch    *big.Int
+		QuorumId *big.Int
+		X        *big.Int
+		Y        *big.Int
+	}{
+		DataRoot: dataRoot,
+		Epoch:    epoch,
+		QuorumId: quorumId,
+		X:        erasureCommitment.X.BigInt(new(big.Int)),
+		Y:        erasureCommitment.Y.BigInt(new(big.Int)),
+	}
+
+	bytes, err := arguments.Pack(o)
+	if err != nil {
+		return [32]byte{}, err
+	}
+
+	var headerHash [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(bytes)
+	copy(headerHash[:], hasher.Sum(nil)[:32])
+
+	return headerHash, nil
 }
