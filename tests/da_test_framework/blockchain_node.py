@@ -117,4 +117,4 @@ class BlockchainNode(TestNode):
         w3.eth.wait_for_transaction_receipt(tx_hash)
 
     def start(self):
-        super().start(False)
+        super().start(True)

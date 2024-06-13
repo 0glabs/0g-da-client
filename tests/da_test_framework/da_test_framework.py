@@ -11,6 +11,7 @@ import pdb
 import tempfile
 import subprocess
 import traceback
+import platform
 
 from utility.utils import PortMin, is_windows_platform, blockchain_rpc_port
 from da_test_framework.da_encoder import DAEncoder
@@ -46,6 +47,8 @@ class DATestFramework():
         self.blockchain_node = None
 
         tmp_dir = os.path.join(os.path.dirname(__file_path__), "tmp")
+        if not os.path.exists(tmp_dir):
+            os.mkdir(tmp_dir)
         self.__default_blockchain_binary__ = os.path.join(
             tmp_dir, "0gchaind" + binary_ext
         )
@@ -170,6 +173,8 @@ class DATestFramework():
         while self.da_services:
             service = self.da_services.pop()
             service.stop()
+        
+        self.blockchain_node.stop()
 
     def build_binary(self):
         da_root = os.path.join(__file_path__, "..", "..")
@@ -208,6 +213,16 @@ class DATestFramework():
 
         sh_path = os.path.join(self.tmp_dir, "localtestnet.sh")
         shutil.copyfile(script_path, sh_path)
+
+        with open(sh_path, 'r') as file:
+            file_content = file.read()
+
+        # Replace the string
+        modified_content = file_content.replace('sed -in-place=\'\' \'s/enable = false/enable = true/g\' $DATA/config/app.toml', 'sed -i \'/\\[grpc\\]/,/^\\[/ s/enable = true/enable = false/\' $DATA/config/app.toml\nsed -i \'/\\[grpc-web\\]/,/^\\[/ s/enable = true/enable = false/\' $DATA/config/app.toml\nsed -i \'/\\[json-rpc\\]/,/^\\[/ s/enable = false/enable = true/\' $DATA/config/app.toml')
+
+        # Write the modified content back to the file
+        with open(sh_path, 'w') as file:
+            file.write(modified_content)
 
         with open(sh_path, 'r+') as file:
             lines = file.readlines()
@@ -279,7 +294,11 @@ class DATestFramework():
     def setup_blockchain_node(self):
         updated_config = {}
 
-        exe_file = os.path.join(self.root_dir, ".build")
+        exe_file = os.path.join(self.root_dir, "out")
+        if not os.path.exists(exe_file):
+            os.mkdir(exe_file)
+        
+        exe_file = os.path.join(exe_file, platform.system().lower())
         if not os.path.exists(exe_file):
             os.mkdir(exe_file)
         

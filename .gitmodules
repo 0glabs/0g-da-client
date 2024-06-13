@@ -1,18 +1,13 @@
-[submodule "contracts/lib/forge-std"]
-	path = contracts/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "contracts/lib/openzeppelin-contracts"]
-	path = contracts/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
-[submodule "contracts/lib/openzeppelin-contracts-upgradeable"]
-	path = contracts/lib/openzeppelin-contracts-upgradeable
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable
-[submodule "contracts/lib/eigenlayer-contracts"]
-	path = contracts/lib/eigenlayer-contracts
-	url = https://github.com/Layr-Labs/eigenlayer-contracts
-[submodule "contracts/lib/eigenlayer-middleware"]
-	path = contracts/lib/eigenlayer-middleware
-	url = https://github.com/Layr-Labs/eigenlayer-middleware
-[submodule "0g-storage-kv"]
-	path = 0g-storage-kv
-	url = https://github.com/0glabs/0g-storage-kv.git
+[submodule "0g-da-contract"]
+	path = 0g-da-contract
+	url = https://github.com/0glabs/0g-da-contract.git
+[submodule "0g-da-encoder"]
+	path = 0g-da-encoder
+	url = https://github.com/0glabs/0g-da-encoder.git
+[submodule "0g-da-signer"]
+	path = 0g-da-signer
+	url = https://github.com/0glabs/0g-da-signer.git
+[submodule "0g-chain"]
+	path = 0g-chain
+	url = https://github.com/0glabs/0g-chain.git
+	branch = dev
