@@ -372,12 +372,17 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 			// b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
 		}
 		b.sliceSigner.RemoveBatchingStatus(signedTs)
-
+		if len(s) > 1 {
+			b.sliceSigner.SignedBatchSize = uint(len(s)) / 2
+		} else {
+			b.sliceSigner.SignedBatchSize = 1
+		}
 		return err
 	}
 
 	b.logger.Info("[batcher] submit aggregate signatures", "duration", time.Since(stageTimer))
 
+	b.sliceSigner.SignedBatchSize = 0
 	b.confirmer.ConfirmChan <- &BatchInfo{
 		headerHash: headerHash,
 		batch:      batch,

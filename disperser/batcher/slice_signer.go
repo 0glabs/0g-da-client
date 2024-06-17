@@ -126,6 +126,8 @@ type SliceSigner struct {
 	metrics   *Metrics
 
 	logger common.Logger
+
+	SignedBatchSize uint
 }
 
 func NewEncodedSliceSigner(
@@ -159,6 +161,7 @@ func NewEncodedSliceSigner(
 		signedBatching:       make(map[uint64]uint64),
 		signedBatches:        make(map[uint64][]uint64),
 		signedBlobSize:       0,
+		SignedBatchSize:      0,
 	}, nil
 }
 
@@ -680,6 +683,7 @@ func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmissi
 	}
 
 	blobSize := 0
+	batchSize := 0
 	for id, signedResult := range s.pendingSubmissions {
 		if _, ok := s.signedBatching[id]; !ok {
 			fetched = append(fetched, signedResult)
@@ -687,6 +691,10 @@ func (s *SliceSigner) GetCommitRootSubmissionBatch() ([]*BatchCommitRootSubmissi
 			s.signedBatches[ts] = append(s.signedBatches[ts], id)
 
 			blobSize += len(signedResult.submissions)
+
+			if s.SignedBatchSize != 0 && batchSize > int(s.SignedBatchSize) {
+				break
+			}
 		}
 	}
 
