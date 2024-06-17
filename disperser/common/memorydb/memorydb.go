@@ -89,8 +89,8 @@ func (q *SharedBlobStore) RemoveBlob(ctx context.Context, metadata *disperser.Bl
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	if holder, ok := q.Blobs[metadata.MetadataHash]; ok {
-		q.size -= uint64(len(holder.Data))
+	if _, ok := q.Blobs[metadata.MetadataHash]; ok {
+		q.size -= core.MaxBlobSize
 		delete(q.Blobs, metadata.MetadataHash)
 	}
 	if existing, ok := q.Metadata[metadata.GetBlobKey()]; ok {
@@ -111,7 +111,7 @@ func (q *SharedBlobStore) StoreBlob(ctx context.Context, blob *core.Blob, reques
 	blobKey.MetadataHash = getMetadataHash(requestedAt)
 
 	if _, ok := q.Blobs[blobKey.MetadataHash]; !ok {
-		q.size += uint64(len(blob.Data))
+		q.size += core.MaxBlobSize
 		if q.size > q.sizeLimit {
 			return blobKey, disperser.ErrMemoryDbIsFull
 		}
