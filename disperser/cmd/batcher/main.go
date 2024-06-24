@@ -16,7 +16,9 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
 	"github.com/0glabs/0g-data-avail/disperser/cmd/batcher/flags"
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
+	"github.com/0glabs/0g-data-avail/disperser/contract"
 	"github.com/0glabs/0g-data-avail/disperser/encoder"
+	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli"
 )
@@ -53,14 +55,17 @@ func RunBatcher(ctx *cli.Context) error {
 		return err
 	}
 
+	daEntranceAddress := eth_common.HexToAddress(config.BatcherConfig.DAEntranceContractAddress)
+	daSignersAddress := eth_common.HexToAddress(config.BatcherConfig.DASignersContractAddress)
+	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, config.EthClientConfig.RPCURL, config.EthClientConfig.PrivateKeyString)
+	if err != nil {
+		return fmt.Errorf("failed to create DAEntrance contract: %w", err)
+	}
+
 	// transactor
-	transactor := transactor.NewTransactor(logger)
+	transactor := transactor.NewTransactor(config.BatcherConfig.VerifiedCommitRootsTxGasLimit, logger)
 	// dispatcher
-	dispatcher, err := dispatcher.NewDispatcher(&dispatcher.Config{
-		EthClientURL:      config.EthClientConfig.RPCURL,
-		PrivateKeyString:  config.EthClientConfig.PrivateKeyString,
-		StorageNodeConfig: config.StorageNodeConfig,
-	}, transactor, logger)
+	dispatcher, err := dispatcher.NewDispatcher(transactor, daContract, logger)
 	if err != nil {
 		return err
 	}
@@ -96,6 +101,13 @@ func RunBatcher(ctx *cli.Context) error {
 
 	metrics := batcher.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", config.StorageNodeConfig.TimeToExpire, logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	// encoder
 	if len(config.BatcherConfig.EncoderSocket) == 0 {
 		return fmt.Errorf("encoder socket must be specified")
@@ -106,16 +118,16 @@ func RunBatcher(ctx *cli.Context) error {
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.StorageNodeConfig, queue, config.BatcherConfig.MaxNumRetriesPerBlob, config.BatcherConfig.ConfirmerNum, transactor, logger, metrics)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, daContract, logger, metrics, kvStore)
 	if err != nil {
 		return err
 	}
 
 	//finalizer
-	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger)
+	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger, config.BatcherConfig.FinalizedBlockCount)
 
 	//batcher
-	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, queue, dispatcher, encoderClient, finalizer, confirmer, logger, metrics)
+	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, daContract, logger, metrics)
 	if err != nil {
 		return err
 	}

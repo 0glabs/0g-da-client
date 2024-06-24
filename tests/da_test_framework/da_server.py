@@ -8,7 +8,8 @@ from da_test_framework.da_node_type import DANodeType
 
 sys.path.append("../0g-storage-kv/tests")
 
-from test_framework.blockchain_node import TestNode
+from da_test_framework.blockchain_node import TestNode
+from config.node_config import PRIV_KEY
 
 
 __file_path__ = os.path.dirname(os.path.realpath(__file__))
@@ -26,7 +27,7 @@ class DAServer(TestNode):
         local_conf.update(updated_config)
 
         data_dir = os.path.join(root_dir, "da_server")
-        self.grpc_url = "0.0.0.0:51001"
+        self.grpc_url = f"0.0.0.0:{local_conf['grpc_port']}"
         super().__init__(
             DANodeType.DA_SERVER,
             13,
@@ -39,13 +40,35 @@ class DAServer(TestNode):
         )
         self.args = [
             binary,
-            "--disperser-server.grpc-port", "51001",
+            "--chain.rpc", local_conf['blockchain_rpc_endpoint'],
+	        "--chain.private-key", PRIV_KEY,
+            "--chain.receipt-wait-rounds", "180",
+	        "--chain.receipt-wait-interval", "1s",
+	        "--chain.gas-limit", "2000000",
+	        "--combined-server.use-memory-db",
+            "--batcher.da-entrance-contract", "0x64fcfde2350E08E7BaDc18771a7674FAb5E137a2",
+            "--batcher.da-signers-contract", "0x0000000000000000000000000000000000001000",
+            "--combined-server.storage.kv-db-path", "./run/",
+            "--combined-server.storage.time-to-expire", "300",
             "--disperser-server.s3-bucket-name", "test-zgda-blobstore",
             "--disperser-server.dynamodb-table-name", "test-BlobMetadata",
-            "--disperser-server.aws.region", "us-east-1",
-            "--disperser-server.aws.access-key-id", "localstack",
-            "--disperser-server.aws.secret-access-key", "localstack",
-            "--disperser-server.aws.endpoint-url", "http://0.0.0.0:4566"
+            "--disperser-server.grpc-port", local_conf['grpc_port'],
+            "--batcher.s3-bucket-name", "test-zgda-blobstore",
+            "--batcher.dynamodb-table-name", "test-BlobMetadata",
+            "--batcher.pull-interval", "30s",
+            "--batcher.signed-pull-interval", "60s",
+            "--batcher.finalizer-interval", "20s",
+            "--batcher.confirmer-num", "3",
+            "--batcher.max-num-retries-for-sign", "10",
+            "--batcher.finalized-block-count", "50",
+            "--batcher.encoding-request-queue-size", "1",
+            "--encoder-socket", local_conf['encoder_socket'],
+            "--batcher.batch-size-limit", "500",
+            "--encoding-timeout", "100s",
+            "--chain-read-timeout", "12s",
+            "--chain-write-timeout", "13s",
+            "--combined-server.log.level-file", "trace",
+            "--combined-server.log.level-std", "trace"
         ]
     
     def wait_for_rpc_connection(self):
@@ -64,7 +87,7 @@ class DAServer(TestNode):
         super().stop(kill=True, wait=False)
         
     def disperse_blob(self, data):
-        message = pb2.DisperseBlobRequest(data=data, security_params=[pb2.SecurityParams(quorum_id=0, adversary_threshold=25, quorum_threshold=50)], target_chunk_num=16)
+        message = pb2.DisperseBlobRequest(data=data, security_params=[pb2.SecurityParams(quorum_id=0, adversary_threshold=25, quorum_threshold=50)], target_row_num=16)
         return self.stub.DisperseBlob(message)
 
     def retrieve_blob(self, info):

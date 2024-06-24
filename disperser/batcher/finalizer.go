@@ -22,46 +22,90 @@ const baseDelay = 1 * time.Second
 type Finalizer interface {
 	Start(ctx context.Context)
 	FinalizeBlobs(ctx context.Context) error
+	LatestFinalizedBlock() uint64
 }
 
 type finalizer struct {
-	timeout              time.Duration
-	loopInterval         time.Duration
-	blobStore            disperser.BlobStore
-	ethClient            common.EthClient
-	rpcClient            common.RPCEthClient
-	maxNumRetriesPerBlob uint
-	logger               common.Logger
+	timeout                    time.Duration
+	loopInterval               time.Duration
+	blobStore                  disperser.BlobStore
+	ethClient                  common.EthClient
+	rpcClient                  common.RPCEthClient
+	maxNumRetriesPerBlob       uint
+	logger                     common.Logger
+	latestFinalizedBlock       uint64
+	defaultFinalizedBlockCount uint64
 }
 
-func NewFinalizer(timeout time.Duration, loopInterval time.Duration, blobStore disperser.BlobStore, ethClient common.EthClient, rpcClient common.RPCEthClient, maxNumRetriesPerBlob uint, logger common.Logger) Finalizer {
+func NewFinalizer(timeout time.Duration, loopInterval time.Duration, blobStore disperser.BlobStore, ethClient common.EthClient, rpcClient common.RPCEthClient, maxNumRetriesPerBlob uint, logger common.Logger, defaultFinalizedBlockCount uint) Finalizer {
 	return &finalizer{
-		timeout:              timeout,
-		loopInterval:         loopInterval,
-		blobStore:            blobStore,
-		ethClient:            ethClient,
-		rpcClient:            rpcClient,
-		maxNumRetriesPerBlob: maxNumRetriesPerBlob,
-		logger:               logger,
+		timeout:                    timeout,
+		loopInterval:               loopInterval,
+		blobStore:                  blobStore,
+		ethClient:                  ethClient,
+		rpcClient:                  rpcClient,
+		maxNumRetriesPerBlob:       maxNumRetriesPerBlob,
+		logger:                     logger,
+		latestFinalizedBlock:       0,
+		defaultFinalizedBlockCount: uint64(defaultFinalizedBlockCount),
 	}
 }
 
 func (f *finalizer) Start(ctx context.Context) {
 	go func() {
-		ticker := time.NewTicker(f.loopInterval)
-		defer ticker.Stop()
-
 		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				if err := f.FinalizeBlobs(ctx); err != nil {
-					f.logger.Error("[finalizer] failed to finalize blobs", "err", err)
-				}
-			}
+			f.updateFinalizedBlockNumber(ctx)
+			time.Sleep(time.Second * 5)
 		}
 	}()
+
+	if !f.blobStore.MetadataHashAsBlobKey() {
+		go func() {
+			ticker := time.NewTicker(f.loopInterval)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-ticker.C:
+					if err := f.FinalizeBlobs(ctx); err != nil {
+						f.logger.Error("[finalizer] failed to finalize blobs", "err", err)
+					}
+				}
+			}
+		}()
+	}
+}
+
+func (f *finalizer) updateFinalizedBlockNumber(ctx context.Context) {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	var header = types.Header{}
+	var blockNumber uint64
+	err := f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
+	if err != nil {
+		f.logger.Error("[finalizer] error getting latest finalized block", "err", err)
+
+		err := f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "latest", false)
+		if err != nil {
+			f.logger.Error("[finalizer] error getting latest block", "err", err)
+		} else {
+			blockNumber = header.Number.Uint64() - f.defaultFinalizedBlockCount
+		}
+	} else {
+		blockNumber = uint64(header.Number.Uint64())
+	}
+
+	if blockNumber > f.latestFinalizedBlock {
+		f.latestFinalizedBlock = blockNumber
+		f.logger.Info("[finalizer] latest finalized block number updated", "number", f.latestFinalizedBlock)
+	}
+}
+
+func (f *finalizer) LatestFinalizedBlock() uint64 {
+	return f.latestFinalizedBlock
 }
 
 // FinalizeBlobs checks the latest finalized block and marks blobs in `confirmed` state as `finalized` if their confirmation
@@ -161,7 +205,7 @@ func (f *finalizer) getLatestFinalizedBlock(ctx context.Context) (*types.Header,
 	for i := 0; i < maxRetries; i++ {
 		ctxWithTimeout, cancel = context.WithTimeout(ctx, f.timeout)
 		defer cancel()
-		err := f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
+		err = f.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
 		if err == nil {
 			break
 		}

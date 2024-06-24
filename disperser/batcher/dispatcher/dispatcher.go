@@ -2,64 +2,35 @@ package dispatcher
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"math/big"
 
 	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
 	"github.com/0glabs/0g-data-avail/disperser/batcher/transactor"
-	"github.com/0glabs/0g-storage-client/common/blockchain"
-	"github.com/0glabs/0g-storage-client/contract"
+	"github.com/0glabs/0g-data-avail/disperser/contract"
+	"github.com/0glabs/0g-data-avail/disperser/contract/da_entrance"
 	zg_core "github.com/0glabs/0g-storage-client/core"
-	"github.com/0glabs/0g-storage-client/kv"
-	"github.com/0glabs/0g-storage-client/node"
-	"github.com/0glabs/0g-storage-client/transfer"
 	eth_common "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/pkg/errors"
 	"github.com/wealdtech/go-merkletree"
+	"github.com/wealdtech/go-merkletree/keccak256"
 )
 
-type Config struct {
-	EthClientURL      string
-	PrivateKeyString  string
-	StorageNodeConfig storage_node.ClientConfig
-	UploadTaskSize    uint
-}
-
 type dispatcher struct {
-	*Config
-
-	Flow           *contract.FlowContract
-	Nodes          []*node.Client
-	KVNode         *kv.Client
-	StreamId       eth_common.Hash
-	UploadTaskSize uint
+	daContract *contract.DAContract
 
 	transactor *transactor.Transactor
 
 	logger common.Logger
 }
 
-func NewDispatcher(cfg *Config, transactor *transactor.Transactor, logger common.Logger) (*dispatcher, error) {
-	client := blockchain.MustNewWeb3(cfg.EthClientURL, cfg.PrivateKeyString)
-	contractAddr := eth_common.HexToAddress(cfg.StorageNodeConfig.FlowContractAddress)
-	flow, err := contract.NewFlowContract(contractAddr, client)
-	if err != nil {
-		return nil, fmt.Errorf("NewDispatcher: failed to create flow contract: %v", err)
-	}
-
+func NewDispatcher(transactor *transactor.Transactor, daContract *contract.DAContract, logger common.Logger) (*dispatcher, error) {
 	return &dispatcher{
-		Config:         cfg,
-		logger:         logger,
-		Flow:           flow,
-		Nodes:          node.MustNewClients(cfg.StorageNodeConfig.StorageNodeURLs),
-		KVNode:         kv.NewClient(node.MustNewClient(cfg.StorageNodeConfig.KVNodeURL), nil),
-		StreamId:       cfg.StorageNodeConfig.KVStreamId,
-		UploadTaskSize: cfg.StorageNodeConfig.UploadTaskSize,
-		transactor:     transactor,
+		logger:     logger,
+		daContract: daContract,
+		transactor: transactor,
 	}, nil
 }
 
@@ -91,101 +62,89 @@ func DumpEncodedBlobs(extendedMatrix []*core.ExtendedMatrix) ([]byte, error) {
 	return res, nil
 }
 
-func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, extendedMatrix []*core.ExtendedMatrix, blobHeaders []*core.BlobHeader, proofs []*merkletree.Proof) (eth_common.Hash, error) {
-	uploader := transfer.NewUploader(c.Flow, c.Nodes)
-	encoded, err := DumpEncodedBlobs(extendedMatrix)
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "failed to dump encoded blobs")
-	}
+func (c *dispatcher) DisperseBatch(ctx context.Context, batchHeaderHash [32]byte, batchHeader *core.BatchHeader, blobCommitments []*core.BlobCommitments, blobHeaders []*core.BlobHeader) (eth_common.Hash, error) {
+	n := len(blobCommitments)
+	dataRoots := make([]eth_common.Hash, n)
 
-	// encoded blobs
-	encodedBlobsData, err := zg_core.NewDataInMemory(encoded)
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
-	}
+	for i, commit := range blobCommitments {
+		if len(commit.EncodedData) > 0 {
+			// encoded blobs
+			encodedBlobsData, err := zg_core.NewDataInMemory(commit.EncodedData)
+			if err != nil {
+				return eth_common.Hash{}, errors.WithMessage(err, "failed to build encoded blobs data")
+			}
 
-	// calculate data root
-	tree, err := zg_core.MerkleTree(encodedBlobsData)
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "failed to get encoded data merkle tree")
-	}
-	batchHeader.DataRoot = tree.Root()
+			// c.logger.Info("[dispatcher] Data prepared to upload", "size", data.Size(), "chunks", data.NumChunks(), "segments", data.NumSegments())
 
-	// kv
-	// batcher info
-	batcher := c.KVNode.Batcher()
-	blobDisperseInfos := make([]core.BlobDisperseInfo, len(extendedMatrix))
-	for i, matrix := range extendedMatrix {
-		blobDisperseInfos[i] = core.BlobDisperseInfo{
-			BlobLength: matrix.Length,
-			Rows:       uint(matrix.GetRows()),
-			Cols:       uint(matrix.GetCols()),
+			// Calculate file merkle root.
+			tree, err := zg_core.MerkleTree(encodedBlobsData)
+			if err != nil {
+				return eth_common.Hash{}, errors.WithMessage(err, "Failed to create data merkle tree")
+			}
+			c.logger.Info("[dispatcher] data merkle root calculated", "root", tree.Root())
+			dataRoots[i] = tree.Root()
+
+			if eth_common.BytesToHash(blobCommitments[i].StorageRoot) != dataRoots[i] {
+				return eth_common.Hash{}, fmt.Errorf("data merkle root is not match: local: %v, encoder: %v", dataRoots[i], eth_common.BytesToHash(blobCommitments[i].StorageRoot))
+			}
+		} else {
+			dataRoots[i] = eth_common.BytesToHash(blobCommitments[i].StorageRoot)
 		}
 	}
-	kvBatchInfo := core.KVBatchInfo{
-		BatchHeader:       batchHeader,
-		BlobDisperseInfos: blobDisperseInfos,
-	}
-	serializedBatchInfo, err := json.Marshal(kvBatchInfo)
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize batch info")
-	}
-	batcher.Set(c.StreamId, batchHeaderHash[:], serializedBatchInfo)
-	// blob info
-	for blobIndex := range extendedMatrix {
-		key, err := json.Marshal((&core.KVBlobInfoKey{
-			BatchHeaderHash: batchHeaderHash,
-			BlobIndex:       uint32(blobIndex),
-		}))
-		if err != nil {
-			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize kv blob info key")
-		}
 
-		value, err := json.Marshal(core.KVBlobInfo{
-			BlobHeader: blobHeaders[blobIndex],
-			MerkleProof: &core.MerkleProof{
-				Hashes: proofs[blobIndex].Hashes,
-				Index:  proofs[blobIndex].Index,
-			},
-		})
-		if err != nil {
-			return eth_common.Hash{}, errors.WithMessage(err, "Failed to serialize blob info")
-		}
-		batcher.Set(c.StreamId, key, value)
+	leafs := make([][]byte, len(dataRoots))
+	for i, dataRoot := range dataRoots {
+		leafs[i] = dataRoot[:]
 	}
-	streamData, err := batcher.Build()
+	tree, err := merkletree.NewTree(merkletree.WithData(leafs), merkletree.WithHashType(keccak256.New()))
 	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "Failed to build stream data")
+		return eth_common.Hash{}, fmt.Errorf("failed to get batch data root: %v", err)
 	}
-	rawKVData, err := streamData.Encode()
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "Failed to encode stream data")
-	}
-	kvData, err := zg_core.NewDataInMemory(rawKVData)
-	if err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "failed to build kv data")
-	}
+	batchHeader.DataRoot = eth_common.Hash(tree.Root())
 
 	// upload batchly
-	txHash, dataRoots, err := c.transactor.BatchUpload(uploader, []zg_core.IterableData{encodedBlobsData, kvData}, []transfer.UploadOption{
-		// encoded blobs options
-		{
-			Tags:     hexutil.MustDecode("0x"),
-			Force:    true,
-			Disperse: true,
-			TaskSize: c.UploadTaskSize,
-		},
-		// kv options
-		{
-			Tags:     batcher.BuildTags(),
-			Force:    true,
-			Disperse: false,
-			TaskSize: c.UploadTaskSize,
-		}})
+	txHash, err := c.transactor.BatchUpload(c.daContract, dataRoots)
 	if err != nil {
-		return eth_common.Hash{}, fmt.Errorf("failed to upload file: %v", err)
+		return eth_common.Hash{}, fmt.Errorf("failed to submit blob data roots: %v", err)
 	}
-	batchHeader.DataRoot = dataRoots[0]
+
+	return txHash, nil
+}
+
+func (c *dispatcher) SubmitAggregateSignatures(ctx context.Context, rootSubmission []*core.CommitRootSubmission) (eth_common.Hash, error) {
+	submissions := make([]da_entrance.IDAEntranceCommitRootSubmission, len(rootSubmission))
+	c.logger.Debug("[dispatcher] submit aggregate signatures", "size", len(rootSubmission))
+	for i, s := range rootSubmission {
+		submissions[i] = da_entrance.IDAEntranceCommitRootSubmission{
+			DataRoot: s.DataRoot,
+			Epoch:    s.Epoch,
+			QuorumId: s.QuorumId,
+			ErasureCommitment: da_entrance.BN254G1Point{
+				X: s.ErasureCommitment.X.BigInt(new(big.Int)),
+				Y: s.ErasureCommitment.Y.BigInt(new(big.Int)),
+			},
+			QuorumBitmap: s.QuorumBitmap,
+			AggPkG2: da_entrance.BN254G2Point{
+				X: [2]*big.Int{
+					s.AggPkG2.X.A1.BigInt(new(big.Int)),
+					s.AggPkG2.X.A0.BigInt(new(big.Int)),
+				},
+				Y: [2]*big.Int{
+					s.AggPkG2.Y.A1.BigInt(new(big.Int)),
+					s.AggPkG2.Y.A0.BigInt(new(big.Int)),
+				},
+			},
+			Signature: da_entrance.BN254G1Point{
+				X: s.AggSigs.X.BigInt(new(big.Int)),
+				Y: s.AggSigs.Y.BigInt(new(big.Int)),
+			},
+		}
+	}
+
+	txHash, err := c.transactor.SubmitVerifiedCommitRoots(c.daContract, submissions)
+	if err != nil {
+		return eth_common.Hash{}, fmt.Errorf("failed to submit verified commit roots: %v", err)
+	}
 
 	return txHash, nil
 }

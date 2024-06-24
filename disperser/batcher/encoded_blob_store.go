@@ -9,6 +9,10 @@ import (
 	"github.com/0glabs/0g-data-avail/disperser"
 )
 
+const (
+	maxSliceSize = 1000000000
+)
+
 type requestID string
 
 type encodedBlobStore struct {
@@ -28,7 +32,7 @@ type encodedBlobStore struct {
 type EncodingResult struct {
 	BlobMetadata         *disperser.BlobMetadata
 	ReferenceBlockNumber uint
-	ExtendedMatrix       *core.ExtendedMatrix
+	BlobCommitments      *core.BlobCommitments
 }
 
 // EncodingResultOrStatus is a wrapper for EncodingResult that also contains an error
@@ -143,11 +147,19 @@ func (e *encodedBlobStore) GetNewEncodingResults(ts uint64) []*EncodingResult {
 	if _, ok := e.batches[ts]; !ok {
 		e.batches[ts] = make([]requestID, 0)
 	}
+	sliceSize := 0
 	for id, encodedResult := range e.encoded {
 		if _, ok := e.batching[id]; !ok {
+			t := sliceSize + len(encodedResult.BlobCommitments.EncodedSlice)*len(encodedResult.BlobCommitments.EncodedSlice[0])
+			if t > maxSliceSize {
+				e.logger.Info("maximum slice size reached", "current size", sliceSize)
+				break
+			}
+
 			fetched = append(fetched, encodedResult)
 			e.batching[id] = ts
 			e.batches[ts] = append(e.batches[ts], id)
+			sliceSize = t
 		}
 	}
 	e.logger.Trace("consumed encoded results", "fetched", len(fetched), "encodedSize", e.encodedResultSize)
@@ -174,10 +186,14 @@ func (e *encodedBlobStore) GetEncodedResultSize() (int, uint64) {
 	return len(e.encoded), e.encodedResultSize
 }
 
+func (e *encodedBlobStore) GetEncodingRequestingSize() int {
+	return len(e.requested)
+}
+
 func getRequestID(key disperser.BlobKey) requestID {
 	return requestID(fmt.Sprintf("%s", key.String()))
 }
 
 func getChunksSize(result *EncodingResult) uint64 {
-	return uint64(result.ExtendedMatrix.GetRows() * (result.ExtendedMatrix.GetCols()*core.CoeffSize + core.CommitmentSize))
+	return uint64(len(result.BlobCommitments.EncodedSlice) * len(result.BlobCommitments.EncodedSlice[0]))
 }

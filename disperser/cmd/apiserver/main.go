@@ -9,8 +9,6 @@ import (
 	"github.com/0glabs/0g-data-avail/common"
 	"github.com/0glabs/0g-data-avail/disperser/apiserver"
 	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
-	"github.com/0glabs/0g-storage-client/kv"
-	"github.com/0glabs/0g-storage-client/node"
 
 	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
 	"github.com/0glabs/0g-data-avail/common/aws/s3"
@@ -76,6 +74,13 @@ func RunDisperserServer(ctx *cli.Context) error {
 	blobMetadataStore := blobstore.NewBlobMetadataStore(dynamoClient, logger, config.BlobstoreConfig.TableName, 0)
 	blobStore = blobstore.NewSharedStorage(bucketName, s3Client, config.BlobstoreConfig.MetadataHashAsBlobKey, blobMetadataStore, logger)
 
+	// Create new store
+	kvStore, err := disperser.NewLevelDBStore(config.StorageNodeConfig.KvDbPath+"/chunk", config.StorageNodeConfig.TimeToExpire, logger)
+	if err != nil {
+		logger.Error("create level db failed")
+		return nil
+	}
+
 	if config.EnableRatelimiter {
 		globalParams := config.RatelimiterConfig.GlobalRateParams
 
@@ -98,17 +103,15 @@ func RunDisperserServer(ctx *cli.Context) error {
 	// TODO: create a separate metrics for batcher
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	var kvClient *kv.Client
 	var rpcClient *rpc.Client
 
 	if config.BlobstoreConfig.MetadataHashAsBlobKey {
-		kvClient = kv.NewClient(node.MustNewClient(config.StorageNodeConfig.KVNodeURL), nil)
 		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
 		if err != nil {
 			return err
 		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvClient, config.StorageNodeConfig.KVStreamId, rpcClient)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

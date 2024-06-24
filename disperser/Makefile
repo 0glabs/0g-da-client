@@ -58,11 +58,9 @@ run_combined: build_combined
 	--chain.receipt-wait-interval 1s \
 	--chain.gas-limit 2000000 \
 	--combined-server.use-memory-db \
-	--combined-server.storage.node-url http://0.0.0.0:5678 \
-	--combined-server.storage.node-url http://0.0.0.0:6789 \
-	--combined-server.storage.kv-url http://0.0.0.0:7890 \
-	--combined-server.storage.kv-stream-id 000000000000000000000000000000000000000000000000000000000000f2bd \
-	--combined-server.storage.flow-contract	FLOW_CONTRACT_ADDR \
+	--combined-server.storage.da-entrance-contract ENTRANCE_CONTRACT_ADDR \
+	--combined-server.storage.da-signers-contract SIGNERS_CONTRACT_ADDR \
+	--combined-server.storage.kv-db-path /data/db \
 	--disperser-server.s3-bucket-name test-zgda-blobstore \
 	--disperser-server.dynamodb-table-name test-BlobMetadata \
 	--disperser-server.grpc-port 51001 \
@@ -71,6 +69,8 @@ run_combined: build_combined
 	--batcher.pull-interval 5s \
 	--batcher.finalizer-interval 20s \
 	--batcher.confirmer-num 3 \
+	--batcher.max-num-retries-for-sign 2 \
+	--batcher.finalized-block-count 50 \
 	--encoder-socket 0.0.0.0:34000 \
 	--batcher.batch-size-limit 50 \
 	--encoding-timeout 15s \

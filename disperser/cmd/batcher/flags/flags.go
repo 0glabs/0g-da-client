@@ -66,7 +66,7 @@ var (
 		Name:     "encoding-timeout",
 		Usage:    "connection timeout from grpc call to encoder",
 		Required: false,
-		Value:    10 * time.Second,
+		Value:    30 * time.Second,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_TIMEOUT"),
 	}
 	ChainReadTimeoutFlag = cli.DurationFlag{
@@ -89,6 +89,13 @@ var (
 		Required: false,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "NUM_CONNECTIONS"),
 		Value:    256,
+	}
+	SigningTimeoutFlag = cli.DurationFlag{
+		Name:     "signing-timeout",
+		Usage:    "connection timeout from grpc call to signer",
+		Required: false,
+		Value:    30 * time.Second,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_TIMEOUT"),
 	}
 	FinalizerIntervalFlag = cli.DurationFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "finalizer-interval"),
@@ -118,6 +125,69 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "CONFIRMER_NUM"),
 		Value:    1,
 	}
+	DAEntranceContractAddressFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "da-entrance-contract"),
+		Usage:    "DAEntrance contract address",
+		Required: false,
+		Value:    "0x0000000000000000000000000000000000000000",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DAENTRANCE_CONTRACT_ADDRESS"),
+	}
+	DASignersContractAddressFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "da-signers-contract"),
+		Usage:    "DASigners contract address",
+		Required: false,
+		Value:    "0x0000000000000000000000000000000000000000",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DASIGNERS_CONTRACT_ADDRESS"),
+	}
+	EncodingIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "encoding-interval"),
+		Usage:    "Interval for encoding loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "ENCODING_INTERVAL"),
+		Value:    10 * time.Second,
+	}
+	SigningIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "signing-interval"),
+		Usage:    "Interval for signing loop",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNING_INTERVAL"),
+		Value:    10 * time.Second,
+	}
+	MaxNumRetriesForSignFlag = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "max-num-retries-for-sign"),
+		Usage:    "Maximum number of retries to sign a blob before marking the blob as FAILED",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "MAX_NUM_RETRIES_FOR_SIGN"),
+		Value:    1,
+	}
+	FinalizedBlockCountFlag = cli.UintFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "finalized-block-count"),
+		Usage:    "Number of latest block before finalized",
+		Required: false,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "FINALIZED_BLOCK_COUNT"),
+		Value:    1,
+	}
+	ExpirationPollIntervalSecFlag = cli.StringFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "expiration-poll-interval"),
+		Usage:    "How often (in second) to poll status and expire outdated blobs",
+		Required: false,
+		Value:    "5184000",
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "EXPIRATION_POLL_INTERVAL"),
+	}
+	SignedPullIntervalFlag = cli.DurationFlag{
+		Name:     common.PrefixFlag(FlagPrefix, "signed-pull-interval"),
+		Usage:    "Interval at which to pull from the signed queue",
+		Required: true,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "SIGNED_PULL_INTERVAL"),
+	}
+	VerifiedCommitRootsTxGasLimitFlag = cli.Uint64Flag{
+		Name:     common.PrefixFlag(FlagPrefix, "verified-commit-roots-tx-gas-limit"),
+		Usage:    "tx gas limit for VerifiedCommitRootsTx",
+		Required: false,
+		Value:    10000000,
+		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "VERIFIED_COMMIT_ROOTS_TX_GAS_LIMIT"),
+	}
+
 	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
 	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
 	// downloaded by light clients for DAS.
@@ -142,6 +212,7 @@ var RequiredFlags = []cli.Flag{
 	EncoderSocket,
 	EnableMetrics,
 	BatchSizeLimitFlag,
+	SignedPullIntervalFlag,
 }
 
 var OptionalFlags = []cli.Flag{
@@ -154,8 +225,17 @@ var OptionalFlags = []cli.Flag{
 	EncodingRequestQueueSizeFlag,
 	MaxNumRetriesPerBlobFlag,
 	ConfirmerNumFlag,
+	SigningTimeoutFlag,
+	DAEntranceContractAddressFlag,
+	DASignersContractAddressFlag,
+	EncodingIntervalFlag,
+	SigningIntervalFlag,
+	MaxNumRetriesForSignFlag,
+	FinalizedBlockCountFlag,
+	ExpirationPollIntervalSecFlag,
 	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
+	VerifiedCommitRootsTxGasLimitFlag,
 }
 
 // Flags contains the list of configuration options available to the binary.

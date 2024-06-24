@@ -1,7 +1,10 @@
 package core
 
 import (
+	"math/big"
+
 	eth_common "github.com/ethereum/go-ethereum/common"
+	"golang.org/x/crypto/sha3"
 
 	"github.com/0glabs/0g-data-avail/common"
 )
@@ -68,6 +71,32 @@ type Coeff = [32]byte
 type EncodedRow = []Coeff
 
 type Commitment = [48]byte
+
+type CommitRootSubmission struct {
+	DataRoot          [32]byte
+	Epoch             *big.Int
+	QuorumId          *big.Int
+	ErasureCommitment *G1Point
+	QuorumBitmap      []byte
+	AggPkG2           *G2Point
+	AggSigs           *Signature
+}
+
+type BlobCommitments struct {
+	ErasureCommitment *G1Point
+	StorageRoot       []byte
+	EncodedData       []byte
+	EncodedSlice      [][]byte
+}
+
+func (b *BlobCommitments) GetHash() [32]byte {
+	var message [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(b.ErasureCommitment.Serialize())
+	hasher.Write(b.StorageRoot)
+	copy(message[:], hasher.Sum(nil)[:32])
+	return message
+}
 
 type ExtendedMatrix struct {
 	Length      uint
