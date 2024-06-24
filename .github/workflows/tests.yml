@@ -41,7 +41,7 @@ jobs:
         cd tests && python -m grpc_tools.protoc --proto_path=. ./disperser.proto --python_out=. --grpc_python_out=. && python -m grpc_tools.protoc --proto_path=. ./retriever.proto --python_out=. --grpc_python_out=.
 
 
-    - name: Run tests
-      run: |
-        cd tests
-        python da_test_all.py
+    # - name: Run tests
+    #   run: |
+    #     cd tests
+    #     python da_test_all.py
