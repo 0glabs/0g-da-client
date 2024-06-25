@@ -70,6 +70,12 @@ var (
 		Usage:  "use metadata hash as blob key",
 		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "METADATA_HASH_AS_BLOB_KEY"),
 	}
+	RetrieverAddrName = cli.StringFlag{
+		Name:   common.PrefixFlag(FlagPrefix, "retriever-address"),
+		Usage:  "address of retriever",
+		Value:  "",
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "RETRIEVER-ADDRESS"),
+	}
 )
 
 var RequiredFlags = []cli.Flag{
@@ -85,6 +91,7 @@ var OptionalFlags = []cli.Flag{
 	EnableRatelimiter,
 	BucketStoreSize,
 	MetadataHashAsBlobKey,
+	RetrieverAddrName,
 }
 
 // Flags contains the list of configuration options available to the binary.

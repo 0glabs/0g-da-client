@@ -111,7 +111,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 			return err
 		}
 	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore, config.RetrieverAddr)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
