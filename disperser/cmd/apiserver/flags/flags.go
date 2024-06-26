@@ -73,7 +73,7 @@ var (
 	RetrieverAddrName = cli.StringFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "retriever-address"),
 		Usage:  "address of retriever",
-		Value:  "",
+		Value:  "0.0.0.0:34005",
 		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "RETRIEVER-ADDRESS"),
 	}
 )
