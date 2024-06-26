@@ -30,6 +30,7 @@ type Config struct {
 	EnableRatelimiter bool
 	BucketTableName   string
 	BucketStoreSize   int
+	RetrieverAddr     string
 	// batcher
 	BatcherConfig batcher.Config
 	TimeoutConfig batcher.TimeoutConfig
@@ -72,6 +73,7 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 		BucketTableName:   ctx.GlobalString(server_flags.BucketTableName.Name),
 		BucketStoreSize:   ctx.GlobalInt(server_flags.BucketStoreSize.Name),
 		StorageNodeConfig: storage_node.ReadClientConfig(ctx, flags.FlagPrefix),
+		RetrieverAddr:     ctx.GlobalString(server_flags.RetrieverAddrName.Name),
 		// batcher
 		BatcherConfig: batcher.Config{
 			PullInterval:                  ctx.GlobalDuration(batcher_flags.PullIntervalFlag.Name),

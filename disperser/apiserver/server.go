@@ -12,10 +12,12 @@ import (
 	healthcheck "github.com/0glabs/0g-data-avail/common/healthcheck"
 	"github.com/0glabs/0g-data-avail/core"
 	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-data-avail/disperser/api/grpc/retriever"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/openweb3/web3go/types"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -44,6 +46,8 @@ type DispersalServer struct {
 	latestFinalizedBlock uint32
 
 	logger common.Logger
+
+	retrieverAddr string
 }
 
 // NewServer creates a new Server struct with the provided parameters.
@@ -59,6 +63,7 @@ func NewDispersalServer(
 	metadataHashAsBlobKey bool,
 	rpcClient *rpc.Client,
 	kvStore *disperser.Store,
+	retrieverAddr string,
 ) *DispersalServer {
 
 	return &DispersalServer{
@@ -72,6 +77,7 @@ func NewDispersalServer(
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
 		kvStore:               kvStore,
 		rpcClient:             rpcClient,
+		retrieverAddr:         retrieverAddr,
 	}
 }
 
@@ -259,24 +265,29 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	}))
 	defer timer.ObserveDuration()
 
-	s.logger.Info("[apiserver] received a new blob retrieval request", "batchHeaderHash", req.BatchHeaderHash, "blobIndex", req.BlobIndex)
+	s.logger.Info("[apiserver] received a new blob retrieval request", "blob storage root", req.StorageRoot, "blob epoch", req.Epoch, "quorum id", req.QuorumId)
 
-	batchHeaderHash := req.GetBatchHeaderHash()
-	// Convert to [32]byte
-	var batchHeaderHash32 [32]byte
-	copy(batchHeaderHash32[:], batchHeaderHash)
-
-	blobIndex := req.GetBlobIndex()
-
-	blobMetadata, err := s.blobStore.GetMetadataInBatch(ctx, batchHeaderHash32, blobIndex)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(
+		ctxWithTimeout,
+		s.retrieverAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024*1024*1024)), // 1 GiB
+	)
 	if err != nil {
-		s.logger.Error("Failed to retrieve blob metadata", "err", err)
-		s.metrics.IncrementFailedBlobRequestNum("RetrieveBlob")
-
-		return nil, err
+		return nil, fmt.Errorf("failed to dial retriever: %w", err)
 	}
+	defer conn.Close()
 
-	data, err := s.blobStore.GetBlobContent(ctx, blobMetadata)
+	client := retriever.NewRetrieverClient(conn)
+	reply, err := client.RetrieveBlob(ctx, &retriever.BlobRequest{
+		StorageRoot: req.StorageRoot,
+		Epoch:       req.Epoch,
+		QuorumId:    req.QuorumId,
+	})
+
+	data := reply.GetData()
 	if err != nil {
 		s.logger.Error("Failed to retrieve blob", "err", err)
 		s.metrics.HandleFailedRequest(len(data), "RetrieveBlob")

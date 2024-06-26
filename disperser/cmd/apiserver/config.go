@@ -26,6 +26,7 @@ type Config struct {
 	EnableRatelimiter bool
 	BucketTableName   string
 	BucketStoreSize   int
+	RetrieverAddr     string
 }
 
 func NewConfig(ctx *cli.Context) (Config, error) {
@@ -62,6 +63,7 @@ func NewConfig(ctx *cli.Context) (Config, error) {
 		BucketTableName:   ctx.GlobalString(flags.BucketTableName.Name),
 		BucketStoreSize:   ctx.GlobalInt(flags.BucketStoreSize.Name),
 		StorageNodeConfig: storage_node.ReadClientConfig(ctx, flags.FlagPrefix),
+		RetrieverAddr:     ctx.GlobalString(flags.RetrieverAddrName.Name),
 	}
 	return config, nil
 }
