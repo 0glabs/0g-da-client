@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/0glabs/0g-data-avail/common/aws/s3"
+	"github.com/0glabs/0g-da-client/common/aws/s3"
 )
 
 type S3Client struct {

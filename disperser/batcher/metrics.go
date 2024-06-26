@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"

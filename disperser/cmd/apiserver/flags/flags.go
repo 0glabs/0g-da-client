@@ -1,10 +1,10 @@
 package flags
 
 import (
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/logging"
-	"github.com/0glabs/0g-data-avail/common/ratelimit"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/common/aws"
+	"github.com/0glabs/0g-da-client/common/logging"
+	"github.com/0glabs/0g-da-client/common/ratelimit"
 	"github.com/urfave/cli"
 )
 

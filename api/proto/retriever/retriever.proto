@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/0glabs/0g-data-avail/api/grpc/retriever";
+option go_package = "github.com/0glabs/0g-da-client/api/grpc/retriever";
 package retriever;
 
 // The Retriever is a service for retrieving chunks corresponding to a blob from
@@ -24,7 +24,7 @@ service Retriever {
 
 message BlobRequest {
 	// The hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// https://github.com/0glabs/0g-da-client/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// This identifies the batch that this blob belongs to.
 	bytes batch_header_hash = 1;
 	// Which blob in the batch this is requesting for (note: a batch is logically an

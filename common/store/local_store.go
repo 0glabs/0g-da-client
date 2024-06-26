@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-da-client/common"
 	lru "github.com/hashicorp/golang-lru/v2"
 )
 

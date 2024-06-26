@@ -10,13 +10,13 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/store"
-	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
+	"github.com/0glabs/0g-da-client/common/aws"
+	"github.com/0glabs/0g-da-client/common/store"
+	"github.com/0glabs/0g-da-client/disperser/common/blobstore"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 
-	test_utils "github.com/0glabs/0g-data-avail/common/aws/dynamodb/utils"
+	test_utils "github.com/0glabs/0g-da-client/common/aws/dynamodb/utils"
 )
 
 func StartDockertestWithLocalstackContainer(localStackPort string) (*dockertest.Pool, *dockertest.Resource, error) {

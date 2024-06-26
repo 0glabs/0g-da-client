@@ -6,7 +6,7 @@ import (
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"golang.org/x/crypto/sha3"
 
-	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-da-client/common"
 )
 
 type AccountID = string

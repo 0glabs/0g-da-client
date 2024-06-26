@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/0glabs/0g-data-avail/common"
-	commonaws "github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-da-client/common"
+	commonaws "github.com/0glabs/0g-da-client/common/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"

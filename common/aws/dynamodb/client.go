@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
-	commonaws "github.com/0glabs/0g-data-avail/common/aws"
+	"github.com/0glabs/0g-da-client/common"
+	commonaws "github.com/0glabs/0g-da-client/common/aws"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"

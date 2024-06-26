@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-da-client/common"
 )
 
 type BucketStore = common.KVStore[common.RateBucketParams]

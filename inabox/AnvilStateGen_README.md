@@ -2,7 +2,7 @@
 
 ## Generate Anvil State for 4 Operators for Anvil Chain to run on Kubernetes:
 1. Update InitialSupply in the contract to 100000 ether enough for 200 operators
-[Click here to view the highlighted code on GitHub](https://github.com/0glabs/0g-data-avail/blob/7a16b44b8b06e770e15d372108df2fd220720697/contracts/script/SetUpZGDA.s.sol#L58C38-L58C38)
+[Click here to view the highlighted code on GitHub](https://github.com/0glabs/0g-da-client/blob/7a16b44b8b06e770e15d372108df2fd220720697/contracts/script/SetUpZGDA.s.sol#L58C38-L58C38)
 
 1. Update InitialSupply in the contract to 100000 ether enough for 200 operators.
 
@@ -90,9 +90,9 @@ Generating variables
 Test environment has succesfully deployed!
 ```
 
-Copy generated states to states directory in this repo [here](https://github.com/0glabs/0g-data-avail-devops/tree/master/charts/anvil-chain/states)
+Copy generated states to states directory in this repo [here](https://github.com/0glabs/0g-da-client-devops/tree/master/charts/anvil-chain/states)
 ```
-1. Copy the generated state: opr-state.json and build docker image. Instructions here https://github.com/0glabs/0g-data-avail-devops/blob/master/charts/anvil-chain/README.md
+1. Copy the generated state: opr-state.json and build docker image. Instructions here https://github.com/0glabs/0g-da-client-devops/blob/master/charts/anvil-chain/README.md
 ```
 
 ## Generate Anvil State for 200 Operators for Anvil Chain to run on Kubernetes:

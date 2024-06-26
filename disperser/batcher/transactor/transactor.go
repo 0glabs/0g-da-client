@@ -4,9 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/disperser/contract"
-	"github.com/0glabs/0g-data-avail/disperser/contract/da_entrance"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/disperser/contract"
+	"github.com/0glabs/0g-da-client/disperser/contract/da_entrance"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
 )

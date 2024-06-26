@@ -1,18 +1,18 @@
 package main
 
 import (
-	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/geth"
-	"github.com/0glabs/0g-data-avail/common/logging"
-	"github.com/0glabs/0g-data-avail/common/ratelimit"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
-	"github.com/0glabs/0g-data-avail/disperser"
-	"github.com/0glabs/0g-data-avail/disperser/apiserver"
-	"github.com/0glabs/0g-data-avail/disperser/batcher"
-	server_flags "github.com/0glabs/0g-data-avail/disperser/cmd/apiserver/flags"
-	batcher_flags "github.com/0glabs/0g-data-avail/disperser/cmd/batcher/flags"
-	"github.com/0glabs/0g-data-avail/disperser/cmd/combined_server/flags"
-	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
+	"github.com/0glabs/0g-da-client/common/aws"
+	"github.com/0glabs/0g-da-client/common/geth"
+	"github.com/0glabs/0g-da-client/common/logging"
+	"github.com/0glabs/0g-da-client/common/ratelimit"
+	"github.com/0glabs/0g-da-client/common/storage_node"
+	"github.com/0glabs/0g-da-client/disperser"
+	"github.com/0glabs/0g-da-client/disperser/apiserver"
+	"github.com/0glabs/0g-da-client/disperser/batcher"
+	server_flags "github.com/0glabs/0g-da-client/disperser/cmd/apiserver/flags"
+	batcher_flags "github.com/0glabs/0g-da-client/disperser/cmd/batcher/flags"
+	"github.com/0glabs/0g-da-client/disperser/cmd/combined_server/flags"
+	"github.com/0glabs/0g-da-client/disperser/common/blobstore"
 	"github.com/urfave/cli"
 )
 

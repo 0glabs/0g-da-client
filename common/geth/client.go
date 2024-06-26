@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-da-client/common"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

@@ -8,8 +8,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/disperser/leveldb"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/disperser/leveldb"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/mock"
 
-	dacommon "github.com/0glabs/0g-data-avail/common"
+	dacommon "github.com/0glabs/0g-da-client/common"
 )
 
 type MockEthClient struct {

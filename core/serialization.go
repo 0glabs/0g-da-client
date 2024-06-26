@@ -36,7 +36,7 @@ func (h *BatchHeader) SetBatchRoot(blobHeaders []*BlobHeader) (*merkletree.Merkl
 
 func (h *BatchHeader) Encode() ([]byte, error) {
 	// The order here has to match the field ordering of ReducedBatchHeader defined in IZGDAServiceManager.sol
-	// ref: https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// ref: https://github.com/0glabs/0g-da-client/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	batchHeaderType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
 			Name: "blobHeadersRoot",
@@ -74,7 +74,7 @@ func (h *BatchHeader) Encode() ([]byte, error) {
 }
 
 // GetBatchHeaderHash returns the hash of the reduced BatchHeader that is used to sign the Batch
-// ref: https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/libraries/ZGDAHasher.sol#L65
+// ref: https://github.com/0glabs/0g-da-client/blob/master/contracts/src/libraries/ZGDAHasher.sol#L65
 func (h BatchHeader) GetBatchHeaderHash() ([32]byte, error) {
 	headerByte, err := h.Encode()
 	if err != nil {

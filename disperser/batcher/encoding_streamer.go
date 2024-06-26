@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/core"
-	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/core"
+	"github.com/0glabs/0g-da-client/disperser"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/wealdtech/go-merkletree"
 )

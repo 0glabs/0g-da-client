@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/0glabs/0g-data-avail/api/grpc/encoder";
+option go_package = "github.com/0glabs/0g-da-client/api/grpc/encoder";
 package encoder;
 
 service Encoder {
