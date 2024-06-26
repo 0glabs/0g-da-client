@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/0glabs/0g-data-avail/disperser/contract/da_entrance"
-	"github.com/0glabs/0g-data-avail/disperser/contract/da_signers"
+	"github.com/0glabs/0g-da-client/disperser/contract/da_entrance"
+	"github.com/0glabs/0g-da-client/disperser/contract/da_signers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	gethTypes "github.com/ethereum/go-ethereum/core/types"

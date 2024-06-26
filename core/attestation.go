@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"strings"
 
-	bn254utils "github.com/0glabs/0g-data-avail/core/bn254"
+	bn254utils "github.com/0glabs/0g-da-client/core/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fp"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"

@@ -1,11 +1,11 @@
-module github.com/0glabs/0g-data-avail
+module github.com/0glabs/0g-da-client
 
 go 1.21
 
 toolchain go1.21.1
 
 require (
-	github.com/0glabs/0g-data-avail/api v0.0.0
+	github.com/0glabs/0g-da-client/api v0.0.0
 	github.com/0glabs/0g-storage-client v0.1.14
 	github.com/Layr-Labs/eigensdk-go v0.0.8
 	github.com/aws/aws-sdk-go-v2 v1.21.2
@@ -169,4 +169,4 @@ require (
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
 
-replace github.com/0glabs/0g-data-avail/api => ./api
+replace github.com/0glabs/0g-da-client/api => ./api

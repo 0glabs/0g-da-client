@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/0glabs/0g-data-avail/cli/flags"
-	"github.com/0glabs/0g-data-avail/common/aws/dynamodb"
-	"github.com/0glabs/0g-data-avail/common/aws/s3"
-	"github.com/0glabs/0g-data-avail/common/logging"
-	"github.com/0glabs/0g-data-avail/common/store"
-	"github.com/0glabs/0g-data-avail/disperser/common/blobstore"
+	"github.com/0glabs/0g-da-client/cli/flags"
+	"github.com/0glabs/0g-da-client/common/aws/dynamodb"
+	"github.com/0glabs/0g-da-client/common/aws/s3"
+	"github.com/0glabs/0g-da-client/common/logging"
+	"github.com/0glabs/0g-da-client/common/store"
+	"github.com/0glabs/0g-da-client/disperser/common/blobstore"
 	"github.com/urfave/cli"
 )
 

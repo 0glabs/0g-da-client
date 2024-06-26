@@ -3,11 +3,11 @@ package flags
 import (
 	"time"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/geth"
-	"github.com/0glabs/0g-data-avail/common/logging"
-	"github.com/0glabs/0g-data-avail/common/storage_node"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/common/aws"
+	"github.com/0glabs/0g-da-client/common/geth"
+	"github.com/0glabs/0g-da-client/common/logging"
+	"github.com/0glabs/0g-da-client/common/storage_node"
 	"github.com/urfave/cli"
 )
 

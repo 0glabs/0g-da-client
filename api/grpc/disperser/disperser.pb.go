@@ -475,7 +475,7 @@ type SecurityParams struct {
 	// Note: The adversary_threshold and quorum_threshold will directly influence the
 	// cost of encoding for the blob to be dispersed, roughly by a factor of
 	// 100 / (quorum_threshold - adversary_threshold). See the spec for more details:
-	// https://github.com/0glabs/0g-data-avail/blob/master/docs/spec/protocol-modules/storage/overview.md
+	// https://github.com/0glabs/0g-da-client/blob/master/docs/spec/protocol-modules/storage/overview.md
 	// Currently it's required that the difference must be at least 10.
 	QuorumThreshold uint32 `protobuf:"varint,3,opt,name=quorum_threshold,json=quorumThreshold,proto3" json:"quorum_threshold,omitempty"`
 }
@@ -872,7 +872,7 @@ type BatchMetadata struct {
 	// The Ethereum block number at which the batch is confirmed onchain.
 	ConfirmationBlockNumber uint32 `protobuf:"varint,4,opt,name=confirmation_block_number,json=confirmationBlockNumber,proto3" json:"confirmation_block_number,omitempty"`
 	// This is the hash of the ReducedBatchHeader defined onchain, see:
-	// https://github.com/0glabs/0g-data-avail/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
+	// https://github.com/0glabs/0g-da-client/blob/master/contracts/src/interfaces/IZGDAServiceManager.sol#L43
 	// The is the message that the operators will sign their signatures on.
 	BatchHeaderHash []byte `protobuf:"bytes,5,opt,name=batch_header_hash,json=batchHeaderHash,proto3" json:"batch_header_hash,omitempty"`
 }

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/core"
-	"github.com/0glabs/0g-data-avail/disperser"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/core"
+	"github.com/0glabs/0g-da-client/disperser"
 )
 
 // SharedBlobStore is an in-memory implementation of the SharedBlobStore interface

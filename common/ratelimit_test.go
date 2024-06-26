@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/0glabs/0g-data-avail/common"
+	"github.com/0glabs/0g-da-client/common"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"

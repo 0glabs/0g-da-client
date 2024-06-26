@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/0glabs/0g-data-avail/common"
-	commondynamodb "github.com/0glabs/0g-data-avail/common/aws/dynamodb"
+	"github.com/0glabs/0g-da-client/common"
+	commondynamodb "github.com/0glabs/0g-da-client/common/aws/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

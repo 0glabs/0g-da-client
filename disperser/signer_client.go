@@ -3,9 +3,9 @@ package disperser
 import (
 	"context"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/core"
-	pb "github.com/0glabs/0g-data-avail/disperser/api/grpc/signer"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/core"
+	pb "github.com/0glabs/0g-da-client/disperser/api/grpc/signer"
 )
 
 type SignerClient interface {

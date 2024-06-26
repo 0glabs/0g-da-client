@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-da-client/core"
 	"github.com/stretchr/testify/assert"
 )
 

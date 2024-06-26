@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/0glabs/0g-data-avail/common"
-	"github.com/0glabs/0g-data-avail/core"
+	"github.com/0glabs/0g-da-client/common"
+	"github.com/0glabs/0g-da-client/core"
 
-	disperser_rpc "github.com/0glabs/0g-data-avail/api/grpc/disperser"
+	disperser_rpc "github.com/0glabs/0g-da-client/api/grpc/disperser"
 	eth_common "github.com/ethereum/go-ethereum/common"
 )
 

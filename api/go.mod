@@ -1,4 +1,4 @@
-module github.com/0glabs/0g-data-avail/api
+module github.com/0glabs/0g-da-client/api
 
 go 1.21
 

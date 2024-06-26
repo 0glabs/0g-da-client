@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/0glabs/0g-data-avail/cli/flags"
-	"github.com/0glabs/0g-data-avail/common/aws"
-	"github.com/0glabs/0g-data-avail/common/logging"
+	"github.com/0glabs/0g-da-client/cli/flags"
+	"github.com/0glabs/0g-da-client/common/aws"
+	"github.com/0glabs/0g-da-client/common/logging"
 	"github.com/urfave/cli"
 )
 

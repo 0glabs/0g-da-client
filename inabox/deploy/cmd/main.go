@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/0glabs/0g-data-avail/inabox/deploy"
+	"github.com/0glabs/0g-da-client/inabox/deploy"
 	"github.com/urfave/cli/v2"
 )
 
