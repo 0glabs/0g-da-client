@@ -227,8 +227,8 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 					DataLength:       dataLength,
 					BlobQuorumParams: blobQuorumParams,
 					DataRoot:         confirmationInfo.DataRoot,
-					Epoch:            uint32(confirmationInfo.Epoch),
-					QuorumId:         uint32(confirmationInfo.QuorumId),
+					Epoch:            confirmationInfo.Epoch,
+					QuorumId:         confirmationInfo.QuorumId,
 				},
 				BlobVerificationProof: &pb.BlobVerificationProof{
 					BatchId:   confirmationInfo.BatchID,

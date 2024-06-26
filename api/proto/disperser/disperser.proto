@@ -158,9 +158,9 @@ message BlobHeader {
 	// The data merkle root
 	bytes data_root = 4;
 	// Signers epoch
-	uint32 epoch = 5;
+	uint64 epoch = 5;
 	// Signers quorum id
-	uint32 quorum_id = 6;
+	uint64 quorum_id = 6;
 }
 
 message BlobQuorumParam {
