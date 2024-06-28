@@ -138,13 +138,13 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, 
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, daContract, logger, metrics, kvStore)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, daContract, logger, metrics)
 	if err != nil {
 		return err
 	}
 
 	//finalizer
-	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger, config.BatcherConfig.FinalizedBlockCount)
+	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig, queue, client, rpcClient, logger, kvStore)
 
 	//batcher
 	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, daContract, logger, metrics)

@@ -48,8 +48,6 @@ type BlobRequestHeader struct {
 	SecurityParams []*SecurityParam `json:"security_params"`
 	// AccountID is the account that is paying for the blob to be stored
 	AccountID AccountID `json:"account_id"`
-	// TargetRowNum is the number of rows that encoded blob split into
-	TargetRowNum uint32 `json:"target_row_num"`
 }
 
 // BlobQuorumInfo contains the quorum IDs and parameters for a blob specific to a given quorum

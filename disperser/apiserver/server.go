@@ -14,7 +14,6 @@ import (
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/api/grpc/retriever"
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/openweb3/web3go/types"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -42,8 +41,7 @@ type DispersalServer struct {
 	metadataHashAsBlobKey bool
 	kvStore               *disperser.Store
 
-	rpcClient            *rpc.Client
-	latestFinalizedBlock uint32
+	rpcClient *rpc.Client
 
 	logger common.Logger
 
@@ -177,12 +175,6 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 					ConfirmationBlockNumber: metadataFromKV.BlockNumber,
 				},
 			}
-
-			s.mu.RLock()
-			defer s.mu.RUnlock()
-			if metadata.ConfirmationInfo.ConfirmationBlockNumber <= s.latestFinalizedBlock {
-				metadata.BlobStatus = disperser.Finalized
-			}
 		} else {
 			// behavior align with aws dynamodb
 			metadata = &disperser.BlobMetadata{
@@ -302,42 +294,9 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	}, nil
 }
 
-func (s *DispersalServer) UpdateLatestFinalizedBlock(ctx context.Context) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Second*5)
-	defer cancel()
-
-	var header = types.Header{}
-	err := s.rpcClient.CallContext(ctxWithTimeout, &header, "eth_getBlockByNumber", "finalized", false)
-	if err != nil {
-		return err
-	}
-	if uint32(header.Number.Uint64()) > s.latestFinalizedBlock {
-		s.latestFinalizedBlock = uint32(header.Number.Uint64())
-	}
-	return nil
-}
-
 func (s *DispersalServer) Start(ctx context.Context) error {
 	s.logger.Trace("Entering Start function...")
 	defer s.logger.Trace("Exiting Start function...")
-
-	// fetch latest finalized block number
-	if s.metadataHashAsBlobKey {
-		go func() {
-			for {
-				err := s.UpdateLatestFinalizedBlock(ctx)
-				if err != nil {
-					s.logger.Warn("[apiserver] fetch latest finalized block number failed", "error", err)
-				} else {
-					s.logger.Info("[apiserver] latest finalized block number updated", "number", s.latestFinalizedBlock)
-				}
-				time.Sleep(time.Second * 5)
-			}
-		}()
-	}
 
 	// Serve grpc requests
 	addr := fmt.Sprintf("%s:%s", disperser.Localhost, s.config.GrpcPort)
@@ -395,7 +354,6 @@ func getBlobFromRequest(req *pb.DisperseBlobRequest) *core.Blob {
 	blob := &core.Blob{
 		RequestHeader: core.BlobRequestHeader{
 			SecurityParams: params,
-			TargetRowNum:   req.GetTargetRowNum(),
 		},
 		Data: data,
 	}

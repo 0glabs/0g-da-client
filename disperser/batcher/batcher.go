@@ -166,7 +166,6 @@ func (b *Batcher) Start(ctx context.Context) error {
 
 	// confirmer
 	b.confirmer.EncodingStreamer = b.EncodingStreamer
-	b.confirmer.Finalizer = b.finalizer
 	b.confirmer.SliceSigner = b.sliceSigner
 	b.confirmer.Start(ctx)
 	// finalizer
