@@ -13,7 +13,6 @@ import (
 	"github.com/0glabs/0g-da-client/core"
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/api/grpc/retriever"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -41,8 +40,6 @@ type DispersalServer struct {
 	metadataHashAsBlobKey bool
 	kvStore               *disperser.Store
 
-	rpcClient *rpc.Client
-
 	logger common.Logger
 
 	retrieverAddr string
@@ -59,7 +56,6 @@ func NewDispersalServer(
 	ratelimiter common.RateLimiter,
 	rateConfig RateConfig,
 	metadataHashAsBlobKey bool,
-	rpcClient *rpc.Client,
 	kvStore *disperser.Store,
 	retrieverAddr string,
 ) *DispersalServer {
@@ -74,7 +70,6 @@ func NewDispersalServer(
 		mu:                    &sync.RWMutex{},
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
 		kvStore:               kvStore,
-		rpcClient:             rpcClient,
 		retrieverAddr:         retrieverAddr,
 	}
 }
@@ -167,7 +162,7 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		if metadataFromKV != nil {
 			// metadata = metadataInKV
 			metadata = &disperser.BlobMetadata{
-				BlobStatus: disperser.Processing,
+				BlobStatus: disperser.Finalized,
 				ConfirmationInfo: &disperser.ConfirmationInfo{
 					DataRoot:                metadataFromKV.DataRoot,
 					Epoch:                   metadataFromKV.Epoch,

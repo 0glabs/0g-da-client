@@ -77,16 +77,7 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	var rpcClient *rpc.Client
-
-	if config.BlobstoreConfig.MetadataHashAsBlobKey {
-		var err error
-		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
-		if err != nil {
-			return err
-		}
-	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore, config.RetrieverAddr)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvStore, config.RetrieverAddr)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

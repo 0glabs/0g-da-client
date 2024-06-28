@@ -147,6 +147,10 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 		return fmt.Errorf("FinalizeBlobs: error getting blob headers: %w", err)
 	}
 
+	if len(metadatas) == 0 {
+		return nil
+	}
+
 	f.logger.Info("[finalizer] FinalizeBlobs: finalizing blobs", "numBlobs", len(metadatas), "finalizedBlockNumber", finalizedBlokNumber)
 
 	finalizedMetadatas := make([]*disperser.BlobMetadata, 0)
@@ -199,6 +203,10 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 }
 
 func (f *finalizer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disperser.BlobMetadata) error {
+	if len(metadatas) == 0 {
+		return nil
+	}
+
 	keys := make([][]byte, 0)
 	values := make([][]byte, 0)
 	for _, metadata := range metadatas {
