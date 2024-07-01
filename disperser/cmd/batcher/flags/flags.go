@@ -19,16 +19,14 @@ const (
 var (
 	/* Required Flags */
 	S3BucketNameFlag = cli.StringFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "s3-bucket-name"),
-		Usage:    "Name of the bucket to store blobs",
-		Required: true,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "S3_BUCKET_NAME"),
+		Name:   common.PrefixFlag(FlagPrefix, "s3-bucket-name"),
+		Usage:  "Name of the bucket to store blobs",
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "S3_BUCKET_NAME"),
 	}
 	DynamoDBTableNameFlag = cli.StringFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "dynamodb-table-name"),
-		Usage:    "Name of the dynamodb table to store blob metadata",
-		Required: true,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DYNAMODB_TABLE_NAME"),
+		Name:   common.PrefixFlag(FlagPrefix, "dynamodb-table-name"),
+		Usage:  "Name of the dynamodb table to store blob metadata",
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "DYNAMODB_TABLE_NAME"),
 	}
 	PullIntervalFlag = cli.DurationFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "pull-interval"),
