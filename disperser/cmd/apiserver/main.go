@@ -17,7 +17,6 @@ import (
 	"github.com/0glabs/0g-da-client/common/store"
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/cmd/apiserver/flags"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/urfave/cli"
 )
 
@@ -103,15 +102,7 @@ func RunDisperserServer(ctx *cli.Context) error {
 	// TODO: create a separate metrics for batcher
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	var rpcClient *rpc.Client
-
-	if config.BlobstoreConfig.MetadataHashAsBlobKey {
-		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
-		if err != nil {
-			return err
-		}
-	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore, config.RetrieverAddr)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvStore, config.RetrieverAddr)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

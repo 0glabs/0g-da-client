@@ -35,9 +35,6 @@ message DisperseBlobRequest {
 	// The disperser will ensure that the encoded blobs for each quorum are all processed
 	// within the same batch.
 	repeated SecurityParams security_params = 2;
-	// The number of rows that encoded blob split into.
-	// The number will be aligned to the next power of 2 and be bounded by blob size.
-	uint32 target_row_num = 3;
 }
 
 message DisperseBlobReply {

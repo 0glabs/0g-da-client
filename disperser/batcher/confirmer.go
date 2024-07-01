@@ -3,7 +3,6 @@ package batcher
 import (
 	"context"
 	"fmt"
-	"math"
 	"math/big"
 	"sync"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/0glabs/0g-da-client/common"
 	"github.com/0glabs/0g-da-client/common/geth"
 	"github.com/0glabs/0g-da-client/disperser"
-	"github.com/0glabs/0g-da-client/disperser/batcher/transactor"
 	"github.com/0glabs/0g-da-client/disperser/contract"
 	"github.com/0glabs/0g-storage-client/common/blockchain"
 	eth_common "github.com/ethereum/go-ethereum/common"
@@ -31,20 +29,16 @@ type Confirmer struct {
 	Queue            disperser.BlobStore
 	EncodingStreamer *EncodingStreamer
 	SliceSigner      *SliceSigner
-	Finalizer        Finalizer
 
 	daContract  *contract.DAContract
 	ConfirmChan chan *BatchInfo
 
-	pendingBatches            []*BatchInfo
-	MaxNumRetriesPerBlob      uint
-	ExpirationPollIntervalSec uint64
+	pendingBatches       []*BatchInfo
+	MaxNumRetriesPerBlob uint
 
 	routines uint
 
 	retryOption contract.RetryOption
-	kvStore     *disperser.Store
-	transactor  *transactor.Transactor
 
 	logger  common.Logger
 	Metrics *Metrics
@@ -61,7 +55,7 @@ type BatchInfo struct {
 	quorumIds  []*big.Int
 }
 
-func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue disperser.BlobStore, transactor *transactor.Transactor, daContract *contract.DAContract, logger common.Logger, metrics *Metrics, kvStore *disperser.Store) (*Confirmer, error) {
+func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue disperser.BlobStore, daContract *contract.DAContract, logger common.Logger, metrics *Metrics) (*Confirmer, error) {
 	if ethConfig.TxGasLimit > 0 {
 		blockchain.CustomGasLimit = uint64(ethConfig.TxGasLimit)
 	}
@@ -77,17 +71,12 @@ func NewConfirmer(ethConfig geth.EthClientConfig, batcherConfig Config, queue di
 			Rounds:   ethConfig.ReceiptPollingRounds,
 			Interval: ethConfig.ReceiptPollingInterval,
 		},
-		kvStore:                   kvStore,
-		logger:                    logger,
-		Metrics:                   metrics,
-		transactor:                transactor,
-		ExpirationPollIntervalSec: batcherConfig.ExpirationPollIntervalSec,
+		logger:  logger,
+		Metrics: metrics,
 	}, nil
 }
 
 func (c *Confirmer) Start(ctx context.Context) {
-	go c.expireLoop()
-
 	go func() {
 		for {
 			select {
@@ -165,100 +154,15 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, error) {
 	}
 	c.logger.Info("[confirmer] Waiting signing batch be confirmed", "transaction hash", txHash)
 	// data is not duplicate, there is a new transaction
-
-	for {
-		receipt, err := c.daContract.WaitForReceipt(txHash, true, c.retryOption)
-		if err != nil {
-			return 0, err
-		}
-
-		blockNumber := receipt.BlockNumber
-		c.logger.Debug("[confirmer] waiting signed tx to be confirmed", "receipt block", blockNumber, "finalized block", c.Finalizer.LatestFinalizedBlock())
-		if blockNumber > c.Finalizer.LatestFinalizedBlock() {
-			time.Sleep(time.Second * 5)
-			continue
-		}
-
-		return uint32(blockNumber), nil
-	}
-}
-
-func (c *Confirmer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disperser.BlobMetadata) error {
-	// uploader := transfer.NewUploader(c.Flow, c.Nodes)
-	// batcher := c.KVNode.Batcher()
-	// for _, metadata := range metadatas {
-	// 	blobKey := metadata.GetBlobKey()
-	// 	key := []byte(blobKey.String())
-	// 	value, err := metadata.Serialize()
-	// 	if err != nil {
-	// 		return errors.WithMessage(err, "Failed to serialize blob metadata")
-	// 	}
-	// 	batcher.Set(c.StreamId, key, value)
-	// }
-	// streamData, err := batcher.Build()
-	// if err != nil {
-	// 	return errors.WithMessage(err, "Failed to build stream data")
-	// }
-	// rawKVData, err := streamData.Encode()
-	// if err != nil {
-	// 	return errors.WithMessage(err, "Failed to encode stream data")
-	// }
-	// kvData, err := zg_core.NewDataInMemory(rawKVData)
-	// if err != nil {
-	// 	return errors.WithMessage(err, "failed to build kv data")
-	// }
-	// upload
-	// txHash, _, err := c.transactor.BatchUpload(uploader, []zg_core.IterableData{kvData}, []transfer.UploadOption{
-	// 	// kv options
-	// 	{
-	// 		Tags:     batcher.BuildTags(),
-	// 		Force:    true,
-	// 		Disperse: false,
-	// 		TaskSize: c.UploadTaskSize,
-	// 	}})
-	// if err != nil {
-	// 	return errors.WithMessage(err, "failed to upload file")
-	// }
-	// // wait for receipt
-	// _, _, err = c.waitForReceipt(txHash)
-	// if err != nil {
-	// 	return errors.WithMessage(err, "failed to confirm metadata onchain")
-	// }
-
-	keys := make([][]byte, 0)
-	values := make([][]byte, 0)
-	for _, metadata := range metadatas {
-		retrieveMetadata := disperser.BlobRetrieveMetadata{
-			DataRoot:    metadata.ConfirmationInfo.DataRoot,
-			Epoch:       metadata.ConfirmationInfo.Epoch,
-			QuorumId:    metadata.ConfirmationInfo.QuorumId,
-			BlockNumber: metadata.ConfirmationInfo.ConfirmationBlockNumber,
-		}
-		val, err := retrieveMetadata.Serialize()
-		if err != nil {
-			return errors.WithMessage(err, "failed to serialize retrieve metadata")
-		}
-
-		key := []byte(metadata.GetBlobKey().String())
-		keys = append(keys, key)
-		values = append(values, val)
-	}
-
-	_, err := c.kvStore.StoreMetadataBatch(ctx, keys, values)
+	receipt, err := c.daContract.WaitForReceipt(txHash, true, c.retryOption)
 	if err != nil {
-		return errors.WithMessage(err, "failed to save retrieve metadata to kv db")
+		return 0, err
 	}
 
-	c.logger.Info("[confirmer] removing confirmed blobs")
-	for _, metadata := range metadatas {
-		c.logger.Info("[confirmer] removing blob", "blob key", metadata.GetBlobKey().String())
-		err := c.Queue.RemoveBlob(ctx, metadata)
-		if err != nil {
-			c.logger.Warn("[confirmer] failed to remove blob", "error", err)
-		}
-	}
-	c.logger.Info("[confirmer] confirmed blobs removed")
-	return nil
+	blockNumber := receipt.BlockNumber
+	c.logger.Debug("[confirmer] waiting signed tx to be confirmed", "receipt block", blockNumber)
+
+	return uint32(blockNumber), nil
 }
 
 func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) error {
@@ -287,7 +191,6 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 		stageTimer := time.Now()
 		blobsToRetry := make([]*disperser.BlobMetadata, 0)
 		var updateConfirmationInfoErr error
-		confirmedMetadatas := make([]*disperser.BlobMetadata, 0)
 		for blobIndex, metadata := range batch.BlobMetadata {
 			confirmationInfo := &disperser.ConfirmationInfo{
 				BatchHeaderHash:         batchInfo.headerHash[idx],
@@ -306,15 +209,13 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 				ConfirmationBlockNumber: blockNumber,
 			}
 			c.logger.Trace("[confirmer] confirming blob", "blob key", metadata.GetBlobKey())
-			var confirmedMetadata *disperser.BlobMetadata
-			confirmedMetadata, updateConfirmationInfoErr := c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo)
+			_, updateConfirmationInfoErr := c.Queue.MarkBlobConfirmed(ctx, metadata, confirmationInfo)
 			if updateConfirmationInfoErr == nil {
 				c.Metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Confirmed)
 				// remove encoded blob from storage so we don't disperse it again
 				c.EncodingStreamer.RemoveEncodedBlob(metadata)
 				c.logger.Trace("[confirmer] blob confirmed", "blob key", metadata.GetBlobKey())
 
-				confirmedMetadatas = append(confirmedMetadatas, confirmedMetadata)
 			} else {
 				c.logger.Error("[confirmer] HandleSingleBatch: error updating blob confirmed metadata", "err", updateConfirmationInfoErr)
 				blobsToRetry = append(blobsToRetry, batch.BlobMetadata[blobIndex])
@@ -332,18 +233,6 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 		c.logger.Info("[confirmer] Update confirmation info took", "duration", time.Since(stageTimer))
 		c.Metrics.ObserveLatency("UpdateConfirmationInfo", float64(time.Since(stageTimer).Milliseconds()))
-
-		// remove blobs
-		if c.Queue.MetadataHashAsBlobKey() {
-			stageTimer = time.Now()
-			c.logger.Info("[confirmer] Uploading confirmed metadata on chain")
-			err := c.PersistConfirmedBlobs(ctx, confirmedMetadatas)
-			if err != nil {
-				c.logger.Error("[confirmer] Failed to upload metadata on chain: %v", err)
-			}
-			c.logger.Info("[confirmer] Uploaded confirmed metadata on chain", "duration", time.Since(stageTimer))
-		}
-
 		batchSize := int64(0)
 		for _, blobMeta := range batch.BlobMetadata {
 			batchSize += int64(blobMeta.RequestMetadata.BlobSize)
@@ -356,31 +245,4 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 
 	c.SliceSigner.RemoveBatchingStatus(batchInfo.signedTs)
 	return nil
-}
-
-// The expireLoop is a loop that is run once per configured second(s) while the node
-// is running. It scans for expired blobs and removes them from the local database.
-func (c *Confirmer) expireLoop() {
-	c.logger.Info("[confirmer] start expireLoop goroutine in background to periodically remove expired blobs on the node")
-	ticker := time.NewTicker(time.Duration(c.ExpirationPollIntervalSec) * time.Second)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-
-		// We cap the time the deletion function can run, to make sure there is no overlapping
-		// between loops and the garbage collection doesn't take too much resource.
-		// The heuristic is to cap the GC time to a percentage of the poll interval, but at
-		// least have 1 second.
-		timeLimitSec := uint64(math.Max(float64(c.ExpirationPollIntervalSec)*gcPercentageTime, 1.0))
-		numBlobsDeleted, err := c.kvStore.DeleteExpiredEntries(time.Now().Unix(), timeLimitSec)
-		c.logger.Info("[confirmer] complete an expiration cycle to remove expired blobs", "num expired blobs found and removed", numBlobsDeleted)
-		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				c.logger.Error("Expiration cycle exited with ContextDeadlineExceed, meaning more expired blobs need to be removed, which will continue in next cycle", "time limit (sec)", timeLimitSec)
-			} else {
-				c.logger.Error("Expiration cycle encountered error when removing expired blobs, which will be retried in next cycle", "err", err)
-			}
-		}
-	}
 }

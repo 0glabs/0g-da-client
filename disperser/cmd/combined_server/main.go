@@ -77,16 +77,7 @@ func RunDisperserServer(config Config, blobStore disperser.BlobStore, logger com
 
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	var rpcClient *rpc.Client
-
-	if config.BlobstoreConfig.MetadataHashAsBlobKey {
-		var err error
-		rpcClient, err = rpc.Dial(config.EthClientConfig.RPCURL)
-		if err != nil {
-			return err
-		}
-	}
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, rpcClient, kvStore, config.RetrieverAddr)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvStore, config.RetrieverAddr)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {
@@ -138,13 +129,13 @@ func RunBatcher(config Config, queue disperser.BlobStore, logger common.Logger, 
 	}
 
 	// confirmer
-	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, transactor, daContract, logger, metrics, kvStore)
+	confirmer, err := batcher.NewConfirmer(config.EthClientConfig, config.BatcherConfig, queue, daContract, logger, metrics)
 	if err != nil {
 		return err
 	}
 
 	//finalizer
-	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig.FinalizerInterval, queue, client, rpcClient, config.BatcherConfig.MaxNumRetriesPerBlob, logger, config.BatcherConfig.FinalizedBlockCount)
+	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig, queue, client, rpcClient, logger, kvStore)
 
 	//batcher
 	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, daContract, logger, metrics)
