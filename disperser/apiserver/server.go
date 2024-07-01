@@ -80,8 +80,6 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 	}))
 	defer timer.ObserveDuration()
 
-	securityParams := req.GetSecurityParams()
-
 	blobSize := len(req.GetData())
 	// The blob size in bytes must be in range [1, maxBlobSize].
 	if blobSize > core.MaxBlobSize {
@@ -99,7 +97,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 		return nil, err
 	}
 
-	s.logger.Debug("[apiserver] received a new blob request", "origin", origin, "securityParams", securityParams)
+	s.logger.Debug("[apiserver] received a new blob request", "origin", origin)
 
 	requestedAt := uint64(time.Now().UnixNano())
 	metadataKey, err := s.blobStore.StoreBlob(ctx, blob, requestedAt)
@@ -187,54 +185,13 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 	if isConfirmed {
 		confirmationInfo := metadata.ConfirmationInfo
 
-		commitmentRoot := confirmationInfo.CommitmentRoot
-		dataLength := uint32(confirmationInfo.Length)
-		quorumInfos := confirmationInfo.BlobQuorumInfos
-		blobQuorumParams := make([]*pb.BlobQuorumParam, len(quorumInfos))
-		quorumNumbers := make([]byte, len(quorumInfos))
-		quorumPercentSigned := make([]byte, len(quorumInfos))
-		quorumIndexes := make([]byte, len(quorumInfos))
-		for i, quorumInfo := range quorumInfos {
-			blobQuorumParams[i] = &pb.BlobQuorumParam{
-				QuorumNumber:                 uint32(quorumInfo.QuorumID),
-				AdversaryThresholdPercentage: uint32(quorumInfo.AdversaryThreshold),
-				QuorumThresholdPercentage:    uint32(quorumInfo.QuorumThreshold),
-				ChunkLength:                  uint32(quorumInfo.ChunkLength),
-			}
-			quorumNumbers[i] = quorumInfo.QuorumID
-			quorumPercentSigned[i] = confirmationInfo.QuorumResults[quorumInfo.QuorumID].PercentSigned
-			quorumIndexes[i] = byte(i)
-		}
-
 		return &pb.BlobStatusReply{
 			Status: getResponseStatus(metadata.BlobStatus),
 			Info: &pb.BlobInfo{
 				BlobHeader: &pb.BlobHeader{
-					CommitmentRoot:   commitmentRoot,
-					DataLength:       dataLength,
-					BlobQuorumParams: blobQuorumParams,
-					DataRoot:         confirmationInfo.DataRoot,
-					Epoch:            confirmationInfo.Epoch,
-					QuorumId:         confirmationInfo.QuorumId,
-				},
-				BlobVerificationProof: &pb.BlobVerificationProof{
-					BatchId:   confirmationInfo.BatchID,
-					BlobIndex: confirmationInfo.BlobIndex,
-					BatchMetadata: &pb.BatchMetadata{
-						BatchHeader: &pb.BatchHeader{
-							BatchRoot:               confirmationInfo.BatchRoot,
-							QuorumNumbers:           quorumNumbers,
-							QuorumSignedPercentages: quorumPercentSigned,
-							ReferenceBlockNumber:    confirmationInfo.ReferenceBlockNumber,
-						},
-						SignatoryRecordHash:     confirmationInfo.SignatoryRecordHash[:],
-						Fee:                     confirmationInfo.Fee,
-						ConfirmationBlockNumber: confirmationInfo.ConfirmationBlockNumber,
-						BatchHeaderHash:         confirmationInfo.BatchHeaderHash[:],
-					},
-					InclusionProof: confirmationInfo.BlobInclusionProof,
-					// ref: api/proto/disperser/disperser.proto:BlobVerificationProof.quorum_indexes
-					QuorumIndexes: quorumIndexes,
+					DataRoot: confirmationInfo.DataRoot,
+					Epoch:    confirmationInfo.Epoch,
+					QuorumId: confirmationInfo.QuorumId,
 				},
 			},
 		}, nil
@@ -334,22 +291,9 @@ func getResponseStatus(status disperser.BlobStatus) pb.BlobStatus {
 }
 
 func getBlobFromRequest(req *pb.DisperseBlobRequest) *core.Blob {
-	params := make([]*core.SecurityParam, len(req.SecurityParams))
-
-	for i, param := range req.GetSecurityParams() {
-		params[i] = &core.SecurityParam{
-			QuorumID:           core.QuorumID(param.QuorumId),
-			AdversaryThreshold: uint8(param.AdversaryThreshold),
-			QuorumThreshold:    uint8(param.QuorumThreshold),
-		}
-	}
-
 	data := req.GetData()
 
 	blob := &core.Blob{
-		RequestHeader: core.BlobRequestHeader{
-			SecurityParams: params,
-		},
 		Data: data,
 	}
 
