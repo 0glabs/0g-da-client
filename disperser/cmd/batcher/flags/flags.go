@@ -19,16 +19,14 @@ const (
 var (
 	/* Required Flags */
 	S3BucketNameFlag = cli.StringFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "s3-bucket-name"),
-		Usage:    "Name of the bucket to store blobs",
-		Required: true,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "S3_BUCKET_NAME"),
+		Name:   common.PrefixFlag(FlagPrefix, "s3-bucket-name"),
+		Usage:  "Name of the bucket to store blobs",
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "S3_BUCKET_NAME"),
 	}
 	DynamoDBTableNameFlag = cli.StringFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "dynamodb-table-name"),
-		Usage:    "Name of the dynamodb table to store blob metadata",
-		Required: true,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "DYNAMODB_TABLE_NAME"),
+		Name:   common.PrefixFlag(FlagPrefix, "dynamodb-table-name"),
+		Usage:  "Name of the dynamodb table to store blob metadata",
+		EnvVar: common.PrefixEnvVar(EnvVarPrefix, "DYNAMODB_TABLE_NAME"),
 	}
 	PullIntervalFlag = cli.DurationFlag{
 		Name:     common.PrefixFlag(FlagPrefix, "pull-interval"),
@@ -188,16 +186,6 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "VERIFIED_COMMIT_ROOTS_TX_GAS_LIMIT"),
 	}
 
-	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
-	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
-	// downloaded by light clients for DAS.
-	TargetNumChunksFlag = cli.UintFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "target-num-chunks"),
-		Usage:    "Target number of chunks per blob. If set to zero, the number of chunks will be calculated based on the ratio of the total stake to the minimum stake",
-		Required: false,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "TARGET_NUM_CHUNKS"),
-		Value:    0,
-	}
 	MetadataHashAsBlobKey = cli.BoolFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "metadata-hash-as-blob-key"),
 		Usage:  "use metadata hash as blob key",
@@ -233,7 +221,6 @@ var OptionalFlags = []cli.Flag{
 	MaxNumRetriesForSignFlag,
 	FinalizedBlockCountFlag,
 	ExpirationPollIntervalSecFlag,
-	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
 	VerifiedCommitRootsTxGasLimitFlag,
 }
