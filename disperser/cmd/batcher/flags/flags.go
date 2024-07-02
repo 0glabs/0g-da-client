@@ -186,16 +186,6 @@ var (
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "VERIFIED_COMMIT_ROOTS_TX_GAS_LIMIT"),
 	}
 
-	// This flag is available so that we can manually adjust the number of chunks if desired for testing purposes or for other reasons.
-	// For instance, we may want to increase the number of chunks / reduce the chunk size to reduce the amount of data that needs to be
-	// downloaded by light clients for DAS.
-	TargetNumChunksFlag = cli.UintFlag{
-		Name:     common.PrefixFlag(FlagPrefix, "target-num-chunks"),
-		Usage:    "Target number of chunks per blob. If set to zero, the number of chunks will be calculated based on the ratio of the total stake to the minimum stake",
-		Required: false,
-		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "TARGET_NUM_CHUNKS"),
-		Value:    0,
-	}
 	MetadataHashAsBlobKey = cli.BoolFlag{
 		Name:   common.PrefixFlag(FlagPrefix, "metadata-hash-as-blob-key"),
 		Usage:  "use metadata hash as blob key",
@@ -231,7 +221,6 @@ var OptionalFlags = []cli.Flag{
 	MaxNumRetriesForSignFlag,
 	FinalizedBlockCountFlag,
 	ExpirationPollIntervalSecFlag,
-	TargetNumChunksFlag,
 	MetadataHashAsBlobKey,
 	VerifiedCommitRootsTxGasLimitFlag,
 }
