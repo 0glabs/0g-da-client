@@ -189,9 +189,9 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 			Status: getResponseStatus(metadata.BlobStatus),
 			Info: &pb.BlobInfo{
 				BlobHeader: &pb.BlobHeader{
-					DataRoot: confirmationInfo.DataRoot,
-					Epoch:    confirmationInfo.Epoch,
-					QuorumId: confirmationInfo.QuorumId,
+					StorageRoot: confirmationInfo.DataRoot,
+					Epoch:       confirmationInfo.Epoch,
+					QuorumId:    confirmationInfo.QuorumId,
 				},
 			},
 		}, nil
