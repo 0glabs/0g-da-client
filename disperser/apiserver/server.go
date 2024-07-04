@@ -74,6 +74,12 @@ func NewDispersalServer(
 	}
 }
 
+func (s *DispersalServer) GetStatus(ctx context.Context, req *pb.Empty) (*pb.GetStatusReply, error) {
+	return &pb.GetStatusReply{
+		StatusCode: 200,
+	}, nil
+}
+
 func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlobRequest) (*pb.DisperseBlobReply, error) {
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(f float64) {
 		s.metrics.ObserveLatency("DisperseBlob", f*1000) // make milliseconds
