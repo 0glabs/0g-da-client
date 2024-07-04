@@ -21,9 +21,20 @@ service Disperser {
 	// The blob should have been initially dispersed via this Disperser service
 	// for this API to work.
 	rpc RetrieveBlob(RetrieveBlobRequest) returns (RetrieveBlobReply) {}
+
+	// This checks the disperser status
+	rpc GetStatus(Empty) returns (GetStatusReply) {}
 }
 
 // Requests and Responses
+
+message Empty {}
+
+message GetStatusReply {
+	// The status code of the service
+	// TODO: Add more useful information
+	uint64 status_code = 1;
+}
 
 message DisperseBlobRequest {
 	// The data to be dispersed.
