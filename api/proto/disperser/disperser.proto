@@ -15,9 +15,6 @@ service Disperser {
 	rpc GetBlobStatus(BlobStatusRequest) returns (BlobStatusReply) {}
 
 	// This retrieves the requested blob from the Disperser's backend.
-	// This is a more efficient way to retrieve blobs than directly retrieving
-	// from the DA Nodes (see detail about this approach in
-	// api/proto/retriever/retriever.proto).
 	// The blob should have been initially dispersed via this Disperser service
 	// for this API to work.
 	rpc RetrieveBlob(RetrieveBlobRequest) returns (RetrieveBlobReply) {}
@@ -27,7 +24,7 @@ service Disperser {
 
 message DisperseBlobRequest {
 	// The data to be dispersed.
-	// The size of data must be <= 512KiB.
+	// The size of data must be <= 31744 KiB.
 	bytes data = 1;
 }
 
@@ -59,12 +56,11 @@ message BlobStatusReply {
 
 // RetrieveBlobRequest contains parameters to retrieve the blob.
 message RetrieveBlobRequest {
-	// The hash of data
+	// The storage hash of data
 	bytes storage_root = 1;
 	// This identifies the epoch that this blob belongs to.
 	uint64 epoch = 2;
-	// Which quorum of the blob this is requesting for (note a blob can participate in
-	// multiple quorums).
+	// Which quorum of the blob this is requesting for.
 	uint64 quorum_id = 3;
 }
 

@@ -655,6 +655,19 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			s.logger.Warn("[signer] retry signing", "retries", signInfo.reties)
 		} else {
 			_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures)
+
+			for _, metadata := range signInfo.batch.BlobMetadata {
+				meta, err := s.blobStore.GetBlobMetadata(ctx, metadata.GetBlobKey())
+				if err != nil {
+					s.logger.Error("[signer] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+				} else {
+					if meta.BlobStatus == disperser.Failed {
+						s.logger.Info("[signer] signing blob reach max retries", "key", metadata.GetBlobKey())
+						s.EncodingStreamer.RemoveEncodedBlob(metadata)
+					}
+				}
+			}
+
 			s.EncodingStreamer.RemoveBatchingStatus(signInfo.ts)
 			return errors.New("failed aggregate signatures")
 		}

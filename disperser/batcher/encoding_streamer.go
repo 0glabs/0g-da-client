@@ -150,7 +150,7 @@ func (e *EncodingStreamer) Start(ctx context.Context) error {
 func (e *EncodingStreamer) RequestEncoding(ctx context.Context, encoderChan chan EncodingResultOrStatus) error {
 	stageTimer := time.Now()
 	// pull new blobs and send to encoder
-	e.logger.Info("[encodingstreamer] requesting processing blobs..")
+	e.logger.Trace("[encodingstreamer] requesting processing blobs..")
 	metadatas, err := e.blobStore.GetBlobMetadataByStatus(ctx, disperser.Processing)
 	if err != nil {
 		return fmt.Errorf("error getting blob metadatas: %w", err)
