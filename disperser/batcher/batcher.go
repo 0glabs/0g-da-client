@@ -13,6 +13,7 @@ import (
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/contract"
 	"github.com/0glabs/0g-da-client/disperser/signer"
+	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/gammazero/workerpool"
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
@@ -378,31 +379,36 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 	}
 
 	stageTimer := time.Now()
-	txHash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
-	if err != nil {
-		for idx, item := range batch {
-			_ = b.handleFailure(ctx, item.BlobMetadata, FailSubmitAggregateSignatures)
-			for _, metadata := range item.BlobMetadata {
-				meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
-				if err != nil {
-					log.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
-				} else {
-					if meta.BlobStatus == disperser.Failed {
-						log.Info("[batcher] submit aggregateSignatures reach max retries", "key", metadata.GetBlobKey())
-						b.EncodingStreamer.RemoveEncodedBlob(metadata)
+	var txHash *eth_common.Hash
+	if len(submissions) > 0 {
+		hash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
+		if err != nil {
+			for idx, item := range batch {
+				_ = b.handleFailure(ctx, item.BlobMetadata, FailSubmitAggregateSignatures)
+				for _, metadata := range item.BlobMetadata {
+					meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
+					if err != nil {
+						log.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+					} else {
+						if meta.BlobStatus == disperser.Failed {
+							log.Info("[batcher] submit aggregateSignatures reach max retries", "key", metadata.GetBlobKey())
+							b.EncodingStreamer.RemoveEncodedBlob(metadata)
+						}
 					}
 				}
-			}
 
-			b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
+				b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
+			}
+			b.sliceSigner.RemoveBatchingStatus(signedTs)
+			if len(s) > 1 {
+				b.sliceSigner.SignedBatchSize = uint(len(s)) / 2
+			} else {
+				b.sliceSigner.SignedBatchSize = 1
+			}
+			return err
 		}
-		b.sliceSigner.RemoveBatchingStatus(signedTs)
-		if len(s) > 1 {
-			b.sliceSigner.SignedBatchSize = uint(len(s)) / 2
-		} else {
-			b.sliceSigner.SignedBatchSize = 1
-		}
-		return err
+
+		txHash = &hash
 	}
 
 	b.logger.Info("[batcher] submit aggregate signatures", "duration", time.Since(stageTimer))
