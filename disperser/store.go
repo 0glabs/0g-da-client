@@ -10,6 +10,7 @@ import (
 
 	"github.com/0glabs/0g-da-client/common"
 	"github.com/0glabs/0g-da-client/disperser/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
 const (
@@ -115,7 +116,13 @@ func (s *Store) deleteNBlobs(currentTimeUnixSec int64, numBatches int) (int, err
 				return -1, err
 			}
 
-			expiredKeys = append(expiredKeys, chunk)
+			blobHeaderKey, err := EncodeBlobHeaderKey(chunk)
+			if err != nil {
+				s.logger.Error("Cannot generate the key for query blob:", "err", err)
+				return -1, err
+			}
+
+			expiredKeys = append(expiredKeys, blobHeaderKey)
 		}
 	}
 
@@ -130,7 +137,13 @@ func (s *Store) deleteNBlobs(currentTimeUnixSec int64, numBatches int) (int, err
 }
 
 func (s *Store) StoreMetadata(ctx context.Context, key []byte, value []byte) error {
-	err := s.db.Put(key, value)
+	blobHeaderKey, err := EncodeBlobHeaderKey(key)
+	if err != nil {
+		s.logger.Error("Cannot generate the key for storing blob:", "err", err)
+		return err
+	}
+
+	err = s.db.Put(blobHeaderKey, value)
 	if err != nil {
 		s.logger.Error("Failed to write the batch into local database:", "err", err)
 		return err
@@ -146,7 +159,13 @@ func (s *Store) StoreMetadataBatch(ctx context.Context, blobKeys [][]byte, metad
 	buf := bytes.NewBuffer(make([]byte, 0))
 
 	for idx, key := range blobKeys {
-		keys = append(keys, key)
+		blobHeaderKey, err := EncodeBlobHeaderKey(key)
+		if err != nil {
+			s.logger.Error("Cannot generate the key for storing blob:", "err", err)
+			return nil, err
+		}
+
+		keys = append(keys, blobHeaderKey)
 		values = append(values, metadatas[idx])
 
 		if err := binary.Write(buf, binary.LittleEndian, uint64(len(key))); err != nil {
@@ -177,7 +196,13 @@ func (s *Store) StoreMetadataBatch(ctx context.Context, blobKeys [][]byte, metad
 }
 
 func (s *Store) GetMetadata(ctx context.Context, key []byte) ([]byte, error) {
-	data, err := s.db.Get(key)
+	blobHeaderKey, err := EncodeBlobHeaderKey(key)
+	if err != nil {
+		s.logger.Error("Cannot generate the key for get blob:", "err", err)
+		return nil, err
+	}
+
+	data, err := s.db.Get(blobHeaderKey)
 	if err != nil {
 		if errors.Is(err, leveldb.ErrNotFound) {
 			return nil, ErrKeyNotFound
@@ -185,6 +210,10 @@ func (s *Store) GetMetadata(ctx context.Context, key []byte) ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func (s *Store) MetadataIterator(ctx context.Context) iterator.Iterator {
+	return s.db.NewIterator(EncodeBlobHeaderKeyPrefix())
 }
 
 // HasKey returns if a given key has been stored.
@@ -204,7 +233,8 @@ func (s *Store) DeleteKeys(ctx context.Context, keys *[][]byte) error {
 const (
 	// Caution: the change to these prefixes needs to handle the backward compatibility,
 	// making sure the new code work with old data in DA Node store.
-	batchExpirationPrefix = "_EXPIRATION_" // The prefix of the batch expiration key.
+	blobHeaderPrefix      = "_BLOB_HEADER_" // The prefix of the blob header key.
+	batchExpirationPrefix = "_EXPIRATION_"  // The prefix of the batch expiration key.
 )
 
 func EncodeBatchExpirationKey(expirationTime int64) []byte {
@@ -227,6 +257,18 @@ func DecodeBatchExpirationKey(key []byte) (int64, error) {
 	}
 	ts := int64(binary.BigEndian.Uint64(key[len(key)-8:]))
 	return ts, nil
+}
+
+// EncodeBlobHeaderKey returns an encoded key as blob header identification.
+func EncodeBlobHeaderKey(key []byte) ([]byte, error) {
+	prefix := []byte(blobHeaderPrefix)
+	buf := bytes.NewBuffer(append(prefix, key[:]...))
+	return buf.Bytes(), nil
+}
+
+// Returns an encoded prefix of blob header key.
+func EncodeBlobHeaderKeyPrefix() []byte {
+	return []byte(blobHeaderPrefix)
 }
 
 func copyBytes(src []byte) []byte {

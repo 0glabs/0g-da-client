@@ -40,9 +40,10 @@ type finalizer struct {
 	defaultFinalizedBlockCount uint64
 	kvStore                    *disperser.Store
 	ExpirationPollIntervalSec  uint64
+	blobKeyCache               *disperser.BlobKeyCache
 }
 
-func NewFinalizer(timeout time.Duration, batcherConfig Config, blobStore disperser.BlobStore, ethClient common.EthClient, rpcClient common.RPCEthClient, logger common.Logger, kvStore *disperser.Store) Finalizer {
+func NewFinalizer(timeout time.Duration, batcherConfig Config, blobStore disperser.BlobStore, ethClient common.EthClient, rpcClient common.RPCEthClient, logger common.Logger, kvStore *disperser.Store, blobKeyCache *disperser.BlobKeyCache) Finalizer {
 	return &finalizer{
 		timeout:                    timeout,
 		loopInterval:               batcherConfig.FinalizerInterval,
@@ -55,6 +56,7 @@ func NewFinalizer(timeout time.Duration, batcherConfig Config, blobStore dispers
 		defaultFinalizedBlockCount: uint64(batcherConfig.FinalizedBlockCount),
 		kvStore:                    kvStore,
 		ExpirationPollIntervalSec:  batcherConfig.ExpirationPollIntervalSec,
+		blobKeyCache:               blobKeyCache,
 	}
 }
 
@@ -168,26 +170,29 @@ func (f *finalizer) FinalizeBlobs(ctx context.Context) error {
 		}
 
 		// confirmation block number may have changed due to reorg
-		confirmationBlockNumber, err := f.getTransactionBlockNumber(ctx, confirmationMetadata.ConfirmationInfo.ConfirmationTxnHash)
-		if errors.Is(err, ethereum.NotFound) {
-			// The confirmed block is finalized, but the transaction is not found. It means the transaction should be considered forked/invalid and the blob should be considered as failed.
-			err := f.blobStore.HandleBlobFailure(ctx, m, f.maxNumRetriesPerBlob)
-			if err != nil {
-				f.logger.Error("[finalizer] FinalizeBlobs: error marking blob as failed", "blobKey", blobKey.String(), "err", err)
+		if confirmationMetadata.ConfirmationInfo.ConfirmationTxnHash != gcommon.MaxHash {
+			confirmationBlockNumber, err := f.getTransactionBlockNumber(ctx, confirmationMetadata.ConfirmationInfo.ConfirmationTxnHash)
+			if errors.Is(err, ethereum.NotFound) {
+				// The confirmed block is finalized, but the transaction is not found. It means the transaction should be considered forked/invalid and the blob should be considered as failed.
+				err := f.blobStore.HandleBlobFailure(ctx, m, f.maxNumRetriesPerBlob)
+				if err != nil {
+					f.logger.Error("[finalizer] FinalizeBlobs: error marking blob as failed", "blobKey", blobKey.String(), "err", err)
+				}
+				continue
 			}
-			continue
-		}
-		if err != nil {
-			f.logger.Error("[finalizer] FinalizeBlobs: error getting transaction block number", "err", err)
-			continue
+			if err != nil {
+				f.logger.Error("[finalizer] FinalizeBlobs: error getting transaction block number", "err", err)
+				continue
+			}
+
+			// Leave as confirmed if the reorged confirmation block is after the latest finalized block (not yet finalized)
+			if uint64(confirmationBlockNumber) > finalizedBlokNumber {
+				continue
+			}
+
+			confirmationMetadata.ConfirmationInfo.ConfirmationBlockNumber = uint32(confirmationBlockNumber)
 		}
 
-		// Leave as confirmed if the reorged confirmation block is after the latest finalized block (not yet finalized)
-		if uint64(confirmationBlockNumber) > finalizedBlokNumber {
-			continue
-		}
-
-		confirmationMetadata.ConfirmationInfo.ConfirmationBlockNumber = uint32(confirmationBlockNumber)
 		err = f.blobStore.MarkBlobFinalized(ctx, blobKey)
 		if err != nil {
 			f.logger.Error("[finalizer] FinalizeBlobs: error marking blob as finalized", "blobKey", blobKey.String(), "err", err)
@@ -216,6 +221,8 @@ func (f *finalizer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 			QuorumId:    metadata.ConfirmationInfo.QuorumId,
 			BlockNumber: metadata.ConfirmationInfo.ConfirmationBlockNumber,
 		}
+
+		f.blobKeyCache.Add(retrieveMetadata.Hash(), retrieveMetadata.Epoch)
 		val, err := retrieveMetadata.Serialize()
 		if err != nil {
 			return errors.WithMessage(err, "failed to serialize retrieve metadata")

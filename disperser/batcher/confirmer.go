@@ -50,7 +50,7 @@ type BatchInfo struct {
 	ts         []uint64
 	proofs     [][]*merkletree.Proof
 	signedTs   uint64
-	txHash     eth_common.Hash
+	txHash     *eth_common.Hash
 	epochs     []*big.Int
 	quorumIds  []*big.Int
 }
@@ -166,16 +166,22 @@ func (c *Confirmer) waitForReceipt(txHash eth_common.Hash) (uint32, error) {
 }
 
 func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) error {
-	blockNumber, err := c.waitForReceipt(batchInfo.txHash)
-	if err != nil {
-		// batch is not confirmed
-		for idx := range batchInfo.ts {
-			_ = c.handleFailure(ctx, batchInfo.batch[idx].BlobMetadata, FailConfirmBatch)
-			// c.EncodingStreamer.RemoveBatchingStatus(ts)
-		}
+	blockNumber := uint32(0)
+	txHash := eth_common.MaxHash
+	if batchInfo.txHash != nil {
+		txHash = *batchInfo.txHash
+		var err error
+		blockNumber, err = c.waitForReceipt(txHash)
+		if err != nil {
+			// batch is not confirmed
+			for idx := range batchInfo.ts {
+				_ = c.handleFailure(ctx, batchInfo.batch[idx].BlobMetadata, FailConfirmBatch)
+				// c.EncodingStreamer.RemoveBatchingStatus(ts)
+			}
 
-		c.SliceSigner.RemoveBatchingStatus(batchInfo.signedTs)
-		return err
+			c.SliceSigner.RemoveBatchingStatus(batchInfo.signedTs)
+			return err
+		}
 	}
 
 	for idx, batch := range batchInfo.batch {
@@ -205,7 +211,7 @@ func (c *Confirmer) ConfirmBatch(ctx context.Context, batchInfo *BatchInfo) erro
 				Length:                  uint32(batch.BlobHeaders[blobIndex].Length),
 				BatchID:                 uint32(batchID),
 				SubmissionTxnHash:       batch.TxHash,
-				ConfirmationTxnHash:     batchInfo.txHash,
+				ConfirmationTxnHash:     txHash,
 				ConfirmationBlockNumber: blockNumber,
 			}
 			c.logger.Trace("[confirmer] confirming blob", "blob key", metadata.GetBlobKey())
