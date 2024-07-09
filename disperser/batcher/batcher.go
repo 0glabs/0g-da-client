@@ -13,7 +13,6 @@ import (
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/contract"
 	"github.com/0glabs/0g-da-client/disperser/signer"
-	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/gammazero/workerpool"
 	"github.com/hashicorp/go-multierror"
 	"github.com/prometheus/client_golang/prometheus"
@@ -320,6 +319,18 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	stageTimer = time.Now()
 	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, batch.BlobHeaders)
 	if err != nil {
+		for _, metadata := range batch.BlobMetadata {
+			meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
+			if err != nil {
+				log.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+			} else {
+				if meta.BlobStatus == disperser.Failed {
+					log.Info("[batcher] disperse batch reach max retries", "key", metadata.GetBlobKey())
+					b.EncodingStreamer.RemoveEncodedBlob(metadata)
+				}
+			}
+		}
+
 		_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchSubmitRoot)
 		return ts, err
 	}
@@ -367,24 +378,31 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 	}
 
 	stageTimer := time.Now()
-	var txHash *eth_common.Hash
-	if len(submissions) > 0 {
-		hash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
-		if err != nil {
-			for _, item := range batch {
-				_ = b.handleFailure(ctx, item.BlobMetadata, FailSubmitAggregateSignatures)
-				// b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
+	txHash, err := b.Dispatcher.SubmitAggregateSignatures(ctx, submissions)
+	if err != nil {
+		for idx, item := range batch {
+			_ = b.handleFailure(ctx, item.BlobMetadata, FailSubmitAggregateSignatures)
+			for _, metadata := range item.BlobMetadata {
+				meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
+				if err != nil {
+					log.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+				} else {
+					if meta.BlobStatus == disperser.Failed {
+						log.Info("[batcher] submit aggregateSignatures reach max retries", "key", metadata.GetBlobKey())
+						b.EncodingStreamer.RemoveEncodedBlob(metadata)
+					}
+				}
 			}
-			b.sliceSigner.RemoveBatchingStatus(signedTs)
-			if len(s) > 1 {
-				b.sliceSigner.SignedBatchSize = uint(len(s)) / 2
-			} else {
-				b.sliceSigner.SignedBatchSize = 1
-			}
-			return err
-		}
 
-		txHash = &hash
+			b.EncodingStreamer.RemoveBatchingStatus(ts[idx])
+		}
+		b.sliceSigner.RemoveBatchingStatus(signedTs)
+		if len(s) > 1 {
+			b.sliceSigner.SignedBatchSize = uint(len(s)) / 2
+		} else {
+			b.sliceSigner.SignedBatchSize = 1
+		}
+		return err
 	}
 
 	b.logger.Info("[batcher] submit aggregate signatures", "duration", time.Since(stageTimer))
