@@ -182,7 +182,7 @@ var (
 		Name:     common.PrefixFlag(FlagPrefix, "verified-commit-roots-tx-gas-limit"),
 		Usage:    "tx gas limit for VerifiedCommitRootsTx",
 		Required: false,
-		Value:    10000000,
+		Value:    0,
 		EnvVar:   common.PrefixEnvVar(EnvVarPrefix, "VERIFIED_COMMIT_ROOTS_TX_GAS_LIMIT"),
 	}
 

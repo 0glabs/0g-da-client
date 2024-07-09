@@ -58,19 +58,26 @@ func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	var txHash *types.Transaction
+	var tx *types.Transaction
 	var err error
 
-	if txHash, _, err = daContract.SubmitVerifiedCommitRoots(submissions, 0, false, true); err != nil {
-		return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitVerifiedCommitRoots")
+	var gasLimit uint64
+	if t.gasLimit == 0 {
+		if tx, _, err = daContract.SubmitVerifiedCommitRoots(submissions, 0, false, true); err != nil {
+			return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitVerifiedCommitRoots")
+		}
+
+		gasLimit = tx.Gas()
+		t.logger.Info("[transactor] estimate gas", "gas limit", tx.Gas())
+	} else {
+		gasLimit = t.gasLimit
 	}
 
-	t.logger.Info("[transactor] estimate gas", "gas limit", txHash.Gas())
-	if txHash, _, err = daContract.SubmitVerifiedCommitRoots(submissions, txHash.Gas(), false, false); err != nil {
+	if tx, _, err = daContract.SubmitVerifiedCommitRoots(submissions, gasLimit, false, false); err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to submit verified commit roots")
 	}
 
 	t.logger.Debug("[transactor] submit verified commit roots took", "duration", time.Since(stageTimer))
 
-	return txHash.Hash(), nil
+	return tx.Hash(), nil
 }
