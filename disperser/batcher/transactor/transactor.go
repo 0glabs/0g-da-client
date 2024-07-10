@@ -8,6 +8,7 @@ import (
 	"github.com/0glabs/0g-da-client/disperser/contract"
 	"github.com/0glabs/0g-da-client/disperser/contract/da_entrance"
 	eth_common "github.com/ethereum/go-ethereum/common"
+	"github.com/openweb3/web3go/types"
 	"github.com/pkg/errors"
 )
 
@@ -57,14 +58,26 @@ func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, 
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	var txHash eth_common.Hash
+	var tx *types.Transaction
 	var err error
 
-	if txHash, _, err = daContract.SubmitVerifiedCommitRoots(submissions, t.gasLimit, false); err != nil {
+	var gasLimit uint64
+	if t.gasLimit == 0 {
+		if tx, _, err = daContract.SubmitVerifiedCommitRoots(submissions, 0, false, true); err != nil {
+			return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitVerifiedCommitRoots")
+		}
+
+		gasLimit = tx.Gas()
+		t.logger.Info("[transactor] estimate gas", "gas limit", tx.Gas())
+	} else {
+		gasLimit = t.gasLimit
+	}
+
+	if tx, _, err = daContract.SubmitVerifiedCommitRoots(submissions, gasLimit, false, false); err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to submit verified commit roots")
 	}
 
 	t.logger.Debug("[transactor] submit verified commit roots took", "duration", time.Since(stageTimer))
 
-	return txHash, nil
+	return tx.Hash(), nil
 }

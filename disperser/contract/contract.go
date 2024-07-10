@@ -89,25 +89,30 @@ func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcUR
 	}, nil
 }
 
-func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntranceCommitRootSubmission, gasLimit uint64, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
+func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntranceCommitRootSubmission, gasLimit uint64, waitForReceipt bool, estimateGas bool) (*types.Transaction, *types.Receipt, error) {
 	opts, err := c.CreateTransactOpts()
 	if err != nil {
-		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
+		return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
 	}
 
-	opts.GasLimit = gasLimit
+	if estimateGas {
+		opts.NoSend = estimateGas
+	} else {
+		opts.GasLimit = gasLimit
+	}
+
 	tx, err := c.DAEntrance.SubmitVerifiedCommitRoots(opts, submissions)
 
 	if err != nil {
-		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to send transaction to submit verified commit roots")
+		return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit verified commit roots")
 	}
 
 	if waitForReceipt {
 		// Wait for successful execution
 		receipt, err := c.WaitForReceipt(tx.Hash(), true)
-		return tx.Hash(), receipt, err
+		return tx, receipt, err
 	}
-	return tx.Hash(), nil, nil
+	return tx, nil, nil
 }
 
 func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
