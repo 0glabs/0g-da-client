@@ -123,11 +123,36 @@ func RunBatcher(ctx *cli.Context) error {
 		return err
 	}
 
+	blobKeyCache := disperser.BlobKeyCache{
+		Key:   make(map[[32]byte]bool),
+		Epoch: 0,
+	}
+	iter := kvStore.MetadataIterator(context.Background())
+	for iter.Next() {
+		metadata, err := new(disperser.BlobRetrieveMetadata).Deserialize(iter.Value())
+		if err != nil {
+			return err
+		}
+
+		blobKeyCache.Add(metadata.Hash(), metadata.Epoch)
+	}
+	iter.Release()
 	//finalizer
-	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig, queue, client, rpcClient, logger, kvStore)
+	finalizer := batcher.NewFinalizer(config.TimeoutConfig.ChainReadTimeout, config.BatcherConfig, queue, client, rpcClient, logger, kvStore, &blobKeyCache)
 
 	//batcher
-	batcher, err := batcher.NewBatcher(config.BatcherConfig, config.TimeoutConfig, config.EthClientConfig, queue, dispatcher, encoderClient, finalizer, confirmer, daContract, logger, metrics)
+	batcher, err := batcher.NewBatcher(config.BatcherConfig,
+		config.TimeoutConfig,
+		config.EthClientConfig,
+		queue,
+		dispatcher,
+		encoderClient,
+		finalizer,
+		confirmer,
+		daContract,
+		logger,
+		metrics,
+		&blobKeyCache)
 	if err != nil {
 		return err
 	}

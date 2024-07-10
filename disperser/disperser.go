@@ -3,12 +3,15 @@ package disperser
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/0glabs/0g-da-client/common"
 	"github.com/0glabs/0g-da-client/core"
+	"golang.org/x/crypto/sha3"
 
 	disperser_rpc "github.com/0glabs/0g-da-client/api/grpc/disperser"
 	eth_common "github.com/ethereum/go-ethereum/common"
@@ -64,6 +67,33 @@ func ParseBlobKey(key string) (BlobKey, error) {
 	}, nil
 }
 
+type BlobKeyCache struct {
+	mu    sync.Mutex
+	Key   map[[32]byte]bool
+	Epoch uint64
+}
+
+func (b *BlobKeyCache) Add(key [32]byte, epoch uint64) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.Epoch < epoch {
+		b.Epoch = epoch
+		b.Key = make(map[[32]byte]bool)
+		b.Key[key] = true
+	} else if b.Epoch == epoch {
+		b.Key[key] = true
+	}
+}
+
+func (b *BlobKeyCache) Contains(key [32]byte) bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	_, ok := b.Key[key]
+	return ok
+}
+
 type BlobRetrieveMetadata struct {
 	DataRoot    []byte
 	Epoch       uint64
@@ -78,6 +108,22 @@ func (m *BlobRetrieveMetadata) Serialize() ([]byte, error) {
 func (m *BlobRetrieveMetadata) Deserialize(data []byte) (*BlobRetrieveMetadata, error) {
 	err := core.Decode(data, m)
 	return m, err
+}
+
+func (m *BlobRetrieveMetadata) Hash() [32]byte {
+	var message [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(m.DataRoot)
+
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf[0:8], m.Epoch)
+	hasher.Write(buf)
+
+	binary.BigEndian.PutUint64(buf[0:8], m.QuorumId)
+	hasher.Write(buf)
+
+	copy(message[:], hasher.Sum(nil)[:32])
+	return message
 }
 
 type BlobMetadata struct {

@@ -2,6 +2,7 @@ package batcher
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
@@ -66,6 +67,8 @@ type SignInfo struct {
 	epoch    *big.Int
 	quorumId *big.Int
 	signers  map[eth_common.Address]*SignerState
+
+	newBlobs []int
 }
 
 type SignRequestResult struct {
@@ -96,6 +99,8 @@ type BatchCommitRootSubmission struct {
 	batch       *batch
 	ts          uint64
 	proofs      []*merkletree.Proof
+	epoch       *big.Int
+	quorumId    *big.Int
 }
 
 type SliceSigner struct {
@@ -128,6 +133,8 @@ type SliceSigner struct {
 	logger common.Logger
 
 	SignedBatchSize uint
+
+	blobKeyCache *disperser.BlobKeyCache
 }
 
 func NewEncodedSliceSigner(
@@ -139,7 +146,9 @@ func NewEncodedSliceSigner(
 	blobStore disperser.BlobStore,
 	daContract *contract.DAContract,
 	metrics *Metrics,
-	logger common.Logger) (*SliceSigner, error) {
+	logger common.Logger,
+	blobKeyCache *disperser.BlobKeyCache,
+) (*SliceSigner, error) {
 	return &SliceSigner{
 		SignerConfig:          config,
 		Pool:                  workerPool,
@@ -162,6 +171,7 @@ func NewEncodedSliceSigner(
 		signedBatches:        make(map[uint64][]uint64),
 		signedBlobSize:       0,
 		SignedBatchSize:      0,
+		blobKeyCache:         blobKeyCache,
 	}, nil
 }
 
@@ -286,6 +296,14 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 	batchInfo.epoch = epoch
 	batchInfo.quorumId = quorumId
 	batchInfo.signers = signers
+
+	batchInfo.newBlobs = make([]int, 0)
+	for idx, blob := range batchInfo.batch.EncodedBlobs {
+		hashKey := GetBlobHash(blob.StorageRoot, epoch.Uint64(), quorumId.Uint64())
+		if !s.blobKeyCache.Contains(hashKey) {
+			batchInfo.newBlobs = append(batchInfo.newBlobs, idx)
+		}
+	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -423,12 +441,12 @@ func (s *SliceSigner) getPendingBatchToSign() *SignInfo {
 }
 
 func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
-	requestData := s.assignEncodedBlobs(signInfo.signers, signInfo.batch, signInfo.epoch.Uint64(), signInfo.quorumId.Uint64())
+	requestData := s.assignEncodedBlobs(signInfo)
 	if len(requestData) == 0 {
 		s.logger.Warn("[signer] data for sign is empty")
-		return nil
+		// return nil
 	}
-
+	s.logger.Debug("[signer] signing data", "total length", len(signInfo.batch.EncodedBlobs), "sign length", len(signInfo.newBlobs))
 	update := make(chan SignRequestResultOrStatus, len(requestData))
 	for signerAddress, content := range requestData {
 		address := eth_common.BytesToAddress(signerAddress[:])
@@ -476,16 +494,22 @@ func (s *SliceSigner) doSigning(ctx context.Context, signInfo *SignInfo) error {
 	return nil
 }
 
-func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerState, batch *batch, epoch uint64, quorumId uint64) map[eth_common.Address][]*pb.SignRequest {
+func (s *SliceSigner) assignEncodedBlobs(signInfo *SignInfo) map[eth_common.Address][]*pb.SignRequest {
+	epoch := signInfo.epoch.Uint64()
+	quorumId := signInfo.quorumId.Uint64()
 	requestData := make(map[eth_common.Address][]*pb.SignRequest)
-	for blobIdx, encodedBlobs := range batch.EncodedBlobs {
-		for addr, state := range signers {
+	blobs := signInfo.batch.EncodedBlobs
+
+	for idx, blobIdx := range signInfo.newBlobs {
+		blob := blobs[blobIdx]
+
+		for addr, state := range signInfo.signers {
 			if _, ok := requestData[addr]; !ok {
-				requestData[addr] = make([]*pb.SignRequest, len(batch.EncodedBlobs))
+				requestData[addr] = make([]*pb.SignRequest, len(signInfo.newBlobs))
 			}
 
-			if requestData[addr][blobIdx] == nil {
-				commitment := encodedBlobs.ErasureCommitment.Serialize()
+			if requestData[addr][idx] == nil {
+				commitment := blob.ErasureCommitment.Serialize()
 
 				for i := 0; i < fp.Bytes/2; i++ {
 					commitment[i], commitment[fp.Bytes-i-1] = commitment[fp.Bytes-i-1], commitment[i]
@@ -494,17 +518,17 @@ func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerS
 					commitment[i], commitment[len(commitment)-(i-fp.Bytes)-1] = commitment[len(commitment)-(i-fp.Bytes)-1], commitment[i]
 				}
 
-				requestData[addr][blobIdx] = &pb.SignRequest{
+				requestData[addr][idx] = &pb.SignRequest{
 					Epoch:             epoch,
 					QuorumId:          quorumId,
 					ErasureCommitment: commitment,
-					StorageRoot:       encodedBlobs.StorageRoot,
+					StorageRoot:       blob.StorageRoot,
 					EncodedSlice:      make([][]byte, 0),
 				}
 			}
 
 			for _, sliceIdx := range state.sliceIndexes {
-				requestData[addr][blobIdx].EncodedSlice = append(requestData[addr][blobIdx].EncodedSlice, encodedBlobs.EncodedSlice[sliceIdx])
+				requestData[addr][idx].EncodedSlice = append(requestData[addr][idx].EncodedSlice, blob.EncodedSlice[sliceIdx])
 			}
 		}
 	}
@@ -515,17 +539,18 @@ func (s *SliceSigner) assignEncodedBlobs(signers map[eth_common.Address]*SignerS
 func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo, update chan SignRequestResultOrStatus) error {
 	signerCounter := len(signInfo.signers)
 
-	blobSize := len(signInfo.batch.EncodedBlobs)
+	blobSize := len(signInfo.newBlobs)
 	erasureCommitments := make([]*core.G1Point, blobSize)
 	storageRoots := make([][32]byte, blobSize)
 	messages := make([][32]byte, blobSize)
-	for blobIdx, encodedBlobs := range signInfo.batch.EncodedBlobs {
+	for idx, blobIdx := range signInfo.newBlobs {
+		blob := signInfo.batch.EncodedBlobs[blobIdx]
 		var dataRoot [32]byte
-		copy(dataRoot[:], encodedBlobs.StorageRoot[:32])
+		copy(dataRoot[:], blob.StorageRoot[:32])
 
-		erasureCommitments[blobIdx] = encodedBlobs.ErasureCommitment
-		storageRoots[blobIdx] = dataRoot
-		msg, err := getHash(dataRoot, signInfo.epoch, signInfo.quorumId, encodedBlobs.ErasureCommitment)
+		erasureCommitments[idx] = blob.ErasureCommitment
+		storageRoots[idx] = dataRoot
+		msg, err := getHash(dataRoot, signInfo.epoch, signInfo.quorumId, blob.ErasureCommitment)
 		if err != nil {
 			s.logger.Error("[signer] failed to get hash for batch", "batch", signInfo.ts, "error", err)
 			if signInfo.reties < s.MaxNumRetriesSign {
@@ -541,7 +566,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			return err
 		}
 
-		messages[blobIdx] = msg
+		messages[idx] = msg
 	}
 
 	aggSigs := make([]*core.Signature, blobSize)
@@ -550,51 +575,53 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	signatureCounts := make([]int, blobSize)
 	quorumBitmap := make([][]byte, blobSize)
 
-	for i := 0; i < signerCounter; i++ {
-		recv := <-update
-		signerAddress := recv.signer
-		signer := signInfo.signers[signerAddress]
-		signatures := recv.signatures
+	if blobSize > 0 {
+		for i := 0; i < signerCounter; i++ {
+			recv := <-update
+			signerAddress := recv.signer
+			signer := signInfo.signers[signerAddress]
+			signatures := recv.signatures
 
-		if recv.Err != nil {
-			s.logger.Warn("[signer] error returned from messageChan", "socket", signer.Socket, "err", recv.Err)
-			continue
-		}
-
-		s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket, "signature size", len(signatures))
-		for blobIdx, sig := range signatures {
-			message := messages[blobIdx]
-
-			// Verify Signature
-			ok := sig.Verify(signer.PkG2, message)
-			if !ok {
-				s.logger.Error("[signer] signature is not valid", "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
+			if recv.Err != nil {
+				s.logger.Warn("[signer] error returned from messageChan", "socket", signer.Socket, "err", recv.Err)
 				continue
 			}
 
-			if aggSigs[blobIdx] == nil {
-				aggSigs[blobIdx] = &core.Signature{G1Point: sig.Clone()}
-				aggPubKeys[blobIdx] = signer.PkG2.Clone()
+			s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket, "signature size", len(signatures))
+			for blobIdx, sig := range signatures {
+				message := messages[blobIdx]
 
-				signatureCounts[blobIdx] = 0
-
-				sliceSize := len(signInfo.batch.EncodedBlobs[blobIdx].EncodedSlice)
-				bitmapLen := sliceSize / 8
-				if sliceSize%8 != 0 {
-					sliceSize++
+				// Verify Signature
+				ok := sig.Verify(signer.PkG2, message)
+				if !ok {
+					s.logger.Error("[signer] signature is not valid", "pubkey", hexutil.Encode(signer.PkG2.Serialize()))
+					continue
 				}
-				quorumBitmap[blobIdx] = make([]byte, bitmapLen)
-			} else {
-				aggSigs[blobIdx].Add(sig.G1Point)
-				aggPubKeys[blobIdx].Add(signer.PkG2)
-			}
 
-			signatureCounts[blobIdx]++
+				if aggSigs[blobIdx] == nil {
+					aggSigs[blobIdx] = &core.Signature{G1Point: sig.Clone()}
+					aggPubKeys[blobIdx] = signer.PkG2.Clone()
 
-			for _, sliceIdx := range signer.sliceIndexes {
-				slot := sliceIdx / 8
-				offset := sliceIdx % 8
-				quorumBitmap[blobIdx][slot] |= 1 << offset
+					signatureCounts[blobIdx] = 0
+
+					sliceSize := len(signInfo.batch.EncodedBlobs[signInfo.newBlobs[blobIdx]].EncodedSlice)
+					bitmapLen := sliceSize / 8
+					if sliceSize%8 != 0 {
+						sliceSize++
+					}
+					quorumBitmap[blobIdx] = make([]byte, bitmapLen)
+				} else {
+					aggSigs[blobIdx].Add(sig.G1Point)
+					aggPubKeys[blobIdx].Add(signer.PkG2)
+				}
+
+				signatureCounts[blobIdx]++
+
+				for _, sliceIdx := range signer.sliceIndexes {
+					slot := sliceIdx / 8
+					offset := sliceIdx % 8
+					quorumBitmap[blobIdx][slot] |= 1 << offset
+				}
 			}
 		}
 	}
@@ -629,6 +656,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			batch:       signInfo.batch,
 			ts:          signInfo.ts,
 			proofs:      signInfo.proofs,
+			epoch:       signInfo.epoch,
+			quorumId:    signInfo.quorumId,
 		}
 		s.signedBlobSize += uint64(len(signInfo.batch.EncodedBlobs))
 		s.logger.Debug("[signer] get aggregate signature for batch", "ts", signInfo.ts)
@@ -804,4 +833,20 @@ func getHash(dataRoot [32]byte, epoch, quorumId *big.Int, erasureCommitment *cor
 	copy(headerHash[:], hasher.Sum(nil)[:32])
 
 	return headerHash, nil
+}
+
+func GetBlobHash(dataRoot []byte, epoch, quorumId uint64) [32]byte {
+	var message [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(dataRoot)
+
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf[0:8], epoch)
+	hasher.Write(buf)
+
+	binary.BigEndian.PutUint64(buf[0:8], quorumId)
+	hasher.Write(buf)
+
+	copy(message[:], hasher.Sum(nil)[:32])
+	return message
 }
