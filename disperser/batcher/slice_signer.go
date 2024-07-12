@@ -572,7 +572,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	aggSigs := make([]*core.Signature, blobSize)
 	aggPubKeys := make([]*core.G2Point, blobSize)
 
-	signatureCounts := make([]int, blobSize)
+	signedSliceCount := make([]int, blobSize)
+	totalSliceCount := make([]int, blobSize)
 	quorumBitmap := make([][]byte, blobSize)
 
 	if blobSize > 0 {
@@ -602,9 +603,9 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 					aggSigs[blobIdx] = &core.Signature{G1Point: sig.Clone()}
 					aggPubKeys[blobIdx] = signer.PkG2.Clone()
 
-					signatureCounts[blobIdx] = 0
-
 					sliceSize := len(signInfo.batch.EncodedBlobs[signInfo.newBlobs[blobIdx]].EncodedSlice)
+					totalSliceCount[blobIdx] = sliceSize
+					signedSliceCount[blobIdx] = 0
 					bitmapLen := sliceSize / 8
 					if sliceSize%8 != 0 {
 						sliceSize++
@@ -615,8 +616,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 					aggPubKeys[blobIdx].Add(signer.PkG2)
 				}
 
-				signatureCounts[blobIdx]++
-
+				signedSliceCount[blobIdx] += len(signer.sliceIndexes)
 				for _, sliceIdx := range signer.sliceIndexes {
 					slot := sliceIdx / 8
 					offset := sliceIdx % 8
@@ -626,11 +626,10 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 		}
 	}
 
-	threshold := int(math.Ceil(float64(signerCounter) * 2 / 3))
 	valid := true
 	rootSubmissions := make([]*core.CommitRootSubmission, 0)
 	for blobIdx, sig := range aggSigs {
-		if signatureCounts[blobIdx] < threshold {
+		if signedSliceCount[blobIdx] < int(math.Ceil(float64(totalSliceCount[blobIdx])*2/3)) {
 			valid = false
 			break
 		}
