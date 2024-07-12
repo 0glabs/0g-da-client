@@ -393,6 +393,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 						if meta.BlobStatus == disperser.Failed {
 							log.Info("[batcher] submit aggregateSignatures reach max retries", "key", metadata.GetBlobKey())
 							b.EncodingStreamer.RemoveEncodedBlob(metadata)
+							b.sliceSigner.RemoveSignedBlob(ts[idx])
 						}
 					}
 				}

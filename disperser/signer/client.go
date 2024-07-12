@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/0glabs/0g-da-client/common"
@@ -27,6 +28,13 @@ func NewSignerClient(timeout time.Duration) (disperser.SignerClient, error) {
 }
 
 func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignRequest, log common.Logger) ([]*core.Signature, error) {
+	// Check if the lowercase URL starts with "http://"
+	prefix := "http://"
+	if strings.HasPrefix(strings.ToLower(addr), prefix) {
+		// Remove the prefix from the original URL
+		addr = addr[len(prefix):]
+	}
+
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 	conn, err := grpc.DialContext(
