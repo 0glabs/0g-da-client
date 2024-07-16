@@ -162,10 +162,9 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 			metadata = &disperser.BlobMetadata{
 				BlobStatus: disperser.Finalized,
 				ConfirmationInfo: &disperser.ConfirmationInfo{
-					DataRoot:                metadataFromKV.DataRoot,
-					Epoch:                   metadataFromKV.Epoch,
-					QuorumId:                metadataFromKV.QuorumId,
-					ConfirmationBlockNumber: metadataFromKV.BlockNumber,
+					DataRoot: metadataFromKV.DataRoot,
+					Epoch:    metadataFromKV.Epoch,
+					QuorumId: metadataFromKV.QuorumId,
 				},
 			}
 		} else {
@@ -210,6 +209,26 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	defer timer.ObserveDuration()
 
 	s.logger.Info("[apiserver] received a new blob retrieval request", "blob storage root", req.StorageRoot, "blob epoch", req.Epoch, "quorum id", req.QuorumId)
+
+	metaData := disperser.BlobRetrieveMetadata{
+		DataRoot: req.StorageRoot,
+		Epoch:    req.Epoch,
+		QuorumId: req.QuorumId,
+	}
+	blobKey, err := metaData.Serialize()
+	if err != nil {
+		s.logger.Error("[apiserver] failed to serialize metadata")
+	} else {
+		data, err := s.kvStore.GetBlob(ctx, blobKey)
+		if err != nil {
+			s.logger.Error("[apiserver] failed to get blob for key", "blobKey", blobKey)
+		} else {
+			s.metrics.HandleSuccessfulRequest(len(data), "RetrieveBlob")
+			return &pb.RetrieveBlobReply{
+				Data: data,
+			}, nil
+		}
+	}
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
