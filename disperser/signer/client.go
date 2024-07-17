@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/0glabs/0g-da-client/common"
@@ -17,7 +18,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const ipv4Pattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::\d{1,5})?\b`
+const ipv4WithPortPattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::\d{1,5})?\b`
+const ipv4Pattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
+const portPattern = `\b(\d{1,5})\b`
 
 type client struct {
 	timeout   time.Duration
@@ -25,7 +28,7 @@ type client struct {
 }
 
 func NewSignerClient(timeout time.Duration) (disperser.SignerClient, error) {
-	regex := regexp.MustCompile(ipv4Pattern)
+	regex := regexp.MustCompile(ipv4WithPortPattern)
 
 	return client{
 		timeout:   timeout,
@@ -36,10 +39,32 @@ func NewSignerClient(timeout time.Duration) (disperser.SignerClient, error) {
 func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignRequest, log common.Logger) ([]*core.Signature, error) {
 	matches := c.ipv4Regex.FindAllString(addr, -1)
 	if len(matches) != 1 {
-		return nil, fmt.Errorf("signer addr is not correct: %v", addr)
-	}
+		formattedAddr := ""
+		idx := strings.Index(addr, ":")
+		if idx != -1 {
+			ipv4Reg := regexp.MustCompile(ipv4Pattern)
+			matches := ipv4Reg.FindAllString(addr[:idx], -1)
+			if len(matches) == 1 {
+				formattedAddr = matches[0]
 
-	addr = matches[0]
+				portReg := regexp.MustCompile(portPattern)
+				matches := portReg.FindAllString(addr[idx+1:], -1)
+				if len(matches) == 1 {
+					formattedAddr += ":" + matches[0]
+				} else {
+					formattedAddr = ""
+				}
+			}
+		}
+
+		if formattedAddr == "" {
+			return nil, fmt.Errorf("signer addr is not correct: %v", addr)
+		}
+
+		addr = formattedAddr
+	} else {
+		addr = matches[0]
+	}
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
