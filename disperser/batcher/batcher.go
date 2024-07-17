@@ -328,6 +328,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 				if meta.BlobStatus == disperser.Failed {
 					log.Info("[batcher] disperse batch reach max retries", "key", metadata.GetBlobKey())
 					b.EncodingStreamer.RemoveEncodedBlob(metadata)
+					b.Queue.RemoveBlob(ctx, metadata)
 				}
 			}
 		}
@@ -394,6 +395,7 @@ func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
 							log.Info("[batcher] submit aggregateSignatures reach max retries", "key", metadata.GetBlobKey())
 							b.EncodingStreamer.RemoveEncodedBlob(metadata)
 							b.sliceSigner.RemoveSignedBlob(ts[idx])
+							b.Queue.RemoveBlob(ctx, metadata)
 						}
 					}
 				}
