@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/0glabs/0g-da-client/common"
@@ -17,23 +17,29 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const ipv4Pattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::\d{1,5})?\b`
+
 type client struct {
-	timeout time.Duration
+	timeout   time.Duration
+	ipv4Regex *regexp.Regexp
 }
 
 func NewSignerClient(timeout time.Duration) (disperser.SignerClient, error) {
+	regex := regexp.MustCompile(ipv4Pattern)
+
 	return client{
-		timeout: timeout,
+		timeout:   timeout,
+		ipv4Regex: regex,
 	}, nil
 }
 
 func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignRequest, log common.Logger) ([]*core.Signature, error) {
-	// Check if the lowercase URL starts with "http://"
-	prefix := "http://"
-	if strings.HasPrefix(strings.ToLower(addr), prefix) {
-		// Remove the prefix from the original URL
-		addr = addr[len(prefix):]
+	matches := c.ipv4Regex.FindAllString(addr, -1)
+	if len(matches) != 1 {
+		return nil, fmt.Errorf("signer addr is not correct: %v", addr)
 	}
+
+	addr = matches[0]
 
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
