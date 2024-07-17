@@ -95,10 +95,9 @@ func (b *BlobKeyCache) Contains(key [32]byte) bool {
 }
 
 type BlobRetrieveMetadata struct {
-	DataRoot    []byte
-	Epoch       uint64
-	QuorumId    uint64
-	BlockNumber uint32
+	DataRoot []byte
+	Epoch    uint64
+	QuorumId uint64
 }
 
 func (m *BlobRetrieveMetadata) Serialize() ([]byte, error) {

@@ -123,6 +123,17 @@ func (s *Store) deleteNBlobs(currentTimeUnixSec int64, numBatches int) (int, err
 			}
 
 			expiredKeys = append(expiredKeys, blobHeaderKey)
+
+			metaData, err := s.db.Get(blobHeaderKey)
+			if err != nil {
+				if errors.Is(err, leveldb.ErrNotFound) {
+					s.logger.Error("Cannot get metadata for key:", "metaData", metaData, "err", err)
+				} else {
+					return -1, err
+				}
+			}
+
+			expiredKeys = append(expiredKeys, metaData)
 		}
 	}
 
@@ -152,7 +163,7 @@ func (s *Store) StoreMetadata(ctx context.Context, key []byte, value []byte) err
 	return nil
 }
 
-func (s *Store) StoreMetadataBatch(ctx context.Context, blobKeys [][]byte, metadatas [][]byte) (*[][]byte, error) {
+func (s *Store) StoreMetadataBatch(ctx context.Context, blobKeys [][]byte, metadatas [][]byte, blobs [][]byte) (*[][]byte, error) {
 	keys := make([][]byte, 0)
 	values := make([][]byte, 0)
 
@@ -174,6 +185,9 @@ func (s *Store) StoreMetadataBatch(ctx context.Context, blobKeys [][]byte, metad
 		if _, err := buf.Write(key); err != nil {
 			return nil, err
 		}
+
+		keys = append(keys, metadatas[idx])
+		values = append(values, blobs[idx])
 	}
 
 	curr := time.Now().Unix()
@@ -203,6 +217,17 @@ func (s *Store) GetMetadata(ctx context.Context, key []byte) ([]byte, error) {
 	}
 
 	data, err := s.db.Get(blobHeaderKey)
+	if err != nil {
+		if errors.Is(err, leveldb.ErrNotFound) {
+			return nil, ErrKeyNotFound
+		}
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Store) GetBlob(ctx context.Context, blobKey []byte) ([]byte, error) {
+	data, err := s.db.Get(blobKey)
 	if err != nil {
 		if errors.Is(err, leveldb.ErrNotFound) {
 			return nil, ErrKeyNotFound

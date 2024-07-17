@@ -214,12 +214,12 @@ func (f *finalizer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 
 	keys := make([][]byte, 0)
 	values := make([][]byte, 0)
+	blobs := make([][]byte, 0)
 	for _, metadata := range metadatas {
 		retrieveMetadata := disperser.BlobRetrieveMetadata{
-			DataRoot:    metadata.ConfirmationInfo.DataRoot,
-			Epoch:       metadata.ConfirmationInfo.Epoch,
-			QuorumId:    metadata.ConfirmationInfo.QuorumId,
-			BlockNumber: metadata.ConfirmationInfo.ConfirmationBlockNumber,
+			DataRoot: metadata.ConfirmationInfo.DataRoot,
+			Epoch:    metadata.ConfirmationInfo.Epoch,
+			QuorumId: metadata.ConfirmationInfo.QuorumId,
 		}
 
 		f.blobKeyCache.Add(retrieveMetadata.Hash(), retrieveMetadata.Epoch)
@@ -231,9 +231,15 @@ func (f *finalizer) PersistConfirmedBlobs(ctx context.Context, metadatas []*disp
 		key := []byte(metadata.GetBlobKey().String())
 		keys = append(keys, key)
 		values = append(values, val)
+
+		b, err := f.blobStore.GetBlobContent(ctx, metadata)
+		if err != nil {
+			return errors.WithMessage(err, "failed to get blob content")
+		}
+		blobs = append(blobs, b)
 	}
 
-	_, err := f.kvStore.StoreMetadataBatch(ctx, keys, values)
+	_, err := f.kvStore.StoreMetadataBatch(ctx, keys, values, blobs)
 	if err != nil {
 		return errors.WithMessage(err, "failed to save retrieve metadata to kv db")
 	}
