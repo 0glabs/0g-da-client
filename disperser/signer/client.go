@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const ipv4WithPortPattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::\d{1,5})?\b`
+const ipv4WithPortPattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::\d{1,5})\b`
 const ipv4Pattern = `\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b`
 const portPattern = `\b(\d{1,5})\b`
 
@@ -40,6 +40,11 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 	matches := c.ipv4Regex.FindAllString(addr, -1)
 	if len(matches) != 1 {
 		formattedAddr := ""
+		prefix := "http://"
+		if strings.HasPrefix(strings.ToLower(addr), prefix) {
+			addr = addr[len(prefix):]
+		}
+
 		idx := strings.Index(addr, ":")
 		if idx != -1 {
 			ipv4Reg := regexp.MustCompile(ipv4Pattern)
