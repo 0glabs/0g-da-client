@@ -692,6 +692,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 					if meta.BlobStatus == disperser.Failed {
 						s.logger.Info("[signer] signing blob reach max retries", "key", metadata.GetBlobKey())
 						s.EncodingStreamer.RemoveEncodedBlob(metadata)
+						s.blobStore.RemoveBlob(ctx, metadata)
 					}
 				}
 			}
