@@ -2,9 +2,9 @@
 
 ## Overview
 
-0GDA is a decentralized data availability (DA) service with deep consideration in security, scalability and decentralization. It is also the first DA solution with a built-in data storage layer. Users interact with ZeroGDA to submit and store their data into [0G Storage](https://github.com/0glabs/0g-storage-client) for later retrieval.
+0GDA is a decentralized data availability (DA) service with deep consideration in security, scalability and decentralization. It is also the first DA solution with a built-in data storage layer. Users interact with 0G DA Client to submit and store their data into [0G DA Node](https://github.com/0glabs/0g-da-node) for later retrieval.
 
-To dive deep into the technical details, continue reading [0GDA protocol spec](docs/).
+To dive deep into the technical details, continue reading [0G DA spec](https://docs.0g.ai/0g-doc/docs/0g-da).
 
 ## Integration
 
@@ -14,61 +14,131 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
 
 ## Deployment
 
-* For local test environment, [aws-cli](https://aws.amazon.com/cli/) is required.
-* [Local Stack setup](./#localstack)
-* [Disperser](./#disperser)
-* [Retriever](./#retriever)
+### Installation
 
-### LocalStack
+1. Install dependencies
 
-Create LocalStack(local aws simulation) docker image and start a docker instance:
+*   For Linux
 
-```bash
-cd inabox
+    ```bash
+    sudo apt-get update
+    sudo apt-get install cmake 
+    ```
+*   For Mac
 
-make deploy-localstack
-```
+    ```bash
+    brew install cmake
+    ```
 
-### Disperser
+2. Install Go
 
-1. Build binaries:
+* For Linux
+  *   Download the Go installer
 
-```
-cd disperser
-make build
-```
+      ```bash
+      wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
+      ```
+  *   Extract the archive
 
-2. Run encoder:
+      ```bash
+      rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+      ```
+  *   Add /usr/local/go/bin to the PATH environment variable by adding the following line to your \~/.profile.
 
-```
-make run_encoder
-```
+      ```bash
+      export PATH=$PATH:/usr/local/go/bin
+      ```
+*   For Mac
 
-3. Set the cli arguments of run\_batcher in Makefile to proper values. Full list of available configuration parameters are showing below.
+    ```
+      Download the Go installer from [https://go.dev/dl/go1.22.0.darwin-amd64.pkg](https://go.dev/dl/go1.19.3.darwin-amd64.pkg).\
+      Open the package file you downloaded and follow the prompts to install Go.
+    ```
 
-4. Then run batcher and the main disperser server:
+3.  Download the source code
 
-```
-make run_batcher
+    ```bash
+    git clone -b v1.0.0-testnet https://github.com/0glabs/0g-da-client.git
+    ```
 
-make run_server
-```
 
-### Retriever
+### Configuration
 
-1. Build binaries:
+| Field                                      | Description                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| `--chain.rpc`                              | JSON RPC node endpoint for the blockchain network.                 |
+| `--chain.private-key`                      | Hex-encoded signer private key.                                    |
+| `--chain.receipt-wait-rounds`              | Maximum retries to wait for transaction receipt.                   |
+| `--chain.receipt-wait-interval`            | Interval between retries when waiting for transaction receipt.     |
+| `--chain.gas-limit`                        | Transaction gas limit.                                             |
+| `--combined-server.use-memory-db`          | Whether to use mem-db for blob storage.                            |
+| `--combined-server.storage.kv-db-path`     | Path for level db.                                                 |
+| `--combined-server.storage.time-to-expire` | Expiration duration for blobs in level db.                         |
+| `--combined-server.log.level-file`         | File log level.                                                    |
+| `--combined-server.log.level-std`          | Standard output log level.                                         |
+| `--combined-server.log.path`               | Log file path.                                                     |
+| `--disperser-server.grpc-port`             | Server listening port.                                             |
+| `--disperser-server.retriever-address`     | GRPC host for retriever.                                           |
+| `--batcher.da-entrance-contract`           | Hex-encoded da-entrance contract address.                          |
+| `--batcher.da-signers-contract`            | Hex-encoded da-signers contract address.                           |
+| `--batcher.finalizer-interval`             | Interval for finalizing operations.                                |
+| `--batcher.finalized-block-count`          | Default number of blocks between finalized block and latest block. |
+| `--batcher.confirmer-num`                  | Number of Confirmer threads.                                       |
+| `--batcher.max-num-retries-for-sign`       | Number of retries before signing fails.                            |
+| `--batcher.batch-size-limit`               | Maximum batch size in MiB.                                         |
+| `--batcher.encoding-request-queue-size`    | Size of the encoding request queue.                                |
+| `--batcher.encoding-interval`              | Interval between blob encoding requests.                           |
+| `--batcher.pull-interval`                  | Interval for pulling from the encoded queue.                       |
+| `--batcher.signing-interval`               | Interval between slice signing requests.                           |
+| `--batcher.signed-pull-interval`           | Interval for pulling from the signed queue.                        |
+| `--encoder-socket`                         | GRPC host of the encoder.                                          |
+| `--encoding-timeout`                       | Total time to wait for a response from encoder.                    |
+| `--signing-timeout`                        | Total time to wait for a response from signer.                     |
 
-```
-cd retriever
-make build
-```
+### Run
 
-2. Run the main retriever server:
+1.  Build combined server
 
-```
-make run
-```
+    ```bash
+    make build
+    ```
+2.  Run combined server
 
+    Update the following command by referencing the [Configuration](da-client.md#section1)
+
+    ```bash
+    ./bin/combined \
+        --chain.rpc https://rpc-testnet.0g.ai \
+        --chain.private-key 0x00 \
+        --chain.receipt-wait-rounds 180 \
+        --chain.receipt-wait-interval 1s \
+        --chain.gas-limit 2000000 \
+        --combined-server.use-memory-db \
+        --combined-server.storage.kv-db-path ./../run/ \
+        --combined-server.storage.time-to-expire 300 \
+        --disperser-server.grpc-port 51001 \
+        --batcher.da-entrance-contract 0xDFC8B84e3C98e8b550c7FEF00BCB2d8742d80a69 \
+        --batcher.da-signers-contract 0x0000000000000000000000000000000000001000 \
+        --batcher.finalizer-interval 20s \
+        --batcher.confirmer-num 3 \
+        --batcher.max-num-retries-for-sign 3 \
+        --batcher.finalized-block-count 50 \
+        --batcher.batch-size-limit 500 \
+        --batcher.encoding-interval 3s \
+        --batcher.encoding-request-queue-size 1 \
+        --batcher.pull-interval 10s \
+        --batcher.signing-interval 3s \
+        --batcher.signed-pull-interval 20s \
+        --encoder-socket 52.198.175.144:34000 \
+        --encoding-timeout 600s \
+        --signing-timeout 600s \
+        --chain-read-timeout 12s \
+        --chain-write-timeout 13s \
+        --combined-server.log.level-file trace \
+        --combined-server.log.level-std  trace \
+        --combined-server.log.path ./../run/run.log
+    ```
+    
 ## Contributing
 
 To make contributions to the project, please follow the guidelines [here](contributing.md).
