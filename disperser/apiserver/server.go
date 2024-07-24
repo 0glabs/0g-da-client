@@ -43,6 +43,9 @@ type DispersalServer struct {
 	logger common.Logger
 
 	retrieverAddr string
+
+	writeRateLimiterManager *ClientRateLimiterManager
+	readRateLimiterManager  *ClientRateLimiterManager
 }
 
 // NewServer creates a new Server struct with the provided parameters.
@@ -71,6 +74,9 @@ func NewDispersalServer(
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
 		kvStore:               kvStore,
 		retrieverAddr:         retrieverAddr,
+
+		writeRateLimiterManager: NewClientRateLimiterManager(3),
+		readRateLimiterManager:  NewClientRateLimiterManager(20),
 	}
 }
 
@@ -98,6 +104,12 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 	}
 
 	s.logger.Debug("[apiserver] received a new blob request", "origin", origin)
+
+	limiter := s.writeRateLimiterManager.GetRateLimiter(origin)
+	if !limiter.Allow() {
+		s.logger.Debug("[apiserver] client %s: Rate limit exceeded for disperse blob\n", origin)
+		return nil, fmt.Errorf("request ratelimited")
+	}
 
 	requestedAt := uint64(time.Now().UnixNano())
 	metadataKey, err := s.blobStore.StoreBlob(ctx, blob, requestedAt)
@@ -210,6 +222,18 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 
 	s.logger.Info("[apiserver] received a new blob retrieval request", "blob storage root", req.StorageRoot, "blob epoch", req.Epoch, "quorum id", req.QuorumId)
 
+	origin, err := common.GetClientAddress(ctx, s.rateConfig.ClientIPHeader, 2, true)
+	if err != nil {
+		s.metrics.HandleFailedRequest(0, "RetrieveBlob")
+		return nil, err
+	}
+
+	limiter := s.readRateLimiterManager.GetRateLimiter(origin)
+	if !limiter.Allow() {
+		s.logger.Debug("[apiserver] client %s: Rate limit exceeded for retrieve blob\n", origin)
+		return nil, fmt.Errorf("request ratelimited")
+	}
+
 	metaData := disperser.BlobRetrieveMetadata{
 		DataRoot: req.StorageRoot,
 		Epoch:    req.Epoch,
@@ -317,4 +341,56 @@ func getBlobFromRequest(req *pb.DisperseBlobRequest) *core.Blob {
 	}
 
 	return blob
+}
+
+type TinyRateLimiter struct {
+	ClientID    string // Identifier for the client (e.g., IP address, user ID)
+	MaxRequests int
+	LastRequest time.Time  // Time of the last request
+	mu          sync.Mutex // Mutex for thread safety
+}
+
+func (rl *TinyRateLimiter) Allow() bool {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	now := time.Now()
+	elapsed := now.Sub(rl.LastRequest)
+	if elapsed < time.Minute/time.Duration(rl.MaxRequests) {
+		// Too soon since the last request
+		return false
+	}
+
+	// Allow the request and update the last request time
+	rl.LastRequest = now
+	return true
+}
+
+type ClientRateLimiterManager struct {
+	clients     map[string]*TinyRateLimiter // Map of client ID to RateLimiter
+	maxRequests int
+	mu          sync.Mutex // Mutex for thread safety
+}
+
+func NewClientRateLimiterManager(maxRequests int) *ClientRateLimiterManager {
+	return &ClientRateLimiterManager{
+		clients:     make(map[string]*TinyRateLimiter),
+		maxRequests: maxRequests,
+	}
+}
+
+func (m *ClientRateLimiterManager) GetRateLimiter(clientID string) *TinyRateLimiter {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	limiter, ok := m.clients[clientID]
+	if !ok {
+		limiter = &TinyRateLimiter{
+			ClientID:    clientID,
+			MaxRequests: m.maxRequests,
+		}
+		m.clients[clientID] = limiter
+	}
+
+	return limiter
 }
