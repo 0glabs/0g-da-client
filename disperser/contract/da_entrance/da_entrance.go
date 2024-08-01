@@ -81,7 +81,7 @@ type SampleResponse struct {
 
 // DAEntranceMetaData contains all meta data concerning the DAEntrance contract.
 var DAEntranceMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"beneficiary\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"sampleRound\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quality\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lineIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"sublineIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"}],\"name\":\"DAReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"DataUpload\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"ErasureCommitmentVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"sampleRound\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"sampleHeight\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sampleSeed\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"podasTarget\",\"type\":\"uint256\"}],\"name\":\"NewSampleRound\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DA_SIGNERS\",\"outputs\":[{\"internalType\":\"contractIDASigners\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_PODAS_TARGET\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PARAMS_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_DENOMINATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_NUMERATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"activedReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"blobPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_quorumId\",\"type\":\"uint256\"}],\"name\":\"commitmentExists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentEpochReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentSampleSeed\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"epochWindowSize\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextSampleHeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"payments\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"podasTarget\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"roundSubmissions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"samplePeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleRange\",\"outputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"startEpoch\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"endEpoch\",\"type\":\"uint64\"}],\"internalType\":\"structIDASample.SampleRange\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleRound\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleTask\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"sampleHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"podasTarget\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"restSubmissions\",\"type\":\"uint64\"}],\"internalType\":\"structIDASample.SampleTask\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"serviceFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"serviceFeeRateBps\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_blobPrice\",\"type\":\"uint256\"}],\"name\":\"setBlobPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_epochWindowSize\",\"type\":\"uint64\"}],\"name\":\"setEpochWindowSize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_rewardRatio\",\"type\":\"uint64\"}],\"name\":\"setRewardRatio\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_targetRoundSubmissions\",\"type\":\"uint64\"}],\"name\":\"setRoundSubmissions\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"samplePeriod_\",\"type\":\"uint64\"}],\"name\":\"setSamplePeriod\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"bps\",\"type\":\"uint256\"}],\"name\":\"setServiceFeeRate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_singleDonation\",\"type\":\"uint256\"}],\"name\":\"setSingleDonation\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"treasury_\",\"type\":\"address\"}],\"name\":\"setTreasury\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"singleDonation\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_dataRoots\",\"type\":\"bytes32[]\"}],\"name\":\"submitOriginalData\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"sampleSeed\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"epoch\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"quorumId\",\"type\":\"uint64\"},{\"internalType\":\"uint32\",\"name\":\"lineIndex\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"sublineIndex\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"quality\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32[3]\",\"name\":\"blobRoots\",\"type\":\"bytes32[3]\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structSampleResponse\",\"name\":\"rep\",\"type\":\"tuple\"}],\"name\":\"submitSamplingResponse\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"erasureCommitment\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"quorumBitmap\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\"}],\"internalType\":\"structBN254.G2Point\",\"name\":\"aggPkG2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"signature\",\"type\":\"tuple\"}],\"internalType\":\"structIDAEntrance.CommitRootSubmission[]\",\"name\":\"_submissions\",\"type\":\"tuple[]\"}],\"name\":\"submitVerifiedCommitRoots\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sync\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"targetRoundSubmissions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"targetRoundSubmissionsNext\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalDonations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"treasury\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_quorumId\",\"type\":\"uint256\"}],\"name\":\"verifiedErasureCommitment\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"payee\",\"type\":\"address\"}],\"name\":\"withdrawPayments\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"beneficiary\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"sampleRound\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quality\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"lineIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"sublineIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"reward\",\"type\":\"uint256\"}],\"name\":\"DAReward\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"blobPrice\",\"type\":\"uint256\"}],\"name\":\"DataUpload\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"}],\"name\":\"ErasureCommitmentVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"sampleRound\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"sampleHeight\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sampleSeed\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"podasTarget\",\"type\":\"uint256\"}],\"name\":\"NewSampleRound\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DA_SIGNERS\",\"outputs\":[{\"internalType\":\"contractIDASigners\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_PODAS_TARGET\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"PARAMS_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_DENOMINATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"SLICE_NUMERATOR\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"activedReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"baseReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"blobPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_quorumId\",\"type\":\"uint256\"}],\"name\":\"commitmentExists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentEpoch\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentEpochReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentSampleSeed\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"epochWindowSize\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"initialized\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextSampleHeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dest\",\"type\":\"address\"}],\"name\":\"payments\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"podasTarget\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"rewardRatio\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"roundSubmissions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"samplePeriod\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleRange\",\"outputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"startEpoch\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"endEpoch\",\"type\":\"uint64\"}],\"internalType\":\"structIDASample.SampleRange\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleRound\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sampleTask\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"sampleHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"podasTarget\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"restSubmissions\",\"type\":\"uint64\"}],\"internalType\":\"structIDASample.SampleTask\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"serviceFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"serviceFeeRateBps\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_baseReward\",\"type\":\"uint256\"}],\"name\":\"setBaseReward\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_blobPrice\",\"type\":\"uint256\"}],\"name\":\"setBlobPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_epochWindowSize\",\"type\":\"uint64\"}],\"name\":\"setEpochWindowSize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_rewardRatio\",\"type\":\"uint64\"}],\"name\":\"setRewardRatio\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"_targetRoundSubmissions\",\"type\":\"uint64\"}],\"name\":\"setRoundSubmissions\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"samplePeriod_\",\"type\":\"uint64\"}],\"name\":\"setSamplePeriod\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"bps\",\"type\":\"uint256\"}],\"name\":\"setServiceFeeRate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"treasury_\",\"type\":\"address\"}],\"name\":\"setTreasury\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_dataRoots\",\"type\":\"bytes32[]\"}],\"name\":\"submitOriginalData\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"sampleSeed\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"epoch\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"quorumId\",\"type\":\"uint64\"},{\"internalType\":\"uint32\",\"name\":\"lineIndex\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"sublineIndex\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"quality\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32[3]\",\"name\":\"blobRoots\",\"type\":\"bytes32[3]\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structSampleResponse\",\"name\":\"rep\",\"type\":\"tuple\"}],\"name\":\"submitSamplingResponse\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quorumId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"erasureCommitment\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"quorumBitmap\",\"type\":\"bytes\"},{\"components\":[{\"internalType\":\"uint256[2]\",\"name\":\"X\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"Y\",\"type\":\"uint256[2]\"}],\"internalType\":\"structBN254.G2Point\",\"name\":\"aggPkG2\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"signature\",\"type\":\"tuple\"}],\"internalType\":\"structIDAEntrance.CommitRootSubmission[]\",\"name\":\"_submissions\",\"type\":\"tuple[]\"}],\"name\":\"submitVerifiedCommitRoots\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sync\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"targetRoundSubmissions\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"targetRoundSubmissionsNext\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalBaseReward\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"treasury\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_dataRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_epoch\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_quorumId\",\"type\":\"uint256\"}],\"name\":\"verifiedErasureCommitment\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"X\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"Y\",\"type\":\"uint256\"}],\"internalType\":\"structBN254.G1Point\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"payee\",\"type\":\"address\"}],\"name\":\"withdrawPayments\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // DAEntranceABI is the input ABI used to generate the binding from.
@@ -445,6 +445,37 @@ func (_DAEntrance *DAEntranceSession) ActivedReward() (*big.Int, error) {
 // Solidity: function activedReward() view returns(uint256)
 func (_DAEntrance *DAEntranceCallerSession) ActivedReward() (*big.Int, error) {
 	return _DAEntrance.Contract.ActivedReward(&_DAEntrance.CallOpts)
+}
+
+// BaseReward is a free data retrieval call binding the contract method 0x76ad03bc.
+//
+// Solidity: function baseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceCaller) BaseReward(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _DAEntrance.contract.Call(opts, &out, "baseReward")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// BaseReward is a free data retrieval call binding the contract method 0x76ad03bc.
+//
+// Solidity: function baseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceSession) BaseReward() (*big.Int, error) {
+	return _DAEntrance.Contract.BaseReward(&_DAEntrance.CallOpts)
+}
+
+// BaseReward is a free data retrieval call binding the contract method 0x76ad03bc.
+//
+// Solidity: function baseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceCallerSession) BaseReward() (*big.Int, error) {
+	return _DAEntrance.Contract.BaseReward(&_DAEntrance.CallOpts)
 }
 
 // BlobPrice is a free data retrieval call binding the contract method 0x3d00448a.
@@ -1067,37 +1098,6 @@ func (_DAEntrance *DAEntranceCallerSession) ServiceFeeRateBps() (*big.Int, error
 	return _DAEntrance.Contract.ServiceFeeRateBps(&_DAEntrance.CallOpts)
 }
 
-// SingleDonation is a free data retrieval call binding the contract method 0x070e7210.
-//
-// Solidity: function singleDonation() view returns(uint256)
-func (_DAEntrance *DAEntranceCaller) SingleDonation(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _DAEntrance.contract.Call(opts, &out, "singleDonation")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// SingleDonation is a free data retrieval call binding the contract method 0x070e7210.
-//
-// Solidity: function singleDonation() view returns(uint256)
-func (_DAEntrance *DAEntranceSession) SingleDonation() (*big.Int, error) {
-	return _DAEntrance.Contract.SingleDonation(&_DAEntrance.CallOpts)
-}
-
-// SingleDonation is a free data retrieval call binding the contract method 0x070e7210.
-//
-// Solidity: function singleDonation() view returns(uint256)
-func (_DAEntrance *DAEntranceCallerSession) SingleDonation() (*big.Int, error) {
-	return _DAEntrance.Contract.SingleDonation(&_DAEntrance.CallOpts)
-}
-
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
 // Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
@@ -1191,12 +1191,12 @@ func (_DAEntrance *DAEntranceCallerSession) TargetRoundSubmissionsNext() (*big.I
 	return _DAEntrance.Contract.TargetRoundSubmissionsNext(&_DAEntrance.CallOpts)
 }
 
-// TotalDonations is a free data retrieval call binding the contract method 0xde2ed893.
+// TotalBaseReward is a free data retrieval call binding the contract method 0x7f1b5e43.
 //
-// Solidity: function totalDonations() view returns(uint256)
-func (_DAEntrance *DAEntranceCaller) TotalDonations(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function totalBaseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceCaller) TotalBaseReward(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _DAEntrance.contract.Call(opts, &out, "totalDonations")
+	err := _DAEntrance.contract.Call(opts, &out, "totalBaseReward")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -1208,18 +1208,18 @@ func (_DAEntrance *DAEntranceCaller) TotalDonations(opts *bind.CallOpts) (*big.I
 
 }
 
-// TotalDonations is a free data retrieval call binding the contract method 0xde2ed893.
+// TotalBaseReward is a free data retrieval call binding the contract method 0x7f1b5e43.
 //
-// Solidity: function totalDonations() view returns(uint256)
-func (_DAEntrance *DAEntranceSession) TotalDonations() (*big.Int, error) {
-	return _DAEntrance.Contract.TotalDonations(&_DAEntrance.CallOpts)
+// Solidity: function totalBaseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceSession) TotalBaseReward() (*big.Int, error) {
+	return _DAEntrance.Contract.TotalBaseReward(&_DAEntrance.CallOpts)
 }
 
-// TotalDonations is a free data retrieval call binding the contract method 0xde2ed893.
+// TotalBaseReward is a free data retrieval call binding the contract method 0x7f1b5e43.
 //
-// Solidity: function totalDonations() view returns(uint256)
-func (_DAEntrance *DAEntranceCallerSession) TotalDonations() (*big.Int, error) {
-	return _DAEntrance.Contract.TotalDonations(&_DAEntrance.CallOpts)
+// Solidity: function totalBaseReward() view returns(uint256)
+func (_DAEntrance *DAEntranceCallerSession) TotalBaseReward() (*big.Int, error) {
+	return _DAEntrance.Contract.TotalBaseReward(&_DAEntrance.CallOpts)
 }
 
 // Treasury is a free data retrieval call binding the contract method 0x61d027b3.
@@ -1431,6 +1431,27 @@ func (_DAEntrance *DAEntranceTransactorSession) SampleTask() (*types.Transaction
 	return _DAEntrance.Contract.SampleTask(&_DAEntrance.TransactOpts)
 }
 
+// SetBaseReward is a paid mutator transaction binding the contract method 0x0373a23a.
+//
+// Solidity: function setBaseReward(uint256 _baseReward) returns()
+func (_DAEntrance *DAEntranceTransactor) SetBaseReward(opts *bind.TransactOpts, _baseReward *big.Int) (*types.Transaction, error) {
+	return _DAEntrance.contract.Transact(opts, "setBaseReward", _baseReward)
+}
+
+// SetBaseReward is a paid mutator transaction binding the contract method 0x0373a23a.
+//
+// Solidity: function setBaseReward(uint256 _baseReward) returns()
+func (_DAEntrance *DAEntranceSession) SetBaseReward(_baseReward *big.Int) (*types.Transaction, error) {
+	return _DAEntrance.Contract.SetBaseReward(&_DAEntrance.TransactOpts, _baseReward)
+}
+
+// SetBaseReward is a paid mutator transaction binding the contract method 0x0373a23a.
+//
+// Solidity: function setBaseReward(uint256 _baseReward) returns()
+func (_DAEntrance *DAEntranceTransactorSession) SetBaseReward(_baseReward *big.Int) (*types.Transaction, error) {
+	return _DAEntrance.Contract.SetBaseReward(&_DAEntrance.TransactOpts, _baseReward)
+}
+
 // SetBlobPrice is a paid mutator transaction binding the contract method 0x23dd60a6.
 //
 // Solidity: function setBlobPrice(uint256 _blobPrice) returns()
@@ -1555,27 +1576,6 @@ func (_DAEntrance *DAEntranceSession) SetServiceFeeRate(bps *big.Int) (*types.Tr
 // Solidity: function setServiceFeeRate(uint256 bps) returns()
 func (_DAEntrance *DAEntranceTransactorSession) SetServiceFeeRate(bps *big.Int) (*types.Transaction, error) {
 	return _DAEntrance.Contract.SetServiceFeeRate(&_DAEntrance.TransactOpts, bps)
-}
-
-// SetSingleDonation is a paid mutator transaction binding the contract method 0x1a1b27d5.
-//
-// Solidity: function setSingleDonation(uint256 _singleDonation) returns()
-func (_DAEntrance *DAEntranceTransactor) SetSingleDonation(opts *bind.TransactOpts, _singleDonation *big.Int) (*types.Transaction, error) {
-	return _DAEntrance.contract.Transact(opts, "setSingleDonation", _singleDonation)
-}
-
-// SetSingleDonation is a paid mutator transaction binding the contract method 0x1a1b27d5.
-//
-// Solidity: function setSingleDonation(uint256 _singleDonation) returns()
-func (_DAEntrance *DAEntranceSession) SetSingleDonation(_singleDonation *big.Int) (*types.Transaction, error) {
-	return _DAEntrance.Contract.SetSingleDonation(&_DAEntrance.TransactOpts, _singleDonation)
-}
-
-// SetSingleDonation is a paid mutator transaction binding the contract method 0x1a1b27d5.
-//
-// Solidity: function setSingleDonation(uint256 _singleDonation) returns()
-func (_DAEntrance *DAEntranceTransactorSession) SetSingleDonation(_singleDonation *big.Int) (*types.Transaction, error) {
-	return _DAEntrance.Contract.SetSingleDonation(&_DAEntrance.TransactOpts, _singleDonation)
 }
 
 // SetTreasury is a paid mutator transaction binding the contract method 0xf0f44260.
@@ -1941,15 +1941,16 @@ func (it *DAEntranceDataUploadIterator) Close() error {
 
 // DAEntranceDataUpload represents a DataUpload event raised by the DAEntrance contract.
 type DAEntranceDataUpload struct {
-	DataRoot [32]byte
-	Epoch    *big.Int
-	QuorumId *big.Int
-	Raw      types.Log // Blockchain specific contextual infos
+	DataRoot  [32]byte
+	Epoch     *big.Int
+	QuorumId  *big.Int
+	BlobPrice *big.Int
+	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterDataUpload is a free log retrieval operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
+// FilterDataUpload is a free log retrieval operation binding the contract event 0xb4e0ecfec4293e970525d9286428425fbdc041540ca6e58ad11bce23d16ed41c.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId, uint256 blobPrice)
 func (_DAEntrance *DAEntranceFilterer) FilterDataUpload(opts *bind.FilterOpts) (*DAEntranceDataUploadIterator, error) {
 
 	logs, sub, err := _DAEntrance.contract.FilterLogs(opts, "DataUpload")
@@ -1959,9 +1960,9 @@ func (_DAEntrance *DAEntranceFilterer) FilterDataUpload(opts *bind.FilterOpts) (
 	return &DAEntranceDataUploadIterator{contract: _DAEntrance.contract, event: "DataUpload", logs: logs, sub: sub}, nil
 }
 
-// WatchDataUpload is a free log subscription operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
+// WatchDataUpload is a free log subscription operation binding the contract event 0xb4e0ecfec4293e970525d9286428425fbdc041540ca6e58ad11bce23d16ed41c.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId, uint256 blobPrice)
 func (_DAEntrance *DAEntranceFilterer) WatchDataUpload(opts *bind.WatchOpts, sink chan<- *DAEntranceDataUpload) (event.Subscription, error) {
 
 	logs, sub, err := _DAEntrance.contract.WatchLogs(opts, "DataUpload")
@@ -1996,9 +1997,9 @@ func (_DAEntrance *DAEntranceFilterer) WatchDataUpload(opts *bind.WatchOpts, sin
 	}), nil
 }
 
-// ParseDataUpload is a log parse operation binding the contract event 0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb.
+// ParseDataUpload is a log parse operation binding the contract event 0xb4e0ecfec4293e970525d9286428425fbdc041540ca6e58ad11bce23d16ed41c.
 //
-// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId)
+// Solidity: event DataUpload(bytes32 dataRoot, uint256 epoch, uint256 quorumId, uint256 blobPrice)
 func (_DAEntrance *DAEntranceFilterer) ParseDataUpload(log types.Log) (*DAEntranceDataUpload, error) {
 	event := new(DAEntranceDataUpload)
 	if err := _DAEntrance.contract.UnpackLog(event, "DataUpload", log); err != nil {
