@@ -575,6 +575,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	signedSliceCount := make([]int, blobSize)
 	totalSliceCount := make([]int, blobSize)
 	quorumBitmap := make([][]byte, blobSize)
+	successSignerCount := 0
 
 	if blobSize > 0 {
 		for i := 0; i < signerCounter; i++ {
@@ -588,6 +589,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 				continue
 			}
 
+			successSignerCount += 1
 			s.logger.Debug("[signer] received signature from signer", "address", signer.Signer, "socket", signer.Socket, "signature size", len(signatures))
 			for blobIdx, sig := range signatures {
 				message := messages[blobIdx]
@@ -631,6 +633,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 	for blobIdx, sig := range aggSigs {
 		if signedSliceCount[blobIdx] < int(math.Ceil(float64(totalSliceCount[blobIdx])*2/3)) {
 			valid = false
+			s.logger.Warn("[signer] number of signatures does not meet requirement", "required", int(math.Ceil(float64(totalSliceCount[blobIdx])*2/3)), "received", signedSliceCount[blobIdx], "signer counter", successSignerCount)
 			break
 		}
 
