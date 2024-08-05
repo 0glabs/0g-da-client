@@ -75,8 +75,8 @@ func NewDispersalServer(
 		kvStore:               kvStore,
 		retrieverAddr:         retrieverAddr,
 
-		writeRateLimiterManager: NewClientRateLimiterManager(3),
-		readRateLimiterManager:  NewClientRateLimiterManager(20),
+		writeRateLimiterManager: NewClientRateLimiterManager(60),
+		readRateLimiterManager:  NewClientRateLimiterManager(60),
 	}
 }
 
@@ -107,7 +107,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 
 	limiter := s.writeRateLimiterManager.GetRateLimiter(origin)
 	if !limiter.Allow() {
-		s.logger.Debug("[apiserver] client %s: Rate limit exceeded for disperse blob\n", origin)
+		s.logger.Debug("[apiserver] rate limit exceeded for disperse blob", "client", origin)
 		return nil, fmt.Errorf("request ratelimited")
 	}
 
@@ -167,7 +167,8 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		// check on kv
 		metadataFromKV, err := s.getMetadataFromKv(ctx, requestID)
 		if err != nil {
-			s.logger.Warn("get metadata from kv", err)
+			s.logger.Warn("get metadata from kv", "error", err)
+			return nil, fmt.Errorf("no metadata found for the requestID")
 		}
 		if metadataFromKV != nil {
 			// metadata = metadataInKV
@@ -230,7 +231,7 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 
 	limiter := s.readRateLimiterManager.GetRateLimiter(origin)
 	if !limiter.Allow() {
-		s.logger.Debug("[apiserver] client %s: Rate limit exceeded for retrieve blob\n", origin)
+		s.logger.Debug("[apiserver] rate limit exceeded for retrieve blob", "client", origin)
 		return nil, fmt.Errorf("request ratelimited")
 	}
 
