@@ -261,15 +261,13 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 
 	if err != nil || len(dataUploadEvents) == 0 {
 		// batch is not confirmed
-		_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchReceipt)
-		s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
+		_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchReceipt, batchInfo.ts)
 		return err
 	}
 
 	for i := 1; i < len(dataUploadEvents); i++ {
 		if dataUploadEvents[i].Epoch.Cmp(dataUploadEvents[i-1].Epoch) != 0 {
-			_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchEpochMismatch)
-			s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
+			_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailBatchEpochMismatch, batchInfo.ts)
 			return fmt.Errorf("epoch in one batch is mismatch: epoch %v, %v", dataUploadEvents[i].Epoch, dataUploadEvents[i-1].Epoch)
 		}
 	}
@@ -285,8 +283,7 @@ func (s *SliceSigner) waitBatchTxFinalized(ctx context.Context, batchInfo *SignI
 		// 	signInfo.reties += 1
 		// 	s.pendingBatchesToSign = append(s.pendingBatchesToSign, signInfo)
 		// } else {
-		_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailGetSigners)
-		s.EncodingStreamer.RemoveBatchingStatus(batchInfo.ts)
+		_ = s.handleFailure(ctx, batchInfo.batch.BlobMetadata, FailGetSigners, batchInfo.ts)
 		// }
 
 		return fmt.Errorf("failed to get signers from contract: %w", err)
@@ -410,7 +407,7 @@ func (s *SliceSigner) getSigners(epoch *big.Int, quorumId *big.Int) (map[eth_com
 	return hm, nil
 }
 
-func (s *SliceSigner) handleFailure(ctx context.Context, blobMetadatas []*disperser.BlobMetadata, reason FailReason) error {
+func (s *SliceSigner) handleFailure(ctx context.Context, blobMetadatas []*disperser.BlobMetadata, reason FailReason, ts uint64) error {
 	var result *multierror.Error
 	for _, metadata := range blobMetadatas {
 		err := s.blobStore.HandleBlobFailure(ctx, metadata, s.MaxNumRetriesPerBlob)
@@ -422,6 +419,21 @@ func (s *SliceSigner) handleFailure(ctx context.Context, blobMetadatas []*disper
 		s.metrics.UpdateCompletedBlob(int(metadata.RequestMetadata.BlobSize), disperser.Failed)
 	}
 	s.metrics.UpdateBatchError(reason, len(blobMetadatas))
+
+	for _, metadata := range blobMetadatas {
+		meta, err := s.blobStore.GetBlobMetadata(ctx, metadata.GetBlobKey())
+		if err != nil {
+			s.logger.Error("[signer] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+		} else {
+			if meta.BlobStatus == disperser.Failed {
+				s.logger.Info("[signer] signing blob reach max retries", "key", metadata.GetBlobKey())
+				s.EncodingStreamer.RemoveEncodedBlob(metadata)
+				s.blobStore.RemoveBlob(ctx, metadata)
+			}
+		}
+	}
+
+	s.EncodingStreamer.RemoveBatchingStatus(ts)
 
 	// Return the error(s)
 	return result.ErrorOrNil()
@@ -560,8 +572,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 				signInfo.reties += 1
 				s.pendingBatchesToSign = append(s.pendingBatchesToSign, signInfo)
 			} else {
-				_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures)
-				s.EncodingStreamer.RemoveBatchingStatus(signInfo.ts)
+				_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures, signInfo.ts)
 			}
 			return err
 		}
@@ -685,22 +696,8 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			s.pendingBatchesToSign = append(s.pendingBatchesToSign, signInfo)
 			s.logger.Warn("[signer] retry signing", "retries", signInfo.reties)
 		} else {
-			_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures)
+			_ = s.handleFailure(ctx, signInfo.batch.BlobMetadata, FailAggregateSignatures, signInfo.ts)
 
-			for _, metadata := range signInfo.batch.BlobMetadata {
-				meta, err := s.blobStore.GetBlobMetadata(ctx, metadata.GetBlobKey())
-				if err != nil {
-					s.logger.Error("[signer] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
-				} else {
-					if meta.BlobStatus == disperser.Failed {
-						s.logger.Info("[signer] signing blob reach max retries", "key", metadata.GetBlobKey())
-						s.EncodingStreamer.RemoveEncodedBlob(metadata)
-						s.blobStore.RemoveBlob(ctx, metadata)
-					}
-				}
-			}
-
-			s.EncodingStreamer.RemoveBatchingStatus(signInfo.ts)
 			return errors.New("failed aggregate signatures")
 		}
 	}

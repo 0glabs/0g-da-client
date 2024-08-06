@@ -183,7 +183,20 @@ func (b *Batcher) Start(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if ts, err := b.HandleSingleBatch(ctx); err != nil {
+				if ts, blobMetadata, err := b.HandleSingleBatch(ctx); err != nil {
+					for _, metadata := range blobMetadata {
+						meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
+						if err != nil {
+							b.logger.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+						} else {
+							if meta.BlobStatus == disperser.Failed {
+								b.logger.Info("[batcher] handle encode batch reach max retries", "key", metadata.GetBlobKey())
+								b.EncodingStreamer.RemoveEncodedBlob(metadata)
+								b.Queue.RemoveBlob(ctx, metadata)
+							}
+						}
+					}
+
 					b.EncodingStreamer.RemoveBatchingStatus(ts)
 					if errors.Is(err, errNoEncodedResults) {
 						b.logger.Debug("[batcher] no encoded results to make a batch with")
@@ -193,7 +206,20 @@ func (b *Batcher) Start(ctx context.Context) error {
 				}
 			case <-batchTrigger.Notify:
 				ticker.Stop()
-				if ts, err := b.HandleSingleBatch(ctx); err != nil {
+				if ts, blobMetadata, err := b.HandleSingleBatch(ctx); err != nil {
+					for _, metadata := range blobMetadata {
+						meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
+						if err != nil {
+							b.logger.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
+						} else {
+							if meta.BlobStatus == disperser.Failed {
+								b.logger.Info("[batcher] handle encode batch reach max retries", "key", metadata.GetBlobKey())
+								b.EncodingStreamer.RemoveEncodedBlob(metadata)
+								b.Queue.RemoveBlob(ctx, metadata)
+							}
+						}
+					}
+
 					b.EncodingStreamer.RemoveBatchingStatus(ts)
 					if errors.Is(err, errNoEncodedResults) {
 						b.logger.Debug("[batcher] no encoded results to make a batch with(Notified)")
@@ -267,7 +293,7 @@ func (b *Batcher) handleFailure(ctx context.Context, blobMetadatas []*disperser.
 	return result.ErrorOrNil()
 }
 
-func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
+func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, []*disperser.BlobMetadata, error) {
 	log := b.logger
 	// start a timer
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(f float64) {
@@ -279,7 +305,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	log.Info("[batcher] Creating batch", "ts", stageTimer)
 	batch, ts, err := b.EncodingStreamer.CreateBatch()
 	if err != nil {
-		return ts, err
+		return ts, nil, err
 	}
 	log.Info("[batcher] CreateBatch took", "duration", time.Since(stageTimer), "blobNum", len(batch.EncodedBlobs))
 
@@ -288,7 +314,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	headerHash, err := batch.BatchHeader.GetBatchHeaderHash()
 	if err != nil {
 		_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchHeaderHash)
-		return ts, fmt.Errorf("HandleSingleBatch: error getting batch header hash: %w", err)
+		return ts, batch.BlobMetadata, fmt.Errorf("HandleSingleBatch: error getting batch header hash: %w", err)
 	}
 
 	proofs := make([]*merkletree.Proof, 0)
@@ -298,19 +324,19 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 		// generate inclusion proof
 		if blobIndex >= len(batch.BlobHeaders) {
 			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchBlobIndex)
-			return ts, fmt.Errorf("HandleSingleBatch: error preparing kv data: blob header at index %d not found in batch", blobIndex)
+			return ts, batch.BlobMetadata, fmt.Errorf("HandleSingleBatch: error preparing kv data: blob header at index %d not found in batch", blobIndex)
 		}
 		blobHeader = batch.BlobHeaders[blobIndex]
 
 		blobHeaderHash, err := blobHeader.GetBlobHeaderHash()
 		if err != nil {
 			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchBlobHeaderHash)
-			return ts, fmt.Errorf("HandleSingleBatch: failed to get blob header hash: %w", err)
+			return ts, batch.BlobMetadata, fmt.Errorf("HandleSingleBatch: failed to get blob header hash: %w", err)
 		}
 		merkleProof, err := batch.MerkleTree.GenerateProof(blobHeaderHash[:], 0)
 		if err != nil {
 			_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchProof)
-			return ts, fmt.Errorf("HandleSingleBatch: failed to generate blob header inclusion proof: %w", err)
+			return ts, batch.BlobMetadata, fmt.Errorf("HandleSingleBatch: failed to generate blob header inclusion proof: %w", err)
 		}
 		proofs = append(proofs, merkleProof)
 	}
@@ -320,21 +346,8 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 	stageTimer = time.Now()
 	batch.TxHash, err = b.Dispatcher.DisperseBatch(ctx, headerHash, batch.BatchHeader, batch.EncodedBlobs, batch.BlobHeaders)
 	if err != nil {
-		for _, metadata := range batch.BlobMetadata {
-			meta, err := b.Queue.GetBlobMetadata(ctx, metadata.GetBlobKey())
-			if err != nil {
-				log.Error("[batcher] failed to get blob metadata", "key", metadata.GetBlobKey(), "err", err)
-			} else {
-				if meta.BlobStatus == disperser.Failed {
-					log.Info("[batcher] disperse batch reach max retries", "key", metadata.GetBlobKey())
-					b.EncodingStreamer.RemoveEncodedBlob(metadata)
-					b.Queue.RemoveBlob(ctx, metadata)
-				}
-			}
-		}
-
 		_ = b.handleFailure(ctx, batch.BlobMetadata, FailBatchSubmitRoot)
-		return ts, err
+		return ts, batch.BlobMetadata, err
 	}
 	log.Info("[batcher] DisperseBatch took", "duration", time.Since(stageTimer))
 
@@ -346,7 +359,7 @@ func (b *Batcher) HandleSingleBatch(ctx context.Context) (uint64, error) {
 		reties:     0,
 	}
 
-	return ts, nil
+	return ts, nil, nil
 }
 
 func (b *Batcher) HandleSignedBatch(ctx context.Context) error {
