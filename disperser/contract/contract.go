@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const DataUploadEventHash = "0xb4e0ecfec4293e970525d9286428425fbdc041540ca6e58ad11bce23d16ed41c"
+const DataUploadEventHash = "0x57b8b1a6583dc6ce934dfba3d66f2a8e1591b6e171bb2e0921cc64640277087b"
 
 var Web3LogEnabled bool
 
