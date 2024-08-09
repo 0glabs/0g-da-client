@@ -30,13 +30,13 @@ localstack:
 	go run ./deploy/cmd -localstack-port 4570 localstack
 
 deploy-localstack:
-	go run ./deploy/cmd -localstack-port 4566 -deploy-resources true localstack
+	go run ./deploy/cmd -localstack-port 4566 -deploy-resources localstack
 
 exp: 
 	go run ./deploy/cmd exp
 
 deploy-all:
-	go run ./deploy/cmd  -localstack-port 4570 -deploy-resources true  all
+	go run ./deploy/cmd  -localstack-port 4570 -deploy-resources all
 
 stop-infra:
 	./bin.sh stop-anvil
