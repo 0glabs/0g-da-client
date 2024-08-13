@@ -1,6 +1,6 @@
 /bin/combined \
-	--chain.rpc "L1 RPC Endpoint" \
-	--chain.private-key "Your Private Key" \
+	--chain.rpc L1_RPC_ENDPOINT \
+	--chain.private-key YOUR_PRIVATE_KEY \
 	--chain.receipt-wait-rounds 180 \
 	--chain.receipt-wait-interval 1s \
 	--chain.gas-limit 2000000 \
@@ -8,7 +8,7 @@
 	--combined-server.storage.kv-db-path /runtime/ \
 	--combined-server.storage.time-to-expire 2592000 \
 	--disperser-server.grpc-port 51001 \
-	--batcher.da-entrance-contract "Latest DAEntrance Contract" \
+	--batcher.da-entrance-contract ENTRANCE_CONTRACT_ADDR \
 	--batcher.da-signers-contract 0x0000000000000000000000000000000000001000 \
 	--batcher.finalizer-interval 20s \
 	--batcher.confirmer-num 3 \
@@ -21,7 +21,7 @@
 	--batcher.signing-interval 3s \
 	--batcher.signed-pull-interval 20s \
 	--batcher.expiration-poll-interval 3600 \
-	--encoder-socket "DA Encoder Server" \
+	--encoder-socket DA_ENCODER_SERVER \
 	--encoding-timeout 600s \
 	--signing-timeout 600s \
 	--chain-read-timeout 12s \
