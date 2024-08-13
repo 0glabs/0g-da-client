@@ -15,7 +15,7 @@
     docker build -t 0gclient -f ../Dockerfile .
     ```
 
-3. Update configutaions in **run.sh**
+3. Update configutaions in **[run.sh](run.sh)**
 
 4. Run docker image
     ```bash
