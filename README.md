@@ -105,11 +105,16 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
 2.  Run combined server
 
     Update the following command by referencing the [Configuration](da-client.md#section1)
+    
+    Reference:
+    
+    * [Testnet Configuration](https://docs.0g.ai/0g-doc/run-a-node/testnet-configuration)
+    * [Contract Addresses](https://docs.0g.ai/0g-doc/docs/contract-addresses)
 
     ```bash
     ./bin/combined \
-        --chain.rpc https://rpc-testnet.0g.ai \
-        --chain.private-key 0x00 \
+        --chain.rpc "L1 RPC Endpoint" \
+        --chain.private-key "Your Private Key" \
         --chain.receipt-wait-rounds 180 \
         --chain.receipt-wait-interval 1s \
         --chain.gas-limit 2000000 \
@@ -117,7 +122,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
         --combined-server.storage.kv-db-path ./../run/ \
         --combined-server.storage.time-to-expire 300 \
         --disperser-server.grpc-port 51001 \
-        --batcher.da-entrance-contract 0xDFC8B84e3C98e8b550c7FEF00BCB2d8742d80a69 \
+        --batcher.da-entrance-contract "Latest DAEntrance Contract" \
         --batcher.da-signers-contract 0x0000000000000000000000000000000000001000 \
         --batcher.finalizer-interval 20s \
         --batcher.confirmer-num 3 \
@@ -129,13 +134,13 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
         --batcher.pull-interval 10s \
         --batcher.signing-interval 3s \
         --batcher.signed-pull-interval 20s \
-        --encoder-socket 52.198.175.144:34000 \
+        --encoder-socket "DA Encoder Server" \
         --encoding-timeout 600s \
         --signing-timeout 600s \
         --chain-read-timeout 12s \
         --chain-write-timeout 13s \
         --combined-server.log.level-file trace \
-        --combined-server.log.level-std  trace \
+        --combined-server.log.level-std trace \
         --combined-server.log.path ./../run/run.log
     ```
     
