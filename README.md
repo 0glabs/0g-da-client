@@ -120,7 +120,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
         --chain.gas-limit 2000000 \
         --combined-server.use-memory-db \
         --combined-server.storage.kv-db-path ./../run/ \
-        --combined-server.storage.time-to-expire 300 \
+        --combined-server.storage.time-to-expire 2592000 \
         --disperser-server.grpc-port 51001 \
         --batcher.da-entrance-contract ENTRANCE_CONTRACT_ADDR \
         --batcher.da-signers-contract 0x0000000000000000000000000000000000001000 \
