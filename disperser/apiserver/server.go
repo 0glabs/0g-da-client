@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
 	pb "github.com/0glabs/0g-da-client/api/grpc/disperser"
 	"github.com/0glabs/0g-da-client/common"
 	healthcheck "github.com/0glabs/0g-da-client/common/healthcheck"
+	"github.com/0glabs/0g-da-client/common/ratelimit"
 	"github.com/0glabs/0g-da-client/core"
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/api/grpc/retriever"
@@ -32,8 +34,7 @@ type DispersalServer struct {
 
 	blobStore disperser.BlobStore
 
-	rateConfig  RateConfig
-	ratelimiter common.RateLimiter
+	rateConfig RateConfig
 
 	metrics *disperser.Metrics
 
@@ -56,7 +57,8 @@ func NewDispersalServer(
 	store disperser.BlobStore,
 	logger common.Logger,
 	metrics *disperser.Metrics,
-	ratelimiter common.RateLimiter,
+	ratelimiterConfig ratelimit.Config,
+	enableRatelimiter bool,
 	rateConfig RateConfig,
 	metadataHashAsBlobKey bool,
 	kvStore *disperser.Store,
@@ -68,15 +70,14 @@ func NewDispersalServer(
 		blobStore:             store,
 		metrics:               metrics,
 		logger:                logger,
-		ratelimiter:           ratelimiter,
 		rateConfig:            rateConfig,
 		mu:                    &sync.RWMutex{},
 		metadataHashAsBlobKey: metadataHashAsBlobKey,
 		kvStore:               kvStore,
 		retrieverAddr:         retrieverAddr,
 
-		writeRateLimiterManager: NewClientRateLimiterManager(60),
-		readRateLimiterManager:  NewClientRateLimiterManager(60),
+		writeRateLimiterManager: NewClientRateLimiterManager(enableRatelimiter, ratelimiterConfig.MaxWriteRequestPerMinute, ratelimiterConfig.Allowlist),
+		readRateLimiterManager:  NewClientRateLimiterManager(enableRatelimiter, ratelimiterConfig.MaxReadRequestPerMinute, ratelimiterConfig.Allowlist),
 	}
 }
 
@@ -106,7 +107,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 	s.logger.Debug("[apiserver] received a new blob request", "origin", origin)
 
 	limiter := s.writeRateLimiterManager.GetRateLimiter(origin)
-	if !limiter.Allow() {
+	if limiter != nil && !limiter.Allow() {
 		s.logger.Debug("[apiserver] rate limit exceeded for disperse blob", "client", origin)
 		return nil, fmt.Errorf("request ratelimited")
 	}
@@ -230,7 +231,7 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	}
 
 	limiter := s.readRateLimiterManager.GetRateLimiter(origin)
-	if !limiter.Allow() {
+	if limiter != nil && !limiter.Allow() {
 		s.logger.Debug("[apiserver] rate limit exceeded for retrieve blob", "client", origin)
 		return nil, fmt.Errorf("request ratelimited")
 	}
@@ -368,21 +369,34 @@ func (rl *TinyRateLimiter) Allow() bool {
 }
 
 type ClientRateLimiterManager struct {
-	clients     map[string]*TinyRateLimiter // Map of client ID to RateLimiter
-	maxRequests int
-	mu          sync.Mutex // Mutex for thread safety
+	clients           map[string]*TinyRateLimiter // Map of client ID to RateLimiter
+	maxRequests       int
+	allowlist         []string
+	EnableRatelimiter bool
+	mu                sync.Mutex // Mutex for thread safety
 }
 
-func NewClientRateLimiterManager(maxRequests int) *ClientRateLimiterManager {
+func NewClientRateLimiterManager(enableRatelimiter bool, maxRequests int, allowlist []string) *ClientRateLimiterManager {
 	return &ClientRateLimiterManager{
-		clients:     make(map[string]*TinyRateLimiter),
-		maxRequests: maxRequests,
+		clients:           make(map[string]*TinyRateLimiter),
+		maxRequests:       maxRequests,
+		allowlist:         allowlist,
+		EnableRatelimiter: enableRatelimiter,
 	}
 }
 
 func (m *ClientRateLimiterManager) GetRateLimiter(clientID string) *TinyRateLimiter {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if !m.EnableRatelimiter {
+		return nil
+	}
+
+	for _, id := range m.allowlist {
+		if strings.Contains(clientID, id) {
+			return nil
+		}
+	}
 
 	limiter, ok := m.clients[clientID]
 	if !ok {

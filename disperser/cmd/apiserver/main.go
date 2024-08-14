@@ -6,15 +6,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/0glabs/0g-da-client/common"
 	"github.com/0glabs/0g-da-client/disperser/apiserver"
 	"github.com/0glabs/0g-da-client/disperser/common/blobstore"
 
 	"github.com/0glabs/0g-da-client/common/aws/dynamodb"
 	"github.com/0glabs/0g-da-client/common/aws/s3"
 	"github.com/0glabs/0g-da-client/common/logging"
-	"github.com/0glabs/0g-da-client/common/ratelimit"
-	"github.com/0glabs/0g-da-client/common/store"
 	"github.com/0glabs/0g-da-client/disperser"
 	"github.com/0glabs/0g-da-client/disperser/cmd/apiserver/flags"
 	"github.com/urfave/cli"
@@ -56,7 +53,6 @@ func RunDisperserServer(ctx *cli.Context) error {
 	}
 
 	var blobStore disperser.BlobStore
-	var ratelimiter common.RateLimiter
 
 	s3Client, err := s3.NewClient(config.AwsClientConfig, logger)
 	if err != nil {
@@ -80,29 +76,10 @@ func RunDisperserServer(ctx *cli.Context) error {
 		return nil
 	}
 
-	if config.EnableRatelimiter {
-		globalParams := config.RatelimiterConfig.GlobalRateParams
-
-		var bucketStore common.KVStore[common.RateBucketParams]
-		if config.BucketTableName != "" {
-			dynamoClient, err := dynamodb.NewClient(config.AwsClientConfig, logger)
-			if err != nil {
-				return err
-			}
-			bucketStore = store.NewDynamoParamStore[common.RateBucketParams](dynamoClient, config.BucketTableName)
-		} else {
-			bucketStore, err = store.NewLocalParamStore[common.RateBucketParams](config.BucketStoreSize)
-			if err != nil {
-				return err
-			}
-		}
-		ratelimiter = ratelimit.NewRateLimiter(globalParams, bucketStore, config.RatelimiterConfig.Allowlist, logger)
-	}
-
 	// TODO: create a separate metrics for batcher
 	metrics := disperser.NewMetrics(config.MetricsConfig.HTTPPort, logger)
 
-	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, ratelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvStore, config.RetrieverAddr)
+	server := apiserver.NewDispersalServer(config.ServerConfig, blobStore, logger, metrics, config.RatelimiterConfig, config.EnableRatelimiter, config.RateConfig, config.BlobstoreConfig.MetadataHashAsBlobKey, kvStore, config.RetrieverAddr)
 
 	// Enable Metrics Block
 	if config.MetricsConfig.EnableMetrics {

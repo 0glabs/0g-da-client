@@ -11,18 +11,22 @@ import (
 )
 
 const (
-	BucketSizesFlagName       = "bucket-sizes"
-	BucketMultipliersFlagName = "bucket-multipliers"
-	CountFailedFlagName       = "count-failed"
-	BucketStoreSizeFlagName   = "bucket-store-size"
-	AllowlistFlagName         = "allowlist"
+	BucketSizesFlagName              = "bucket-sizes"
+	BucketMultipliersFlagName        = "bucket-multipliers"
+	CountFailedFlagName              = "count-failed"
+	BucketStoreSizeFlagName          = "bucket-store-size"
+	AllowlistFlagName                = "allowlist"
+	MaxWriteRequestPerMinuteFlagName = "max-write-request-per-minute"
+	MaxReadRequestPerMinuteFlagName  = "max-read-request-per-minute"
 )
 
 type Config struct {
 	common.GlobalRateParams
-	BucketStoreSize  int
-	UniformRateParam common.RateParam
-	Allowlist        []string
+	BucketStoreSize          int
+	UniformRateParam         common.RateParam
+	Allowlist                []string
+	MaxWriteRequestPerMinute int
+	MaxReadRequestPerMinute  int
 }
 
 func RatelimiterCLIFlags(envPrefix string, flagPrefix string) []cli.Flag {
@@ -60,6 +64,20 @@ func RatelimiterCLIFlags(envPrefix string, flagPrefix string) []cli.Flag {
 			EnvVar:   common.PrefixEnvVar(envPrefix, "ALLOWLIST"),
 			Required: false,
 			Value:    &cli.StringSlice{},
+		},
+		cli.IntFlag{
+			Name:     common.PrefixFlag(flagPrefix, MaxWriteRequestPerMinuteFlagName),
+			Usage:    "Max write request per minute",
+			Value:    60,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "MAX_WRITE_REQUEST"),
+			Required: false,
+		},
+		cli.IntFlag{
+			Name:     common.PrefixFlag(flagPrefix, MaxReadRequestPerMinuteFlagName),
+			Usage:    "Max read request per minute",
+			Value:    60,
+			EnvVar:   common.PrefixEnvVar(envPrefix, "MAX_READ_REQUEST"),
+			Required: false,
 		},
 	}
 }
@@ -107,6 +125,8 @@ func ReadCLIConfig(ctx *cli.Context, flagPrefix string) (Config, error) {
 	cfg.GlobalRateParams.CountFailed = ctx.Bool(common.PrefixFlag(flagPrefix, CountFailedFlagName))
 	cfg.BucketStoreSize = ctx.Int(common.PrefixFlag(flagPrefix, BucketStoreSizeFlagName))
 	cfg.Allowlist = ctx.StringSlice(common.PrefixFlag(flagPrefix, AllowlistFlagName))
+	cfg.MaxWriteRequestPerMinute = ctx.Int(common.PrefixFlag(flagPrefix, MaxWriteRequestPerMinuteFlagName))
+	cfg.MaxReadRequestPerMinute = ctx.Int(common.PrefixFlag(flagPrefix, MaxReadRequestPerMinuteFlagName))
 
 	err := validateConfig(cfg)
 	if err != nil {
