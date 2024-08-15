@@ -147,6 +147,10 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
 ### Run via Docker
 [Guidance](run/README.md)
 
+### (Optional) Setup DA Retriever
+If you want to use the retrieval feature of the DA client, you also need to set up the DA Retriever. Please refer to this [document](https://github.com/0glabs/0g-da-retriever) for more details.
+
+
 ## Contributing
 
 To make contributions to the project, please follow the guidelines [here](contributing.md).
