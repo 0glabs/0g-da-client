@@ -12,13 +12,17 @@
 2. Build docker image
 
     ```bash
-    docker build -t 0gclient -f ../Dockerfile .
+    cd ..
+    docker build -t 0gclient -f ./Dockerfile .
     ```
 
 3. Update configutaions in **[run.sh](run.sh)**
 
-4. Run docker image
+4. Grant executable permissions to **[run.sh](run.sh)** and **[start.sh](start.sh)** when needed.
+
+5. Run docker image
     ```bash
+    cd run
     ./start.sh
     ```
 
