@@ -22,8 +22,8 @@
 	--batcher.signed-pull-interval 20s \
 	--batcher.expiration-poll-interval 3600 \
 	--encoder-socket DA_ENCODER_SERVER \
-	--encoding-timeout 600s \
-	--signing-timeout 600s \
+	--encoding-timeout 300s \
+	--signing-timeout 60s \
 	--chain-read-timeout 12s \
 	--chain-write-timeout 13s \
 	--combined-server.log.level-file trace \

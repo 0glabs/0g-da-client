@@ -135,8 +135,8 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
         --batcher.signing-interval 3s \
         --batcher.signed-pull-interval 20s \
         --encoder-socket DA_ENCODER_SERVER \
-        --encoding-timeout 600s \
-        --signing-timeout 600s \
+        --encoding-timeout 300s \
+        --signing-timeout 60s \
         --chain-read-timeout 12s \
         --chain-write-timeout 13s \
         --combined-server.log.level-file trace \
