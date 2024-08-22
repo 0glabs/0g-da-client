@@ -169,7 +169,7 @@ func (s *DispersalServer) GetBlobStatus(ctx context.Context, req *pb.BlobStatusR
 		metadataFromKV, err := s.getMetadataFromKv(ctx, requestID)
 		if err != nil {
 			s.logger.Warn("get metadata from kv", "error", err)
-			return nil, fmt.Errorf("no metadata found for the requestID")
+			return nil, fmt.Errorf("failed to retrieve blob status: disperse failed or request may not exist")
 		}
 		if metadataFromKV != nil {
 			// metadata = metadataInKV
