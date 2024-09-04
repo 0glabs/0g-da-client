@@ -1,6 +1,8 @@
-node_modules
-testdata
-data
-bin
-./contracts/out
-./contracts/cache
+*
+!/Makefile
+!/api
+!/common
+!/core
+!/disperser
+!/go.mod
+!/go.sum
