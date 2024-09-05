@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const DataUploadEventHash = "0xf0bf37f8713754493879920443065424c575888634675f146c115709bbb59acb"
+const DataUploadEventHash = "0x57b8b1a6583dc6ce934dfba3d66f2a8e1591b6e171bb2e0921cc64640277087b"
 
 var Web3LogEnabled bool
 
@@ -121,11 +121,20 @@ func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForRece
 		params[i] = dataRoot
 	}
 
+	blobPrice, err := c.BlobPrice(nil)
+	if err != nil {
+		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to get blob price")
+	}
+
 	// Submit log entry to smart contract.
 	opts, err := c.CreateTransactOpts()
 	if err != nil {
 		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
 	}
+
+	opts.Value = new(big.Int)
+	txValue := new(big.Int).SetUint64(uint64(len(dataRoots)))
+	opts.Value.Mul(blobPrice, txValue)
 
 	tx, err := c.DAEntrance.SubmitOriginalData(opts, params)
 
