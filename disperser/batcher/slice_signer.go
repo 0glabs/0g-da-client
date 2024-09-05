@@ -648,6 +648,14 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			break
 		}
 
+		if aggSigs[blobIdx] == nil {
+			return errors.New("[signer] aggregated signature is not valid")
+		}
+
+		if aggPubKeys[blobIdx] == nil {
+			return errors.New("[signer] aggregated public key is not valid")
+		}
+
 		rootSubmissions = append(rootSubmissions, &core.CommitRootSubmission{
 			DataRoot:          storageRoots[blobIdx],
 			ErasureCommitment: erasureCommitments[blobIdx],
