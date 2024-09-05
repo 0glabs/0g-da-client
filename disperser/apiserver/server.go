@@ -223,6 +223,9 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	defer timer.ObserveDuration()
 
 	s.logger.Info("[apiserver] received a new blob retrieval request", "blob storage root", req.StorageRoot, "blob epoch", req.Epoch, "quorum id", req.QuorumId)
+	if len(req.StorageRoot) != 32 {
+		return nil, fmt.Errorf("parameter StorageRoot len is not accepted")
+	}
 
 	origin, err := common.GetClientAddress(ctx, s.rateConfig.ClientIPHeader, 2, true)
 	if err != nil {
@@ -233,7 +236,7 @@ func (s *DispersalServer) RetrieveBlob(ctx context.Context, req *pb.RetrieveBlob
 	limiter := s.readRateLimiterManager.GetRateLimiter(origin)
 	if limiter != nil && !limiter.Allow() {
 		s.logger.Debug("[apiserver] rate limit exceeded for retrieve blob", "client", origin)
-		return nil, fmt.Errorf("request ratelimited")
+		return nil, fmt.Errorf("request rate limited")
 	}
 
 	metaData := disperser.BlobRetrieveMetadata{
