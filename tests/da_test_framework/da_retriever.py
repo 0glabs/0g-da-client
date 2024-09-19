@@ -48,9 +48,6 @@ class DARetriever(TestNode):
             "--retriever.storage.kv-stream-id", local_conf['stream_id'],
             "--retriever.storage.flow-contract", local_conf['log_contract_address'],
             "--retriever.log.level-std", "trace",
-	        "--kzg.g1-path", f"{__file_path__}/../../inabox/resources/kzg/g1.point.300000",
-            "--kzg.g2-path", f"{__file_path__}/../../inabox/resources/kzg/g2.point.300000",
-            "--kzg.cache-path", f"{__file_path__}/../../inabox/resources/kzg/SRSTables",
             "--kzg.srs-order", "300000",
         ]
     

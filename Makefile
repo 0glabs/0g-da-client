@@ -1,4 +1,4 @@
-.PHONY: compile-el compile-dl clean protoc lint build unit-tests integration-tests-churner integration-tests-indexer integration-tests-inabox integration-tests-inabox-nochurner integration-tests-graph-indexer
+.PHONY: compile-el compile-dl clean protoc lint build unit-tests integration-tests-churner integration-tests-indexer integration-tests-graph-indexer
 
 PROTOS := ./api/proto
 PROTOS_DISPERSER := ./disperser/api/proto
@@ -55,14 +55,6 @@ integration-tests-indexer:
 
 integration-tests-node-plugin:
 	go test -v ./node/plugin/tests
-
-integration-tests-inabox:
-	make build 
-	cd inabox && make run-e2e
-
-integration-tests-inabox-nochurner:
-	make build
-	cd inabox && make run-e2e-nochurner
 
 integration-tests-graph-indexer:
 	make build 
