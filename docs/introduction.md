@@ -17,16 +17,6 @@ For detailed public APIs, visit [gRPC API](../0G%20DA/broken-reference/) section
 * [Disperser](./#disperser)
 * [Retriever](./#retriever)
 
-### LocalStack
-
-Create LocalStack(local aws simulation) docker image and start a docker instance:
-
-```bash
-cd inabox
-
-make deploy-localstack
-```
-
 ### Disperser
 
 1. Build binaries:
