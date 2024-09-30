@@ -104,9 +104,9 @@ message BlobInfo {
 
 message BlobHeader {
 	// The data merkle root
-	bytes storage_root = 4;
+	bytes storage_root = 1;
 	// Signers epoch
-	uint64 epoch = 5;
+	uint64 epoch = 2;
 	// Signers quorum id
-	uint64 quorum_id = 6;
+	uint64 quorum_id = 3;
 }
