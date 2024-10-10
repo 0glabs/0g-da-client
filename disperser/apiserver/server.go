@@ -89,7 +89,7 @@ func (s *DispersalServer) DisperseBlob(ctx context.Context, req *pb.DisperseBlob
 
 	blobSize := len(req.GetData())
 	// The blob size in bytes must be in range [1, maxBlobSize].
-	if blobSize > core.MaxBlobSize {
+	if blobSize > core.MaxBlobSize-4 {
 		return nil, fmt.Errorf("blob size cannot exceed %v KiB", core.MaxBlobSize/1024)
 	}
 	if blobSize == 0 {
