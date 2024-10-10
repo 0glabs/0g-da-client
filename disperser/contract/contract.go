@@ -115,7 +115,7 @@ func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntr
 	return tx, nil, nil
 }
 
-func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForReceipt bool) (eth_common.Hash, *types.Receipt, error) {
+func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForReceipt bool, gasLimit uint64) (*types.Transaction, *types.Receipt, error) {
 	params := make([][32]byte, len(dataRoots))
 	for i, dataRoot := range dataRoots {
 		params[i] = dataRoot
@@ -123,31 +123,37 @@ func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForRece
 
 	blobPrice, err := c.BlobPrice(nil)
 	if err != nil {
-		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to get blob price")
+		return nil, nil, errors.WithMessage(err, "Failed to get blob price")
 	}
 
 	// Submit log entry to smart contract.
 	opts, err := c.CreateTransactOpts()
 	if err != nil {
-		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
+		return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
 	}
 
 	opts.Value = new(big.Int)
 	txValue := new(big.Int).SetUint64(uint64(len(dataRoots)))
 	opts.Value.Mul(blobPrice, txValue)
 
+	if gasLimit == 0 {
+		opts.NoSend = true
+	} else {
+		opts.GasLimit = gasLimit
+	}
+
 	tx, err := c.DAEntrance.SubmitOriginalData(opts, params)
 
 	if err != nil {
-		return eth_common.Hash{}, nil, errors.WithMessage(err, "Failed to send transaction to submit original data")
+		return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit original data")
 	}
 
 	if waitForReceipt {
 		// Wait for successful execution
 		receipt, err := c.WaitForReceipt(tx.Hash(), true)
-		return tx.Hash(), receipt, err
+		return tx, receipt, err
 	}
-	return tx.Hash(), nil, nil
+	return tx, nil, nil
 }
 
 func (c *DAContract) CreateTransactOpts() (*bind.TransactOpts, error) {

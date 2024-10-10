@@ -31,12 +31,19 @@ func (t *Transactor) SubmitLogEntry(daContract *contract.DAContract, dataRoots [
 	defer t.mu.Unlock()
 
 	// Append log on blockchain
-	var txHash eth_common.Hash
+	var tx *types.Transaction
 	var err error
-	if txHash, _, err = daContract.SubmitOriginalData(dataRoots, false); err != nil {
+	if tx, _, err = daContract.SubmitOriginalData(dataRoots, false, 0); err != nil {
+		t.logger.Debug("[transactor] estimate SubmitLogEntry tx failed")
+		return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitLogEntry tx")
+	}
+
+	gasLimit := tx.Gas() + tx.Gas()/20
+	if tx, _, err = daContract.SubmitOriginalData(dataRoots, false, gasLimit); err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to submit log entry")
 	}
-	return txHash, nil
+
+	return tx.Hash(), nil
 }
 
 func (t *Transactor) BatchUpload(daContract *contract.DAContract, dataRoots []eth_common.Hash) (eth_common.Hash, error) {
@@ -67,7 +74,7 @@ func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, 
 			return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitVerifiedCommitRoots")
 		}
 
-		gasLimit = tx.Gas()
+		gasLimit = tx.Gas() + tx.Gas()/20
 		t.logger.Info("[transactor] estimate gas", "gas limit", tx.Gas())
 	} else {
 		gasLimit = t.gasLimit
