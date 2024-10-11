@@ -1,7 +1,9 @@
 package contract
 
 import (
+	"context"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/0glabs/0g-da-client/disperser/contract/da_entrance"
@@ -41,6 +43,8 @@ type DAContract struct {
 	client  *web3go.Client
 	account eth_common.Address // account to send transaction
 	signer  bind.SignerFn
+
+	nonce uint64
 }
 
 func defaultSigner(clientWithSigner *web3go.Client) (interfaces.Signer, error) {
@@ -80,37 +84,62 @@ func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcUR
 		return nil, err
 	}
 
+	nonce, err := backend.PendingNonceAt(context.Background(), default_signer.Address())
+	if err != nil {
+		return nil, err
+	}
+
 	return &DAContract{
 		DAEntrance: flow,
 		DASigners:  signers,
 		client:     clientWithSigner,
 		account:    default_signer.Address(),
 		signer:     signer,
+
+		nonce: nonce,
 	}, nil
 }
 
 func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntranceCommitRootSubmission, gasLimit uint64, waitForReceipt bool, estimateGas bool) (*types.Transaction, *types.Receipt, error) {
-	opts, err := c.CreateTransactOpts()
-	if err != nil {
-		return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
-	}
+	var tx *types.Transaction
+	for {
+		opts, err := c.CreateTransactOpts()
+		if err != nil {
+			return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
+		}
 
-	if estimateGas {
-		opts.NoSend = estimateGas
-	} else {
-		opts.GasLimit = gasLimit
-	}
+		if estimateGas {
+			opts.NoSend = estimateGas
+		} else {
+			opts.GasLimit = gasLimit
+		}
 
-	tx, err := c.DAEntrance.SubmitVerifiedCommitRoots(opts, submissions)
+		tx, err = c.DAEntrance.SubmitVerifiedCommitRoots(opts, submissions)
 
-	if err != nil {
-		return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit verified commit roots")
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid nonce;") {
+				pending := types.BlockNumberOrHashWithNumber(types.PendingBlockNumber)
+				nonce, err := c.client.Eth.TransactionCount(c.account, &pending)
+				if err == nil {
+					c.nonce = nonce.Uint64()
+					continue
+				}
+			}
+
+			return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit verified commit roots")
+		}
+
+		break
 	}
 
 	if waitForReceipt {
 		// Wait for successful execution
 		receipt, err := c.WaitForReceipt(tx.Hash(), true)
 		return tx, receipt, err
+	}
+
+	if !estimateGas {
+		c.nonce++
 	}
 	return tx, nil, nil
 }
@@ -121,31 +150,45 @@ func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForRece
 		params[i] = dataRoot
 	}
 
-	blobPrice, err := c.BlobPrice(nil)
-	if err != nil {
-		return nil, nil, errors.WithMessage(err, "Failed to get blob price")
-	}
+	var tx *types.Transaction
+	for {
+		blobPrice, err := c.BlobPrice(nil)
+		if err != nil {
+			return nil, nil, errors.WithMessage(err, "Failed to get blob price")
+		}
 
-	// Submit log entry to smart contract.
-	opts, err := c.CreateTransactOpts()
-	if err != nil {
-		return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
-	}
+		// Submit log entry to smart contract.
+		opts, err := c.CreateTransactOpts()
+		if err != nil {
+			return nil, nil, errors.WithMessage(err, "Failed to create opts to send transaction")
+		}
 
-	opts.Value = new(big.Int)
-	txValue := new(big.Int).SetUint64(uint64(len(dataRoots)))
-	opts.Value.Mul(blobPrice, txValue)
+		opts.Value = new(big.Int)
+		txValue := new(big.Int).SetUint64(uint64(len(dataRoots)))
+		opts.Value.Mul(blobPrice, txValue)
 
-	if gasLimit == 0 {
-		opts.NoSend = true
-	} else {
-		opts.GasLimit = gasLimit
-	}
+		if gasLimit == 0 {
+			opts.NoSend = true
+		} else {
+			opts.GasLimit = gasLimit
+		}
 
-	tx, err := c.DAEntrance.SubmitOriginalData(opts, params)
+		tx, err = c.DAEntrance.SubmitOriginalData(opts, params)
 
-	if err != nil {
-		return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit original data")
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid nonce;") {
+				pending := types.BlockNumberOrHashWithNumber(types.PendingBlockNumber)
+				nonce, err := c.client.Eth.TransactionCount(c.account, &pending)
+				if err == nil {
+					c.nonce = nonce.Uint64()
+					continue
+				}
+			}
+
+			return nil, nil, errors.WithMessage(err, "Failed to send transaction to submit original data")
+		}
+
+		break
 	}
 
 	if waitForReceipt {
@@ -153,6 +196,11 @@ func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForRece
 		receipt, err := c.WaitForReceipt(tx.Hash(), true)
 		return tx, receipt, err
 	}
+
+	if gasLimit != 0 {
+		c.nonce++
+	}
+
 	return tx, nil, nil
 }
 
@@ -162,11 +210,13 @@ func (c *DAContract) CreateTransactOpts() (*bind.TransactOpts, error) {
 		gasPrice = new(big.Int).SetUint64(CustomGasPrice)
 	}
 
+	var nonce = new(big.Int).SetUint64(c.nonce)
 	return &bind.TransactOpts{
 		From:     c.account,
 		GasPrice: gasPrice,
 		GasLimit: CustomGasLimit,
 		Signer:   c.signer,
+		Nonce:    nonce,
 	}, nil
 }
 
