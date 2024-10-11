@@ -38,7 +38,7 @@ func (t *Transactor) SubmitLogEntry(daContract *contract.DAContract, dataRoots [
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitLogEntry tx")
 	}
 
-	gasLimit := tx.Gas() + tx.Gas()/20
+	gasLimit := tx.Gas() + tx.Gas()*3/10
 	if tx, _, err = daContract.SubmitOriginalData(dataRoots, false, gasLimit); err != nil {
 		return eth_common.Hash{}, errors.WithMessage(err, "Failed to submit log entry")
 	}
@@ -74,7 +74,7 @@ func (t *Transactor) SubmitVerifiedCommitRoots(daContract *contract.DAContract, 
 			return eth_common.Hash{}, errors.WithMessage(err, "Failed to estimate SubmitVerifiedCommitRoots")
 		}
 
-		gasLimit = tx.Gas() + tx.Gas()/20
+		gasLimit = tx.Gas() + tx.Gas()*3/10
 		t.logger.Info("[transactor] estimate gas", "gas limit", tx.Gas())
 	} else {
 		gasLimit = t.gasLimit

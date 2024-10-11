@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/0glabs/0g-da-client/common"
 	"github.com/0glabs/0g-da-client/disperser/contract/da_entrance"
 	"github.com/0glabs/0g-da-client/disperser/contract/da_signers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -44,7 +45,8 @@ type DAContract struct {
 	account eth_common.Address // account to send transaction
 	signer  bind.SignerFn
 
-	nonce uint64
+	nonce  uint64
+	logger common.Logger
 }
 
 func defaultSigner(clientWithSigner *web3go.Client) (interfaces.Signer, error) {
@@ -65,7 +67,7 @@ func defaultSigner(clientWithSigner *web3go.Client) (interfaces.Signer, error) {
 	return signers[0], nil
 }
 
-func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcURL, privateKeyString string) (*DAContract, error) {
+func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcURL, privateKeyString string, logger common.Logger) (*DAContract, error) {
 	clientWithSigner := MustNewWeb3(rpcURL, privateKeyString)
 	backend, signer := clientWithSigner.ToClientForContract()
 
@@ -89,6 +91,8 @@ func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcUR
 		return nil, err
 	}
 
+	logger.Debug("[contract] signer current nonce", "nonce", nonce)
+
 	return &DAContract{
 		DAEntrance: flow,
 		DASigners:  signers,
@@ -96,7 +100,8 @@ func NewDAContract(daEntranceAddress, daSignersAddress eth_common.Address, rpcUR
 		account:    default_signer.Address(),
 		signer:     signer,
 
-		nonce: nonce,
+		nonce:  nonce,
+		logger: logger,
 	}, nil
 }
 
@@ -121,8 +126,11 @@ func (c *DAContract) SubmitVerifiedCommitRoots(submissions []da_entrance.IDAEntr
 				pending := types.BlockNumberOrHashWithNumber(types.PendingBlockNumber)
 				nonce, err := c.client.Eth.TransactionCount(c.account, &pending)
 				if err == nil {
+					c.logger.Debug("[contract] reset signer nonce", "old", c.nonce, "new", nonce)
 					c.nonce = nonce.Uint64()
 					continue
+				} else {
+					c.logger.Error("[contract] call TransactionCount failed", "err", err)
 				}
 			}
 
@@ -180,8 +188,11 @@ func (c *DAContract) SubmitOriginalData(dataRoots []eth_common.Hash, waitForRece
 				pending := types.BlockNumberOrHashWithNumber(types.PendingBlockNumber)
 				nonce, err := c.client.Eth.TransactionCount(c.account, &pending)
 				if err == nil {
+					c.logger.Debug("[contract] reset signer nonce", "old", c.nonce, "new", nonce)
 					c.nonce = nonce.Uint64()
 					continue
+				} else {
+					c.logger.Error("[contract] call TransactionCount failed", "err", err)
 				}
 			}
 
