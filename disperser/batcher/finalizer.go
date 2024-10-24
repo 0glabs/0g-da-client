@@ -66,7 +66,7 @@ func (f *finalizer) Start(ctx context.Context) {
 	go func() {
 		for {
 			f.updateFinalizedBlockNumber(ctx)
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 3)
 		}
 	}()
 

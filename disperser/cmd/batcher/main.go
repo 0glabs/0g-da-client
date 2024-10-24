@@ -57,7 +57,7 @@ func RunBatcher(ctx *cli.Context) error {
 
 	daEntranceAddress := eth_common.HexToAddress(config.BatcherConfig.DAEntranceContractAddress)
 	daSignersAddress := eth_common.HexToAddress(config.BatcherConfig.DASignersContractAddress)
-	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, config.EthClientConfig.RPCURL, config.EthClientConfig.PrivateKeyString)
+	daContract, err := contract.NewDAContract(daEntranceAddress, daSignersAddress, config.EthClientConfig.RPCURL, config.EthClientConfig.PrivateKeyString, logger)
 	if err != nil {
 		return fmt.Errorf("failed to create DAEntrance contract: %w", err)
 	}
