@@ -596,7 +596,7 @@ func (s *SliceSigner) aggregateSignature(ctx context.Context, signInfo *SignInfo
 			signatures := recv.signatures
 
 			if recv.Err != nil {
-				s.logger.Warn("[signer] error returned from messageChan", "socket", signer.Socket, "err", recv.Err)
+				s.logger.Warn("[signer] error returned from messageChan", "address", signer.Signer, "socket", signer.Socket, "err", recv.Err)
 				continue
 			}
 

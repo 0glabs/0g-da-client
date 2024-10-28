@@ -62,11 +62,9 @@ func (c client) BatchSign(ctx context.Context, addr string, data []*pb.SignReque
 			}
 		}
 
-		if formattedAddr == "" {
-			return nil, fmt.Errorf("signer addr is not correct: %v", addr)
+		if formattedAddr != "" {
+			addr = formattedAddr
 		}
-
-		addr = formattedAddr
 	} else {
 		addr = matches[0]
 	}
