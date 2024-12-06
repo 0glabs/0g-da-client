@@ -16,7 +16,7 @@
     docker build -t 0gclient -f ./Dockerfile .
     ```
 
-3. Update configutaions in **[run.sh](run.sh)**
+3. Update configurations in **[run.sh](run.sh)**
 
 4. Grant executable permissions to **[run.sh](run.sh)** and **[start.sh](start.sh)** when needed.
 
