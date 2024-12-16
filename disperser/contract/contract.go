@@ -226,6 +226,7 @@ func (c *DAContract) CreateTransactOpts() (*bind.TransactOpts, error) {
 		} else {
 			increased := new(big.Int)
 			increased.Div(price, big.NewInt(10))
+			gasPrice = new(big.Int)
 			gasPrice.Add(price, increased)
 		}
 	}
