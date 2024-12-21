@@ -219,6 +219,16 @@ func (c *DAContract) CreateTransactOpts() (*bind.TransactOpts, error) {
 	var gasPrice *big.Int
 	if CustomGasPrice > 0 {
 		gasPrice = new(big.Int).SetUint64(CustomGasPrice)
+	} else {
+		price, err := c.client.Eth.GasPrice()
+		if err != nil {
+			c.logger.Debug("[contract] failed to get gas price", "err", err)
+		} else {
+			increased := new(big.Int)
+			increased.Div(price, big.NewInt(10))
+			gasPrice = new(big.Int)
+			gasPrice.Add(price, increased)
+		}
 	}
 
 	var nonce = new(big.Int).SetUint64(c.nonce)
