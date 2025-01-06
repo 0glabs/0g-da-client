@@ -4,7 +4,7 @@
 
 0GDA is a decentralized data availability (DA) service with deep consideration in security, scalability and decentralization. It is also the first DA solution with a built-in data storage layer. Users interact with 0G DA Client to submit and store their data into [0G DA Node](https://github.com/0glabs/0g-da-node) for later retrieval.
 
-To dive deep into the technical details, continue reading [0G DA spec](https://docs.0g.ai/0g-doc/docs/0g-da).
+To dive deep into the technical details, continue reading [0G DA spec](https://docs.0g.ai/da/0g-da-deep-dive).
 
 ## Integration
 
@@ -108,8 +108,8 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
     
     Reference:
     
-    * [Testnet Configuration](https://docs.0g.ai/0g-doc/run-a-node/testnet-configuration)
-    * [Contract Addresses](https://docs.0g.ai/0g-doc/docs/contract-addresses)
+    * [Testnet Configuration](https://docs.0g.ai/run-a-node/testnet-information)
+    * [Contract Addresses](https://docs.0g.ai/run-a-node/testnet-information#contract-addresses)
 
     ```bash
     ./bin/combined \
