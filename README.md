@@ -108,7 +108,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
     
     Reference:
     
-    * [Testnet Configuration](https://docs.0g.ai/run-a-node/testnet-information))
+    * [Testnet Configuration](https://docs.0g.ai/run-a-node/testnet-information)
     * [Contract Addresses](https://docs.0g.ai/0g-doc/docs/contract-addresses)
 
     ```bash
