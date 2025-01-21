@@ -2,15 +2,15 @@
 
 ## Overview
 
-0GDA is a decentralized data availability (DA) service with deep consideration in security, scalability and decentralization. It is also the first DA solution with a built-in data storage layer. Users interact with 0G DA Client to submit and store their data into [0G DA Node](https://github.com/0glabs/0g-da-node) for later retrieval.
+0GDA is a decentralized data availability (DA) service with deep consideration in security, scalability, and decentralization. It is also the first DA solution with a built-in data storage layer. Users interact with the 0G DA Client to submit and store their data into [0G DA Node](https://github.com/0glabs/0g-da-node) for later retrieval.
 
-To dive deep into the technical details, continue reading [0G DA spec](https://docs.0g.ai/da/0g-da-deep-dive).
+To dive deep into the technical details, continue reading the [0G DA spec](https://docs.0g.ai/da/0g-da-deep-dive).
 
 ## Integration
 
 Check out [this example](https://github.com/0glabs/0g-da-example-rust) for how to integrate the 0GDA into your own applications.
 
-For detailed public APIs, visit [gRPC API](docs/api/) section.
+For detailed public APIs, visit the [gRPC API](docs/api/) section.
 
 ## Deployment
 
@@ -22,7 +22,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
 
     ```bash
     sudo apt-get update
-    sudo apt-get install cmake 
+    sudo apt-get install cmake
     ```
 *   For Mac
 
@@ -43,17 +43,17 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
       ```bash
       rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
       ```
-  *   Add /usr/local/go/bin to the PATH environment variable by adding the following line to your \~/.profile.
+  *   Add `/usr/local/go/bin` to the `PATH` environment variable by adding the following line to your `~/.profile`
 
       ```bash
       export PATH=$PATH:/usr/local/go/bin
       ```
 *   For Mac
 
-    ```
-      Download the Go installer from [https://go.dev/dl/go1.22.0.darwin-amd64.pkg](https://go.dev/dl/go1.19.3.darwin-amd64.pkg).\
-      Open the package file you downloaded and follow the prompts to install Go.
-    ```
+    * Download the Go installer from [https://go.dev/dl/go1.22.0.darwin-amd64.pkg](https://go.dev/dl/go1.22.0.darwin-amd64.pkg).
+    
+    * Follow the installation prompts after opening the package
+
 
 3.  Download the source code
 
@@ -104,7 +104,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
     ```
 2.  Run combined server
 
-    Update the following command by referencing the [Configuration](da-client.md#section1)
+    Update the following command by referencing the configuration details from the links below.
     
     Reference:
     
@@ -145,7 +145,7 @@ For detailed public APIs, visit [gRPC API](docs/api/) section.
     ```
 
 ### Run via Docker
-[Guidance](run/README.md)
+For Docker deployment instructions, see the [Docker Guide](run/README.md).
 
 ### (Optional) Setup DA Retriever
 If you want to use the retrieval feature of the DA client, you also need to set up the DA Retriever. Please refer to this [document](https://github.com/0glabs/0g-da-retriever) for more details.
@@ -153,4 +153,4 @@ If you want to use the retrieval feature of the DA client, you also need to set 
 
 ## Contributing
 
-To make contributions to the project, please follow the guidelines [here](contributing.md).
+To make contributions to the project, please follow the [contribution guidelines](contributing.md).
