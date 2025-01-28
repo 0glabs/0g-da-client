@@ -42,7 +42,7 @@ type Blob struct {
 	Data          []byte
 }
 
-// BlobRequestHeader contains the orignal data size of a blob and the security required
+// BlobRequestHeader contains the original data size of a blob and the security required
 type BlobRequestHeader struct {
 	// For a blob to be accepted by ZGDA, it satisfy the AdversaryThreshold of each quorum contained in SecurityParams
 	SecurityParams []*SecurityParam `json:"security_params"`
