@@ -11,7 +11,7 @@ import (
 
 type AccountID = string
 
-// Security and Quorum Paramaters
+// Security and Quorum Parameters
 
 // QuorumID is a unique identifier for a quorum; initially ZGDA wil support upt to 256 quorums
 type QuorumID = uint8
