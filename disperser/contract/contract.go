@@ -320,7 +320,7 @@ func NewWeb3(url, key string) (*web3go.Client, error) {
 	sm := signers.MustNewSignerManagerByPrivateKeyStrings([]string{key})
 
 	option := new(web3go.ClientOption).
-		WithTimout(60 * time.Second).
+		WithTimeout(60 * time.Second).
 		WithSignerManager(sm)
 
 	if Web3LogEnabled {
