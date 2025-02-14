@@ -27,8 +27,8 @@ type GlobalRateParams struct {
 	// `BucketSizes[i]` at a rate of 1, and emptied by an amount equal to `(size of request)/RateParam` each time a
 	// request is processed.
 	BucketSizes []time.Duration
-	// Multipliers speicify how much the supplied rate limit should be relaxed for each time scale.
-	// For i'th BuckeSize, the RateParam*Multiplier[i] will be applied.
+	// Multipliers specify how much the supplied rate limit should be relaxed for each time scale.
+	// For i'th BucketSize, the RateParam*Multiplier[i] will be applied.
 	Multipliers []float32
 	// CountFailed indicates whether failed requests should be counted towards the rate limit.
 	CountFailed bool
@@ -47,7 +47,7 @@ type RateBucketParams struct {
 }
 
 // GetClientAddress returns the client address from the context. If the header is not empty, it will
-// take the ip address located at the `numProxies“ position from the end of the header. If the ip address cannot be
+// take the ip address located at the `numProxies` position from the end of the header. If the ip address cannot be
 // found in the header, it will use the connection ip if `allowDirectConnectionFallback` is true. Otherwise, it will return
 // an error.
 func GetClientAddress(ctx context.Context, header string, numProxies int, allowDirectConnectionFallback bool) (string, error) {
