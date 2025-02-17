@@ -7,7 +7,7 @@ package disperser;
 service Disperser {
 	// This API accepts blob to disperse from clients.
 	// This executes the dispersal async, i.e. it returns once the request
-	// is accepted. The client could use GetBlobStatus() API to poll the the
+	// is accepted. The client could use GetBlobStatus() API to poll the
 	// processing status of the blob.
 	rpc DisperseBlob(DisperseBlobRequest) returns (DisperseBlobReply) {}
 

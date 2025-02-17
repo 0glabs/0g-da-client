@@ -38,7 +38,7 @@ var (
 
 type Item = map[string]types.AttributeValue
 type Key = map[string]types.AttributeValue
-type ExpresseionValues = map[string]types.AttributeValue
+type ExpressionValues = map[string]types.AttributeValue
 
 type Client struct {
 	dynamoClient *dynamodb.Client
@@ -176,7 +176,7 @@ func (c *Client) GetItem(ctx context.Context, tableName string, key Key) (Item, 
 }
 
 // QueryIndex returns all items in the index that match the given key
-func (c *Client) QueryIndex(ctx context.Context, tableName string, indexName string, keyCondition string, expAttributeValues ExpresseionValues) ([]Item, error) {
+func (c *Client) QueryIndex(ctx context.Context, tableName string, indexName string, keyCondition string, expAttributeValues ExpressionValues) ([]Item, error) {
 	response, err := c.dynamoClient.Query(ctx, &dynamodb.QueryInput{
 		TableName:                 aws.String(tableName),
 		IndexName:                 aws.String(indexName),

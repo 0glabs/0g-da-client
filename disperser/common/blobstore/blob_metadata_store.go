@@ -88,7 +88,7 @@ func (s *BlobMetadataStore) GetBlobMetadata(ctx context.Context, metadataKey dis
 // Because this function scans the entire index, it should only be used for status with a limited number of items.
 // It should only be used to filter "Processing" status. To support other status, a streaming version should be implemented.
 func (s *BlobMetadataStore) GetBlobMetadataByStatus(ctx context.Context, status disperser.BlobStatus) ([]*disperser.BlobMetadata, error) {
-	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, statusIndexName, "BlobStatus = :status", commondynamodb.ExpresseionValues{
+	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, statusIndexName, "BlobStatus = :status", commondynamodb.ExpressionValues{
 		":status": &types.AttributeValueMemberN{
 			Value: strconv.Itoa(int(status)),
 		}})
@@ -108,7 +108,7 @@ func (s *BlobMetadataStore) GetBlobMetadataByStatus(ctx context.Context, status 
 }
 
 func (s *BlobMetadataStore) GetAllBlobMetadataByBatch(ctx context.Context, batchHeaderHash [32]byte) ([]*disperser.BlobMetadata, error) {
-	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, batchIndexName, "BatchHeaderHash = :batch_header_hash", commondynamodb.ExpresseionValues{
+	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, batchIndexName, "BatchHeaderHash = :batch_header_hash", commondynamodb.ExpressionValues{
 		":batch_header_hash": &types.AttributeValueMemberB{
 			Value: batchHeaderHash[:],
 		},
@@ -133,7 +133,7 @@ func (s *BlobMetadataStore) GetAllBlobMetadataByBatch(ctx context.Context, batch
 }
 
 func (s *BlobMetadataStore) GetBlobMetadataInBatch(ctx context.Context, batchHeaderHash [32]byte, blobIndex uint32) (*disperser.BlobMetadata, error) {
-	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, batchIndexName, "BatchHeaderHash = :batch_header_hash AND BlobIndex = :blob_index", commondynamodb.ExpresseionValues{
+	items, err := s.dynamoDBClient.QueryIndex(ctx, s.tableName, batchIndexName, "BatchHeaderHash = :batch_header_hash AND BlobIndex = :blob_index", commondynamodb.ExpressionValues{
 		":batch_header_hash": &types.AttributeValueMemberB{
 			Value: batchHeaderHash[:],
 		},
