@@ -90,7 +90,7 @@ type BatchHeader struct {
 	ReferenceBlockNumber uint
 	// BatchRoot is the root of a Merkle tree whose leaves are the hashes of the blobs in the batch
 	BatchRoot [32]byte
-	// DataRoot is the root of a Merkle tree whos leaves are the merkle root encoded data blobs divided in zgs segment size
+	// DataRoot is the root of a Merkle tree who's leaves are the merkle root encoded data blobs divided in zgs segment size
 	DataRoot eth_common.Hash
 }
 ```
