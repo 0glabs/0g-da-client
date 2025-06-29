@@ -39,18 +39,6 @@ func main() {
 					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
 					Action: CreateBucket,
 				},
-				{
-					Name:   "delete",
-					Usage:  "delete a bucket",
-					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
-					Action: DeleteBucket,
-				},
-				{
-					Name:   "clear",
-					Usage:  "clear a bucket",
-					Flags:  append(flags.Flags, flags.S3BucketNameFlag),
-					Action: ClearBucket,
-				},
 			},
 		},
 		{
@@ -120,44 +108,6 @@ func CreateBucket(ctx *cli.Context) error {
 	log.Println("bucketName: ", bucketName)
 	log.Println("region: ", config.AwsClientConfig.Region)
 	err = s3Client.CreateBucket(ctx_bg, bucketName, config.AwsClientConfig.Region)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func DeleteBucket(ctx *cli.Context) error {
-	config := NewConfig(ctx)
-
-	s3Client, err := getS3Client(config)
-	if err != nil {
-		return err
-	}
-
-	ctx_bg := context.Background()
-	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
-	err = s3Client.DeleteBucket(ctx_bg, bucketName)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ClearBucket(ctx *cli.Context) error {
-	config := NewConfig(ctx)
-
-	s3Client, err := getS3Client(config)
-	if err != nil {
-		return err
-	}
-
-	ctx_bg := context.Background()
-	bucketName := ctx.String(flags.S3BucketNameFlag.Name)
-	err = s3Client.ClearBucket(ctx_bg, bucketName)
 
 	if err != nil {
 		return err
