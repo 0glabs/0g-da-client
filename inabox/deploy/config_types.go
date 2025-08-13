@@ -98,7 +98,7 @@ func (cfg *ZGDADeployConfig) MarshalJSON() ([]byte, error) {
 type ZGDAContract struct {
 	Deployer                       string `yaml:"deployer"`
 	ServiceManager                 string `json:"zerogDAServiceManager"`
-	OperatorStateRetreiver         string `json:"blsOperatorStateRetriever"`
+	OperatorStateRetriever         string `json:"blsOperatorStateRetriever"`
 	PubkeyRegistry                 string `json:"blsPubkeyRegistry"`
 	PubkeyCompendium               string `json:"pubkeyCompendium"`
 	RegistryCoordinatorWithIndices string `json:"blsRegistryCoordinatorWithIndices"`

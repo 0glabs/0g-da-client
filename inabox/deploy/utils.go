@@ -188,7 +188,7 @@ func execBashCmd(command string) {
 		log.Print(out.String())
 	}
 
-	log.Printf("bash command succeded with params: %s", cmd)
+	log.Printf("bash command succeeded with params: %s", cmd)
 }
 
 // Converts a private key to an address.
