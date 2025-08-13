@@ -102,7 +102,7 @@ func (c *EthClient) GetNoSendTransactOpts() (*bind.TransactOpts, error) {
 // gas prices sampled from the existing network conditions and an accurate gasLimit.
 // Note that this method does not publish the transaction.
 //
-// Note: tx must be a to a contract, not an EOA
+// Note: tx must be to a contract, not an EOA
 //
 // Slightly modified from: https://github.com/ethereum-optimism/optimism/blob/ec266098641820c50c39c31048aa4e953bece464/batch-submitter/drivers/sequencer/driver.go#L314
 func (c *EthClient) UpdateGas(

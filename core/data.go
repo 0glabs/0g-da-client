@@ -13,7 +13,7 @@ type AccountID = string
 
 // Security and Quorum Paramaters
 
-// QuorumID is a unique identifier for a quorum; initially ZGDA wil support upt to 256 quorums
+// QuorumID is a unique identifier for a quorum; initially ZGDA will support up to 256 quorums
 type QuorumID = uint8
 
 // SecurityParam contains the quorum ID and the adversary threshold for the quorum;
