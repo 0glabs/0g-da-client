@@ -239,8 +239,14 @@ func (c *Client) writeItems(ctx context.Context, tableName string, requestItems 
 
 		// check for unprocessed items
 		if len(output.UnprocessedItems) > 0 {
-			for _, req := range output.UnprocessedItems[tableName] {
-				failedItems = append(failedItems, req.DeleteRequest.Key)
+			if operation == update {
+				for _, req := range output.UnprocessedItems[tableName] {
+					failedItems = append(failedItems, req.PutRequest.Item)
+				}
+			} else if operation == delete {
+				for _, req := range output.UnprocessedItems[tableName] {
+					failedItems = append(failedItems, req.DeleteRequest.Key)
+				}
 			}
 		}
 
