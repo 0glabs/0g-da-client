@@ -24,7 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type DisperserClient interface {
 	// This API accepts blob to disperse from clients.
 	// This executes the dispersal async, i.e. it returns once the request
-	// is accepted. The client could use GetBlobStatus() API to poll the the
+	// is accepted. The client could use GetBlobStatus() API to poll the
 	// processing status of the blob.
 	DisperseBlob(ctx context.Context, in *DisperseBlobRequest, opts ...grpc.CallOption) (*DisperseBlobReply, error)
 	// This API is meant to be polled for the blob status.
